@@ -4,7 +4,8 @@ extends Node2D
 @onready var ray_cast_right: RayCast2D = $RayCastRight
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
-const SPEED: int = 60
+@export var move_speed: float = 60.0
+
 var direction: int = 1
 
 func _process(delta: float) -> void:
@@ -16,4 +17,4 @@ func _process(delta: float) -> void:
     direction = -1
     animated_sprite.flip_h = true;
 
-  position.x += direction * SPEED * delta
+  position.x += direction * move_speed * delta
