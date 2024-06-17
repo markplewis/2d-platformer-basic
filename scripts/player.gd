@@ -8,10 +8,13 @@ extends CharacterBody2D
 # - https://www.youtube.com/watch?v=hG9SzQxaCm8
 
 # Jump buffering: https://www.youtube.com/watch?v=hRQW580zEJE
+# Coyote time: https://www.youtube.com/watch?v=4Vhcqh9S2LM
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var coyote_timer: Timer = $CoyoteTimer
 var on_floor: bool = true
+var is_dead: bool = false
 
 @export_category("Walking")
 @export var ground_speed: float = 130.0
@@ -22,18 +25,20 @@ var last_direction: float = 1.0
 
 @export_category("Jumping")
 @export var jump_height: float = 64.0 # Pixels
-@export var jump_distance: float = 64.0  # Pixels
+@export var jump_distance: float = 64.0 # Pixels
 @export var jump_peak_time: float = 0.4
 @export var jump_fall_time: float = 0.3
 @export var jump_buffer_time: float = 0.1
-var has_jumped: bool = false
+@export var coyote_time: float = 0.1
 var jump_buffer: bool = false
+var jump_available: bool = true
 
 @onready var jump_gravity: float = ((-2.0 * jump_height) / pow(jump_peak_time, 2)) * -1.0
 @onready var fall_gravity: float = ((-2.0 * jump_height) / pow(jump_fall_time, 2)) * -1.0
 @onready var jump_velocity: float = (jump_gravity * jump_peak_time) * -1.0
 @onready var air_speed: float = jump_distance / (jump_peak_time + jump_fall_time)
 var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
+
 
 func _physics_process(delta: float) -> void:
   # Get the input direction: range between -1.0 and 1.0
@@ -54,28 +59,28 @@ func _physics_process(delta: float) -> void:
 
 func apply_gravity(delta: float) -> void:
   if not on_floor:
-    if has_jumped:
-      if velocity.y < 0:
-        # Jump ascent
-        velocity.y += jump_gravity * delta
-      else:
-        # Jump descent
-        velocity.y += fall_gravity * delta
+    if jump_available: # About to fall (did not jump)
+      if coyote_timer.is_stopped():
+        coyote_timer.start(coyote_time)
+      # Comment out to pause gravity until coyote timer has elapsed
+      velocity.y += default_gravity * delta # Fall
     else:
-      # Falling (did not jump)
-      velocity.y += default_gravity * delta
+      if velocity.y < 0:
+        velocity.y += jump_gravity * delta # Jump ascent
+      else:
+        velocity.y += fall_gravity * delta # Jump descent
   else:
-    if has_jumped:
-      # Jump landed
-      has_jumped = false
-    if jump_buffer == true:
+    coyote_timer.stop()
+    jump_available = true
+
+    if jump_buffer:
       jump()
       jump_buffer = false
 
 
 func handle_jump() -> void:
   if Input.is_action_just_pressed("ui_accept"):
-    if on_floor: # Make this jump_available when we implement coyote time
+    if jump_available:
       jump()
     else:
       jump_buffer = true
@@ -83,9 +88,9 @@ func handle_jump() -> void:
 
 
 func jump() -> void:
-  if not has_jumped:
+  if jump_available:
     velocity.y = jump_velocity
-    has_jumped = true
+    jump_available = false
 
 
 func handle_movement(delta: float) -> void:
@@ -114,17 +119,29 @@ func flip_sprite() -> void:
 
 
 func play_animation() -> void:
-  if on_floor:
-    if move_direction == 0:
-      animated_sprite.play("idle")
-    else:
-      animated_sprite.play("run")
+  if is_dead:
+    animated_sprite.play("die")
   else:
-    if velocity.y < 0:
-      animated_sprite.play("jump")
+    if on_floor:
+      if move_direction == 0:
+        animated_sprite.play("idle")
+      else:
+        animated_sprite.play("run")
     else:
-      animated_sprite.play("fall")
+      if velocity.y < 0:
+        animated_sprite.play("jump")
+      else:
+        animated_sprite.play("fall")
+
+
+func die() -> void:
+  is_dead = true;
+  velocity.y = jump_velocity / 2
 
 
 func on_jump_buffer_timeout() -> void:
   jump_buffer = false
+
+
+func _on_coyote_timer_timeout() -> void:
+  jump_available = false
