@@ -39,6 +39,9 @@ var jump_available: bool = true
 @onready var air_speed: float = jump_distance / (jump_peak_time + jump_fall_time)
 var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
+#var point1: Vector2 = Vector2.ZERO
+#var point2: Vector2 = Vector2.ZERO
+
 
 func _physics_process(delta: float) -> void:
   # Get the input direction: range between -1.0 and 1.0
@@ -55,6 +58,22 @@ func _physics_process(delta: float) -> void:
     last_direction = move_direction
 
   move_and_slide() # Apply velocity changes
+
+  # https://forum.godotengine.org/t/how-to-use-get-floor-angle-in-godot-with-c-align-the-player-with-the-floor/48442
+  #var start: Vector2 = Vector2.ZERO
+  #var end: Vector2 = Vector2(0, get_floor_angle())
+  #var rotation : float = start.angle_to_point(end)
+  #print("Angle: " + str(get_floor_angle()))
+  #print("Rotation: " + str(rotation))
+  #print("Velocity: " + str(velocity))
+  #
+  #var rotation : float = Vector2.ZERO.angle_to_point(get_floor_normal())
+  #point2 = Vector2(velocity.x, rotation)
+  #queue_redraw()
+
+
+#func _draw():
+  #draw_line(Vector2.ZERO, point2, Color.GREEN, 1)
 
 
 func apply_gravity(delta: float) -> void:
