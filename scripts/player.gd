@@ -13,6 +13,7 @@ extends CharacterBody2D
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var coyote_timer: Timer = $CoyoteTimer
+@onready var line: Line2D = $Line2D
 var on_floor: bool = true
 var is_dead: bool = false
 
@@ -32,14 +33,20 @@ var last_direction: float = 1.0
 @export var coyote_time: float = 0.1
 var jump_buffer: bool = false
 var jump_available: bool = true
-var is_jumping: bool = false
-var has_landed: bool = false
 
 @onready var jump_gravity: float = ((-2.0 * jump_height) / pow(jump_peak_time, 2)) * -1.0
 @onready var fall_gravity: float = ((-2.0 * jump_height) / pow(jump_fall_time, 2)) * -1.0
 @onready var jump_velocity: float = (jump_gravity * jump_peak_time) * -1.0
 @onready var air_speed: float = jump_distance / (jump_peak_time + jump_fall_time)
 var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
+
+
+func _process(delta: float) -> void:
+  # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
+  line.clear_points()
+  line.add_point(Vector2(0, 0))
+  line.add_point(velocity.normalized() * 20)
+  line.global_rotation = 0
 
 
 func _physics_process(delta: float) -> void:
@@ -73,14 +80,6 @@ func apply_gravity(delta: float) -> void:
         velocity.y += fall_gravity * delta # Jump descent
   else:
     coyote_timer.stop()
-
-    if is_jumping:
-      # Landed
-      is_jumping = false
-      has_landed = true
-    else:
-      has_landed = false
-
     jump_available = true
 
     if jump_buffer:
@@ -100,7 +99,6 @@ func handle_jump() -> void:
 func jump() -> void:
   if jump_available:
     velocity.y = jump_velocity
-    is_jumping = true
     jump_available = false
 
 
@@ -132,10 +130,6 @@ func flip_sprite() -> void:
 func play_animation() -> void:
   if is_dead:
     animated_sprite.play("die")
-  elif has_landed:
-    animated_sprite.play("land")
-  elif animated_sprite.animation == "land" and animated_sprite.is_playing():
-    pass
   else:
     if on_floor:
       if move_direction == 0:
