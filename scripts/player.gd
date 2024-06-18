@@ -40,14 +40,25 @@ var jump_available: bool = true
 @onready var air_speed: float = jump_distance / (jump_peak_time + jump_fall_time)
 var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
+var floor_normal: Vector2 = Vector2.UP
+var floor_angle: float = 0
+
 
 func _process(delta: float) -> void:
   if OS.is_debug_build():
     # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
     line.clear_points()
-    line.add_point(Vector2(0, 0))
-    line.add_point(velocity.normalized() * 20)
-    line.global_rotation = 0
+    if on_floor:
+      line.add_point(Vector2.ZERO)
+      if floor_normal.x < 0:
+        # Sloping upward to right
+        line.add_point(Vector2.UP.rotated(-floor_angle) * 10)
+        line.add_point(Vector2.DOWN.rotated(-floor_angle) * 10)
+      else:
+        # Sloping upward to left
+        line.add_point(Vector2.UP.rotated(floor_angle) * 10)
+        line.add_point(Vector2.DOWN.rotated(floor_angle) * 10)
+      line.global_rotation = 0
 
 
 func _physics_process(delta: float) -> void:
@@ -65,6 +76,9 @@ func _physics_process(delta: float) -> void:
     last_direction = move_direction
 
   move_and_slide() # Apply velocity changes
+
+  floor_normal = get_floor_normal()
+  floor_angle = get_floor_angle() + deg_to_rad(90)
 
 
 func apply_gravity(delta: float) -> void:
