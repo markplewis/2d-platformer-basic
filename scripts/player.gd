@@ -32,15 +32,14 @@ var last_direction: float = 1.0
 @export var coyote_time: float = 0.1
 var jump_buffer: bool = false
 var jump_available: bool = true
+var is_jumping: bool = false
+var has_landed: bool = false
 
 @onready var jump_gravity: float = ((-2.0 * jump_height) / pow(jump_peak_time, 2)) * -1.0
 @onready var fall_gravity: float = ((-2.0 * jump_height) / pow(jump_fall_time, 2)) * -1.0
 @onready var jump_velocity: float = (jump_gravity * jump_peak_time) * -1.0
 @onready var air_speed: float = jump_distance / (jump_peak_time + jump_fall_time)
 var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
-
-#var point1: Vector2 = Vector2.ZERO
-#var point2: Vector2 = Vector2.ZERO
 
 
 func _physics_process(delta: float) -> void:
@@ -59,22 +58,6 @@ func _physics_process(delta: float) -> void:
 
   move_and_slide() # Apply velocity changes
 
-  # https://forum.godotengine.org/t/how-to-use-get-floor-angle-in-godot-with-c-align-the-player-with-the-floor/48442
-  #var start: Vector2 = Vector2.ZERO
-  #var end: Vector2 = Vector2(0, get_floor_angle())
-  #var rotation : float = start.angle_to_point(end)
-  #print("Angle: " + str(get_floor_angle()))
-  #print("Rotation: " + str(rotation))
-  #print("Velocity: " + str(velocity))
-  #
-  #var rotation : float = Vector2.ZERO.angle_to_point(get_floor_normal())
-  #point2 = Vector2(velocity.x, rotation)
-  #queue_redraw()
-
-
-#func _draw():
-  #draw_line(Vector2.ZERO, point2, Color.GREEN, 1)
-
 
 func apply_gravity(delta: float) -> void:
   if not on_floor:
@@ -90,6 +73,14 @@ func apply_gravity(delta: float) -> void:
         velocity.y += fall_gravity * delta # Jump descent
   else:
     coyote_timer.stop()
+
+    if is_jumping:
+      # Landed
+      is_jumping = false
+      has_landed = true
+    else:
+      has_landed = false
+
     jump_available = true
 
     if jump_buffer:
@@ -109,6 +100,7 @@ func handle_jump() -> void:
 func jump() -> void:
   if jump_available:
     velocity.y = jump_velocity
+    is_jumping = true
     jump_available = false
 
 
@@ -140,6 +132,10 @@ func flip_sprite() -> void:
 func play_animation() -> void:
   if is_dead:
     animated_sprite.play("die")
+  elif has_landed:
+    animated_sprite.play("land")
+  elif animated_sprite.animation == "land" and animated_sprite.is_playing():
+    pass
   else:
     if on_floor:
       if move_direction == 0:
