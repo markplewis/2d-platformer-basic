@@ -42,11 +42,12 @@ var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gra
 
 
 func _process(delta: float) -> void:
-  # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
-  line.clear_points()
-  line.add_point(Vector2(0, 0))
-  line.add_point(velocity.normalized() * 20)
-  line.global_rotation = 0
+  if OS.is_debug_build():
+    # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
+    line.clear_points()
+    line.add_point(Vector2(0, 0))
+    line.add_point(velocity.normalized() * 20)
+    line.global_rotation = 0
 
 
 func _physics_process(delta: float) -> void:
