@@ -19,9 +19,6 @@ var is_dead: bool = false
 @export var acceleration_speed: float = 10
 @export var deceleration_speed: float = 15
 
-@onready var slope_line: Line2D = $SlopeLine
-@onready var velocity_line: Line2D = $VelocityLine
-
 var move_direction: float = 0
 var last_move_direction: float = 1.0
 var on_floor: bool = true
@@ -50,14 +47,38 @@ var jump_available: bool = true
 @export var draw_debug_lines: bool = true
 
 
+@onready var  slope_line: Line2D = Line2D.new()
+@onready var  velocity_line: Line2D = Line2D.new()
+@onready var  l: Line2D = Line2D.new()
+
+func _ready() -> void:
+  if OS.is_debug_build() and draw_debug_lines:
+    slope_line.position = Vector2.ZERO
+    slope_line.default_color = Color.WHITE
+    slope_line.width = 1
+    # slope_line.global_rotation = 0
+    add_child(slope_line)
+
+    velocity_line.position = Vector2(collision_shape.position.x, collision_shape.position.y)
+    velocity_line.default_color = Color.GOLD
+    velocity_line.width = 1
+    # velocity_line.global_rotation = 0
+    add_child(velocity_line)
+
+    l.position = Vector2.ZERO
+    l.default_color = Color.INDIAN_RED
+    l.width = 1
+    add_child(l)
+
+
 func _process(delta: float) -> void:
   if OS.is_debug_build() and draw_debug_lines:
     # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
     slope_line.clear_points()
     velocity_line.clear_points()
-    velocity_line.position = Vector2(collision_shape.position.x, collision_shape.position.y)
+    l.clear_points()
 
-    if on_floor:
+    if on_floor and not is_dead:
       slope_line.add_point(Vector2.ZERO)
       if floor_normal.x < 0:
         # Sloping upward to right
@@ -71,11 +92,12 @@ func _process(delta: float) -> void:
           slope_line.add_point(Vector2.UP.rotated(floor_angle) * 10)
         else:
           slope_line.add_point(Vector2.DOWN.rotated(floor_angle) * 10)
-      slope_line.global_rotation = 0
 
       velocity_line.add_point(Vector2.ZERO)
       velocity_line.add_point(velocity.normalized() * 15)
-      velocity_line.global_rotation = 0
+
+      l.add_point(Vector2.ZERO)
+      l.add_point(floor_normal * 20)
 
 
 func _physics_process(delta: float) -> void:
@@ -97,6 +119,7 @@ func _physics_process(delta: float) -> void:
   if on_floor:
     floor_normal = get_floor_normal()
     floor_angle = get_floor_angle() + deg_to_rad(90)
+    # print(get_floor_normal().rotated(deg_to_rad(90)))
   else:
     floor_normal = Vector2.UP
     floor_angle = 0

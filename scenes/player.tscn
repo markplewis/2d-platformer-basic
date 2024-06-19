@@ -219,11 +219,4 @@ max_length = 30
 [node name="CoyoteTimer" type="Timer" parent="."]
 one_shot = true
 
-[node name="SlopeLine" type="Line2D" parent="."]
-width = 1.0
-
-[node name="VelocityLine" type="Line2D" parent="."]
-width = 1.0
-default_color = Color(1, 0.8, 0, 1)
-
 [connection signal="timeout" from="CoyoteTimer" to="." method="_on_coyote_timer_timeout"]
