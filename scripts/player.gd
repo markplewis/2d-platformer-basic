@@ -12,17 +12,21 @@ extends CharacterBody2D
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var coyote_timer: Timer = $CoyoteTimer
-@onready var line: Line2D = $Line2D
-var on_floor: bool = true
 var is_dead: bool = false
 
 @export_category("Walking")
 @export var ground_speed: float = 130.0
 @export var acceleration_speed: float = 10
 @export var deceleration_speed: float = 15
+
+@onready var slope_line: Line2D = $SlopeLine
+@onready var velocity_line: Line2D = $VelocityLine
+
 var move_direction: float = 0
-var last_direction: float = 1.0
+var last_move_direction: float = 1.0
+var on_floor: bool = true
+var floor_normal: Vector2 = Vector2.UP
+var floor_angle: float = 0
 
 @export_category("Jumping")
 @export var jump_height: float = 64.0 # Pixels
@@ -31,34 +35,47 @@ var last_direction: float = 1.0
 @export var jump_fall_time: float = 0.3
 @export var jump_buffer_time: float = 0.1
 @export var coyote_time: float = 0.1
-var jump_buffer: bool = false
-var jump_available: bool = true
 
+@onready var coyote_timer: Timer = $CoyoteTimer
 @onready var jump_gravity: float = ((-2.0 * jump_height) / pow(jump_peak_time, 2)) * -1.0
 @onready var fall_gravity: float = ((-2.0 * jump_height) / pow(jump_fall_time, 2)) * -1.0
 @onready var jump_velocity: float = (jump_gravity * jump_peak_time) * -1.0
 @onready var air_speed: float = jump_distance / (jump_peak_time + jump_fall_time)
-var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
-var floor_normal: Vector2 = Vector2.UP
-var floor_angle: float = 0
+var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
+var jump_buffer: bool = false
+var jump_available: bool = true
+
+@export_category("Debugging")
+@export var draw_debug_lines: bool = true
 
 
 func _process(delta: float) -> void:
-  if OS.is_debug_build():
+  if OS.is_debug_build() and draw_debug_lines:
     # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
-    line.clear_points()
+    slope_line.clear_points()
+    velocity_line.clear_points()
+    velocity_line.position = Vector2(collision_shape.position.x, collision_shape.position.y)
+
     if on_floor:
-      line.add_point(Vector2.ZERO)
+      slope_line.add_point(Vector2.ZERO)
       if floor_normal.x < 0:
         # Sloping upward to right
-        line.add_point(Vector2.UP.rotated(-floor_angle) * 10)
-        line.add_point(Vector2.DOWN.rotated(-floor_angle) * 10)
+        if velocity.x < 0:
+          slope_line.add_point(Vector2.UP.rotated(-floor_angle) * 10)
+        else:
+          slope_line.add_point(Vector2.DOWN.rotated(-floor_angle) * 10)
       else:
         # Sloping upward to left
-        line.add_point(Vector2.UP.rotated(floor_angle) * 10)
-        line.add_point(Vector2.DOWN.rotated(floor_angle) * 10)
-      line.global_rotation = 0
+        if velocity.x > 0:
+          slope_line.add_point(Vector2.UP.rotated(floor_angle) * 10)
+        else:
+          slope_line.add_point(Vector2.DOWN.rotated(floor_angle) * 10)
+      slope_line.global_rotation = 0
+
+      velocity_line.add_point(Vector2.ZERO)
+      velocity_line.add_point(velocity.normalized() * 15)
+      velocity_line.global_rotation = 0
 
 
 func _physics_process(delta: float) -> void:
@@ -73,12 +90,39 @@ func _physics_process(delta: float) -> void:
   play_animation()
 
   if move_direction != 0:
-    last_direction = move_direction
+    last_move_direction = move_direction
 
   move_and_slide() # Apply velocity changes
 
-  floor_normal = get_floor_normal()
-  floor_angle = get_floor_angle() + deg_to_rad(90)
+  if on_floor:
+    floor_normal = get_floor_normal()
+    floor_angle = get_floor_angle() + deg_to_rad(90)
+  else:
+    floor_normal = Vector2.UP
+    floor_angle = 0
+
+# See: Assets/Scripts/Shinjingi/Capabilities/Move.cs - FixedUpdate method
+# And: Assets/Scripts/Shinjingi/Sensors/GroundSensor.cs - SlopeCheck method
+#
+# if (OnGround) {
+#   Vector2 slopeAdjustedVelocity = new Vector2(_moveInputX, 0f);
+#
+#   // Convert ground hit normal from world space to player's local space
+#   Vector2 localGroundCheckHitNormal = _body.transform.InverseTransformDirection(_groundHit.normal);
+#
+#   // Get angle between player up and ground hit normal (0 degrees when on a flat surface)
+#   SlopeAngle = Vector2.Angle(localGroundCheckHitNormal, _body.transform.up);
+#   OnSlope = SlopeAngle != 0f;
+#
+#   // Calculate amount of rotation needed to align player up with ground hit normal
+#   SlopeAngleRotation = OnSlope
+#     ? Quaternion.FromToRotation(_body.transform.up, localGroundCheckHitNormal)
+#     : Quaternion.identity;
+#
+#   // SlopeAngleRotation includes both X and Y values, so Y velocity may no longer be zero
+#   slopeAdjustedVelocity = SlopeAngleRotation * slopeAdjustedVelocity;
+#   newVelocity = slopeAdjustedVelocity * speed;
+# }
 
 
 func apply_gravity(delta: float) -> void:
@@ -139,7 +183,7 @@ func flip_sprite() -> void:
   elif move_direction < 0:
     animated_sprite.flip_h = true
   else:
-    animated_sprite.flip_h = last_direction < 0
+    animated_sprite.flip_h = last_move_direction < 0
 
 
 func play_animation() -> void:
