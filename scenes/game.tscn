@@ -498,8 +498,8 @@ layer_1/tile_data = PackedInt32Array(131072, 0, 0, 131073, 0, 0, 327679, 0, 0, 3
 
 [node name="Player" parent="." instance=ExtResource("1_1oa66")]
 position = Vector2(22, 24)
-floor_constant_speed = true
-floor_snap_length = 0.0
+floor_snap_length = 5.0
+rotate_on_slopes = false
 
 [node name="Camera2D" type="Camera2D" parent="Player"]
 position = Vector2(0, -5)

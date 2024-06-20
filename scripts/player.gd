@@ -10,24 +10,23 @@ extends CharacterBody2D
 # Jump buffering: https://www.youtube.com/watch?v=hRQW580zEJE
 # Coyote time: https://www.youtube.com/watch?v=4Vhcqh9S2LM
 
-#@onready var ground_detection_raycast: RayCast2D = $GroundDetectionRaycast
-@onready var shape_cast: ShapeCast2D = $GroundDetectionShapeCast
-
-@onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var sprite_container: Node2D = $SpriteContainer
+@onready var animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var ground_cast: RayCast2D = $GroundDetectionRaycast
 var is_dead: bool = false
 
 @export_category("Walking")
 @export var ground_speed: float = 130.0
 @export var acceleration_speed: float = 10
 @export var deceleration_speed: float = 15
+@export var rotate_on_slopes: bool = true
 
 var move_direction: float = 0
 var last_move_direction: float = 1.0
 var on_floor: bool = true
 var floor_normal: Vector2 = Vector2.UP
 var floor_angle: float = 0
-var raw_velocity: Vector2 = Vector2.ZERO
 
 @export_category("Jumping")
 @export var jump_height: float = 64.0 # Pixels
@@ -50,22 +49,20 @@ var jump_available: bool = true
 @export_category("Debugging")
 @export var draw_debug_lines: bool = true
 
-@onready var  slope_line: Line2D = Line2D.new()
-@onready var  velocity_line: Line2D = Line2D.new()
-@onready var  floor_normal_line: Line2D = Line2D.new()
+@onready var slope_line: Line2D = Line2D.new()
+@onready var velocity_line: Line2D = Line2D.new()
+@onready var floor_normal_line: Line2D = Line2D.new()
 
 func _ready() -> void:
   if OS.is_debug_build() and draw_debug_lines:
     slope_line.position = Vector2.ZERO
     slope_line.default_color = Color.WHITE
     slope_line.width = 1
-    # slope_line.global_rotation = 0
     add_child(slope_line)
 
     velocity_line.position = Vector2(collision_shape.position.x, collision_shape.position.y)
     velocity_line.default_color = Color.CHARTREUSE
     velocity_line.width = 1
-    # velocity_line.global_rotation = 0
     add_child(velocity_line)
 
     floor_normal_line.position = Vector2.ZERO
@@ -82,26 +79,12 @@ func _process(delta: float) -> void:
     floor_normal_line.clear_points()
 
     if on_floor and not is_dead:
-      #slope_line.add_point(Vector2.ZERO)
-#
-      #if floor_normal.x < 0:
-        ## Sloping upward to right
-        #if velocity.x < 0:
-          #slope_line.add_point(Vector2.UP.rotated(-floor_angle) * 10)
-        #else:
-          #slope_line.add_point(Vector2.DOWN.rotated(-floor_angle) * 10)
-      #else:
-        ## Sloping upward to left
-        #if velocity.x > 0:
-          #slope_line.add_point(Vector2.UP.rotated(floor_angle) * 10)
-        #else:
-          #slope_line.add_point(Vector2.DOWN.rotated(floor_angle) * 10)
+      slope_line.add_point(Vector2.from_angle(floor_angle) * -10)
+      slope_line.add_point(Vector2.from_angle(floor_angle) * 10)
 
-      velocity_line.rotation = -rotation
       velocity_line.add_point(Vector2.ZERO)
       velocity_line.add_point(velocity.normalized() * 15)
 
-      floor_normal_line.rotation = -rotation
       floor_normal_line.add_point(Vector2.ZERO)
       floor_normal_line.add_point(floor_normal * 20)
 
@@ -111,117 +94,17 @@ func _physics_process(delta: float) -> void:
   move_direction = Input.get_axis("move_left", "move_right")
   on_floor = is_on_floor()
 
-  # https://www.reddit.com/r/godot/comments/1agit6k/why_is_the_characterbody2d_property_max_floor/
-  raw_velocity.x = move_direction * ground_speed
-  if on_floor:
-    raw_velocity.y = 0.0
-  else:
-    raw_velocity.y = default_gravity
+  apply_gravity(delta)
+  handle_jump()
+  handle_movement(delta)
+  rotate_sprite()
+  flip_sprite()
+  play_animation()
 
-  # if on_floor:
-  if shape_cast.is_colliding():
-    # var normal = get_floor_normal()
-    var normal = shape_cast.get_collision_normal(0)
-    var angle = Vector2.UP.angle_to(normal)
-    var angle_abs = abs(rad_to_deg(angle))
-    print(angle_abs)
+  if move_direction != 0:
+    last_move_direction = move_direction
 
-    if angle_abs < 45: # angle_abs > 0 &&
-      up_direction = normal
-      # rotation = angle
-      rotation = lerp_angle(rotation, angle, delta * 20)
-      velocity = raw_velocity.rotated(angle)
-    else:
-      velocity = raw_velocity
-  else:
-    velocity = raw_velocity
-
-  move_and_slide()
-
-  ######################
-
-  ## Get the input direction: range between -1.0 and 1.0
-  #move_direction = Input.get_axis("move_left", "move_right")
-  #on_floor = is_on_floor()
-
-  #apply_gravity(delta)
-  #handle_jump()
-  #handle_movement(delta)
-  #flip_sprite()
-  #play_animation()
-
-  #if move_direction != 0:
-    #last_move_direction = move_direction
-
-  #move_and_slide() # Apply velocity changes
-
-  #if on_floor:
-    #floor_normal = get_floor_normal()
-    ## floor_angle = get_floor_angle() + deg_to_rad(90)
-    #floor_angle = get_floor_angle()
-  #else:
-    #floor_normal = Vector2.UP
-    #floor_angle = 0
-
-  ######################
-
-  #if on_floor:
-    #up_direction = floor_normal
-    #var angle: float = Vector2.UP.angle_to(floor_normal)
-    ## rotation = angle
-    #velocity = velocity.rotated(angle)
-#
-  #move_and_slide()
-
-  #if on_floor:
-    #if floor_normal.x < 0:
-      ## Sloping upward to right
-      #if move_direction < 0:
-        #velocity = up_direction.rotated(-(floor_angle + deg_to_rad(90))) * ground_speed
-      #if move_direction > 0:
-        #velocity = up_direction.rotated(-(floor_angle + deg_to_rad(90))) * ground_speed
-      #if move_direction == 0:
-        #velocity = Vector2.ZERO
-    #if floor_normal.x > 0:
-      ## Sloping upward to left
-      #if move_direction > 0:
-        #velocity = up_direction.rotated(floor_angle + deg_to_rad(90)) * ground_speed
-      #if move_direction < 0:
-        #velocity = up_direction.rotated(floor_angle - deg_to_rad(90)) * ground_speed
-      #if move_direction == 0:
-        #velocity = Vector2.ZERO
-    #if floor_normal.x == 0:
-      #velocity.x = move_direction * ground_speed
-  #else:
-    #if move_direction:
-      #velocity.x = move_direction * air_speed
-    #else:
-      #velocity.x = move_toward(velocity.x, 0, air_speed)
-#
-  #move_and_slide()
-
-# See: Assets/Scripts/Shinjingi/Capabilities/Move.cs - FixedUpdate method
-# And: Assets/Scripts/Shinjingi/Sensors/GroundSensor.cs - SlopeCheck method
-#
-# if (OnGround) {
-#   Vector2 slopeAdjustedVelocity = new Vector2(_moveInputX, 0f);
-#
-#   // Convert ground hit normal from world space to player's local space
-#   Vector2 localGroundCheckHitNormal = _body.transform.InverseTransformDirection(_groundHit.normal);
-#
-#   // Get angle between player up and ground hit normal (0 degrees when on a flat surface)
-#   SlopeAngle = Vector2.Angle(localGroundCheckHitNormal, _body.transform.up);
-#   OnSlope = SlopeAngle != 0f;
-#
-#   // Calculate amount of rotation needed to align player up with ground hit normal
-#   SlopeAngleRotation = OnSlope
-#     ? Quaternion.FromToRotation(_body.transform.up, localGroundCheckHitNormal)
-#     : Quaternion.identity;
-#
-#   // SlopeAngleRotation includes both X and Y values, so Y velocity may no longer be zero
-#   slopeAdjustedVelocity = SlopeAngleRotation * slopeAdjustedVelocity;
-#   newVelocity = slopeAdjustedVelocity * speed;
-# }
+  move_and_slide() # Apply velocity changes
 
 
 func apply_gravity(delta: float) -> void:
@@ -274,6 +157,26 @@ func handle_movement(delta: float) -> void:
       velocity.x = move_direction * air_speed
     else:
       velocity.x = move_toward(velocity.x, 0, air_speed)
+
+
+func rotate_sprite() -> void:
+  sprite_container.rotation = 0
+  # up_direction = Vector2.UP
+  # rotation = 0
+
+  # https://www.reddit.com/r/godot/comments/1agit6k/why_is_the_characterbody2d_property_max_floor/
+  if on_floor and ground_cast.is_colliding():
+    floor_normal = ground_cast.get_collision_normal()
+    floor_angle = Vector2.UP.angle_to(floor_normal)
+    # print("Angle: " + str(round(abs(rad_to_deg(floor_angle)))))
+    # print("Max: " + str(rad_to_deg(floor_max_angle)))
+
+    if floor_angle <= floor_max_angle and rotate_on_slopes:
+      sprite_container.rotation = floor_angle
+      # up_direction = floor_normal
+      # rotation = floor_angle
+      # rotation = lerp_angle(rotation, floor_angle, delta * 20)
+      # velocity = raw_velocity.rotated(floor_angle)
 
 
 func flip_sprite() -> void:
