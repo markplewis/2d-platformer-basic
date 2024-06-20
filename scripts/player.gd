@@ -10,6 +10,9 @@ extends CharacterBody2D
 # Jump buffering: https://www.youtube.com/watch?v=hRQW580zEJE
 # Coyote time: https://www.youtube.com/watch?v=4Vhcqh9S2LM
 
+#@onready var ground_detection_raycast: RayCast2D = $GroundDetectionRaycast
+@onready var shape_cast: ShapeCast2D = $GroundDetectionShapeCast
+
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 var is_dead: bool = false
@@ -24,6 +27,7 @@ var last_move_direction: float = 1.0
 var on_floor: bool = true
 var floor_normal: Vector2 = Vector2.UP
 var floor_angle: float = 0
+var raw_velocity: Vector2 = Vector2.ZERO
 
 @export_category("Jumping")
 @export var jump_height: float = 64.0 # Pixels
@@ -46,10 +50,9 @@ var jump_available: bool = true
 @export_category("Debugging")
 @export var draw_debug_lines: bool = true
 
-
 @onready var  slope_line: Line2D = Line2D.new()
 @onready var  velocity_line: Line2D = Line2D.new()
-@onready var  l: Line2D = Line2D.new()
+@onready var  floor_normal_line: Line2D = Line2D.new()
 
 func _ready() -> void:
   if OS.is_debug_build() and draw_debug_lines:
@@ -60,15 +63,15 @@ func _ready() -> void:
     add_child(slope_line)
 
     velocity_line.position = Vector2(collision_shape.position.x, collision_shape.position.y)
-    velocity_line.default_color = Color.GOLD
+    velocity_line.default_color = Color.CHARTREUSE
     velocity_line.width = 1
     # velocity_line.global_rotation = 0
     add_child(velocity_line)
 
-    l.position = Vector2.ZERO
-    l.default_color = Color.INDIAN_RED
-    l.width = 1
-    add_child(l)
+    floor_normal_line.position = Vector2.ZERO
+    floor_normal_line.default_color = Color.INDIAN_RED
+    floor_normal_line.width = 1
+    add_child(floor_normal_line)
 
 
 func _process(delta: float) -> void:
@@ -76,28 +79,31 @@ func _process(delta: float) -> void:
     # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
     slope_line.clear_points()
     velocity_line.clear_points()
-    l.clear_points()
+    floor_normal_line.clear_points()
 
     if on_floor and not is_dead:
-      slope_line.add_point(Vector2.ZERO)
-      if floor_normal.x < 0:
-        # Sloping upward to right
-        if velocity.x < 0:
-          slope_line.add_point(Vector2.UP.rotated(-floor_angle) * 10)
-        else:
-          slope_line.add_point(Vector2.DOWN.rotated(-floor_angle) * 10)
-      else:
-        # Sloping upward to left
-        if velocity.x > 0:
-          slope_line.add_point(Vector2.UP.rotated(floor_angle) * 10)
-        else:
-          slope_line.add_point(Vector2.DOWN.rotated(floor_angle) * 10)
+      #slope_line.add_point(Vector2.ZERO)
+#
+      #if floor_normal.x < 0:
+        ## Sloping upward to right
+        #if velocity.x < 0:
+          #slope_line.add_point(Vector2.UP.rotated(-floor_angle) * 10)
+        #else:
+          #slope_line.add_point(Vector2.DOWN.rotated(-floor_angle) * 10)
+      #else:
+        ## Sloping upward to left
+        #if velocity.x > 0:
+          #slope_line.add_point(Vector2.UP.rotated(floor_angle) * 10)
+        #else:
+          #slope_line.add_point(Vector2.DOWN.rotated(floor_angle) * 10)
 
+      velocity_line.rotation = -rotation
       velocity_line.add_point(Vector2.ZERO)
       velocity_line.add_point(velocity.normalized() * 15)
 
-      l.add_point(Vector2.ZERO)
-      l.add_point(floor_normal * 20)
+      floor_normal_line.rotation = -rotation
+      floor_normal_line.add_point(Vector2.ZERO)
+      floor_normal_line.add_point(floor_normal * 20)
 
 
 func _physics_process(delta: float) -> void:
@@ -105,24 +111,94 @@ func _physics_process(delta: float) -> void:
   move_direction = Input.get_axis("move_left", "move_right")
   on_floor = is_on_floor()
 
-  apply_gravity(delta)
-  handle_jump()
-  handle_movement(delta)
-  flip_sprite()
-  play_animation()
-
-  if move_direction != 0:
-    last_move_direction = move_direction
-
-  move_and_slide() # Apply velocity changes
-
+  # https://www.reddit.com/r/godot/comments/1agit6k/why_is_the_characterbody2d_property_max_floor/
+  raw_velocity.x = move_direction * ground_speed
   if on_floor:
-    floor_normal = get_floor_normal()
-    floor_angle = get_floor_angle() + deg_to_rad(90)
-    # print(get_floor_normal().rotated(deg_to_rad(90)))
+    raw_velocity.y = 0.0
   else:
-    floor_normal = Vector2.UP
-    floor_angle = 0
+    raw_velocity.y = default_gravity
+
+  # if on_floor:
+  if shape_cast.is_colliding():
+    # var normal = get_floor_normal()
+    var normal = shape_cast.get_collision_normal(0)
+    var angle = Vector2.UP.angle_to(normal)
+    var angle_abs = abs(rad_to_deg(angle))
+    print(angle_abs)
+
+    if angle_abs < 45: # angle_abs > 0 &&
+      up_direction = normal
+      # rotation = angle
+      rotation = lerp_angle(rotation, angle, delta * 20)
+      velocity = raw_velocity.rotated(angle)
+    else:
+      velocity = raw_velocity
+  else:
+    velocity = raw_velocity
+
+  move_and_slide()
+
+  ######################
+
+  ## Get the input direction: range between -1.0 and 1.0
+  #move_direction = Input.get_axis("move_left", "move_right")
+  #on_floor = is_on_floor()
+
+  #apply_gravity(delta)
+  #handle_jump()
+  #handle_movement(delta)
+  #flip_sprite()
+  #play_animation()
+
+  #if move_direction != 0:
+    #last_move_direction = move_direction
+
+  #move_and_slide() # Apply velocity changes
+
+  #if on_floor:
+    #floor_normal = get_floor_normal()
+    ## floor_angle = get_floor_angle() + deg_to_rad(90)
+    #floor_angle = get_floor_angle()
+  #else:
+    #floor_normal = Vector2.UP
+    #floor_angle = 0
+
+  ######################
+
+  #if on_floor:
+    #up_direction = floor_normal
+    #var angle: float = Vector2.UP.angle_to(floor_normal)
+    ## rotation = angle
+    #velocity = velocity.rotated(angle)
+#
+  #move_and_slide()
+
+  #if on_floor:
+    #if floor_normal.x < 0:
+      ## Sloping upward to right
+      #if move_direction < 0:
+        #velocity = up_direction.rotated(-(floor_angle + deg_to_rad(90))) * ground_speed
+      #if move_direction > 0:
+        #velocity = up_direction.rotated(-(floor_angle + deg_to_rad(90))) * ground_speed
+      #if move_direction == 0:
+        #velocity = Vector2.ZERO
+    #if floor_normal.x > 0:
+      ## Sloping upward to left
+      #if move_direction > 0:
+        #velocity = up_direction.rotated(floor_angle + deg_to_rad(90)) * ground_speed
+      #if move_direction < 0:
+        #velocity = up_direction.rotated(floor_angle - deg_to_rad(90)) * ground_speed
+      #if move_direction == 0:
+        #velocity = Vector2.ZERO
+    #if floor_normal.x == 0:
+      #velocity.x = move_direction * ground_speed
+  #else:
+    #if move_direction:
+      #velocity.x = move_direction * air_speed
+    #else:
+      #velocity.x = move_toward(velocity.x, 0, air_speed)
+#
+  #move_and_slide()
 
 # See: Assets/Scripts/Shinjingi/Capabilities/Move.cs - FixedUpdate method
 # And: Assets/Scripts/Shinjingi/Sensors/GroundSensor.cs - SlopeCheck method
