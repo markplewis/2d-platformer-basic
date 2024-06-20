@@ -18,12 +18,14 @@ var is_dead: bool = false
 
 @export_category("Walking")
 @export var ground_speed: float = 130.0
+@export var ground_speed_running: float = 230.0
 @export var acceleration_speed: float = 10
 @export var deceleration_speed: float = 15
 @export var rotate_on_slopes: bool = true
 
 var move_direction: float = 0
 var last_move_direction: float = 1.0
+var run_modifier_active: bool = false
 var on_floor: bool = true
 var floor_normal: Vector2 = Vector2.UP
 var floor_angle: float = 0
@@ -31,6 +33,7 @@ var floor_angle: float = 0
 @export_category("Jumping")
 @export var jump_height: float = 64.0 # Pixels
 @export var jump_distance: float = 64.0 # Pixels
+@export var jump_distance_running: float = 96.0 # Pixels
 @export var jump_peak_time: float = 0.4
 @export var jump_fall_time: float = 0.3
 @export var jump_buffer_time: float = 0.1
@@ -41,6 +44,7 @@ var floor_angle: float = 0
 @onready var fall_gravity: float = ((-2.0 * jump_height) / pow(jump_fall_time, 2)) * -1.0
 @onready var jump_velocity: float = (jump_gravity * jump_peak_time) * -1.0
 @onready var air_speed: float = jump_distance / (jump_peak_time + jump_fall_time)
+@onready var air_speed_running: float = jump_distance_running / (jump_peak_time + jump_fall_time)
 
 var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 var jump_buffer: bool = false
@@ -92,6 +96,7 @@ func _process(delta: float) -> void:
 func _physics_process(delta: float) -> void:
   # Get the input direction: range between -1.0 and 1.0
   move_direction = Input.get_axis("move_left", "move_right")
+  run_modifier_active = Input.is_action_pressed("run")
   on_floor = is_on_floor()
 
   apply_gravity(delta)
@@ -144,19 +149,25 @@ func jump() -> void:
 
 
 func handle_movement(delta: float) -> void:
+  var speed: float = 0
+
   if on_floor:
+    speed = ground_speed_running if run_modifier_active else ground_speed
+
     # This method provides tighter control over acceleration and deceleration
     if move_direction < 0:
-      velocity.x = lerp(velocity.x, -ground_speed, acceleration_speed * delta)
+      velocity.x = lerp(velocity.x, -speed, acceleration_speed * delta)
     if move_direction > 0:
-      velocity.x = lerp(velocity.x, ground_speed, acceleration_speed * delta)
+      velocity.x = lerp(velocity.x, speed, acceleration_speed * delta)
     if move_direction == 0:
       velocity.x = lerp(velocity.x, 0.0, deceleration_speed * delta)
   else:
+    speed = air_speed_running if run_modifier_active else air_speed
+
     if move_direction:
-      velocity.x = move_direction * air_speed
+      velocity.x = move_direction * speed
     else:
-      velocity.x = move_toward(velocity.x, 0, air_speed)
+      velocity.x = move_toward(velocity.x, 0, speed)
 
 
 func rotate_sprite() -> void:

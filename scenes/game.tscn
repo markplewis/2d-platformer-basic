@@ -509,7 +509,7 @@ limit_bottom = 120
 limit_smoothed = true
 position_smoothing_enabled = true
 
-[node name="Label" type="Label" parent="."]
+[node name="Press space to jump" type="Label" parent="."]
 offset_left = -103.0
 offset_top = -42.0
 offset_right = -22.0
