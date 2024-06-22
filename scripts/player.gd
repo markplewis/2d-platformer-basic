@@ -59,7 +59,7 @@ var jump_available: bool = true
 @onready var slope_line: Line2D = Line2D.new()
 @onready var velocity_line: Line2D = Line2D.new()
 @onready var floor_normal_line: Line2D = Line2D.new()
-#@onready var trajectory_line: Line2D = Line2D.new()
+@onready var trajectory_line: Line2D = Line2D.new()
 
 func _ready() -> void:
   if OS.is_debug_build() and draw_debug_lines:
@@ -78,10 +78,10 @@ func _ready() -> void:
     floor_normal_line.width = 1
     add_child(floor_normal_line)
 
-    #trajectory_line.position = Vector2.ZERO
-    #trajectory_line.default_color = Color.AQUAMARINE
-    #trajectory_line.width = 1
-    #add_child(trajectory_line)
+    trajectory_line.position = Vector2.ZERO
+    trajectory_line.default_color = Color.AQUAMARINE
+    trajectory_line.width = 1
+    add_child(trajectory_line)
 
 
 func _process(_delta: float) -> void:
@@ -102,17 +102,17 @@ func _process(_delta: float) -> void:
       floor_normal_line.add_point(floor_normal * 20)
 
 
-#func update_trajectory(dir: Vector2, speed: float, gravity: float, delta: float) -> void:
-  #var max_points: int = 300
-  #trajectory_line.clear_points()
-  #var pos: Vector2 = Vector2.ZERO
-  #var vel: Vector2 = dir * speed
-  #print(str(dir) + ", " + str(speed) + ", " + str(gravity))
-#
-  #for i in max_points:
-    #trajectory_line.add_point(pos)
-    #vel.y += gravity * delta
-    #pos += vel * delta
+func update_trajectory(new_velocity: Vector2, gravity: float, speed: float, delta: float) -> void:
+  var max_points: int = 300
+  trajectory_line.clear_points()
+  var pos: Vector2 = Vector2.ZERO
+  var vel: Vector2 = new_velocity * speed
+  # print(str(new_velocity) + ", " + str(speed) + ", " + str(gravity))
+
+  for i in max_points:
+    trajectory_line.add_point(pos)
+    vel.y += gravity * delta
+    pos += vel * delta
 
 
 func _physics_process(delta: float) -> void:
@@ -120,19 +120,15 @@ func _physics_process(delta: float) -> void:
   run_modifier_active = Input.is_action_pressed("run")
   on_floor = is_on_floor()
 
-  var gravity: float = calculate_gravity(delta)
-  var new_velocity_y: float = apply_gravity(velocity.y, gravity, delta)
-  var should_jump: bool = handle_jump()
-
-  if (should_jump):
-    new_velocity_y = jump(new_velocity_y)
-
+  var gravity: float = calculate_gravity()
   var speed: float = calculate_speed()
-  var new_velocity_x: float = handle_movement(velocity.x, speed, delta)
+
+  var new_velocity_y: float = calculate_velocity_y(velocity.y, gravity, delta)
+  var new_velocity_x: float = calculate_velocity_x(velocity.x, speed, delta)
 
   var new_velocity: Vector2 = Vector2(new_velocity_x, new_velocity_y)
 
-  # update_trajectory(new_velocity, speed, gravity, delta)
+  update_trajectory(new_velocity, gravity, speed, delta)
 
   velocity = new_velocity
 
@@ -146,7 +142,7 @@ func _physics_process(delta: float) -> void:
   move_and_slide()
 
 
-func calculate_gravity(delta: float) -> float:
+func calculate_gravity() -> float:
   var gravity: float = 0
 
   if not on_floor:
@@ -160,6 +156,35 @@ func calculate_gravity(delta: float) -> float:
         gravity = fall_gravity # Jump apex or descent
 
   return gravity
+
+
+func calculate_speed() -> float:
+  var speed: float = 0
+
+  if on_floor:
+    if move_direction != 0:
+      speed = run_speed if run_modifier_active else walk_speed
+  else:
+    speed = air_speed_running if run_modifier_active else air_speed
+
+  return speed
+
+
+func calculate_velocity_y(velocity_y: float, gravity: float, delta: float) -> float:
+  var new_velocity_y: float = velocity_y
+  new_velocity_y = apply_gravity(velocity_y, gravity, delta)
+  var should_jump: bool = handle_jump()
+
+  if (should_jump):
+    new_velocity_y = apply_jump(new_velocity_y)
+
+  return new_velocity_y
+
+
+func calculate_velocity_x(velocity_x: float, speed: float, delta: float) -> float:
+  var new_velocity_x: float = velocity_x
+  new_velocity_x = handle_movement(velocity_x, speed, delta)
+  return new_velocity_x
 
 
 func apply_gravity(velocity_y: float, gravity: float, delta: float) -> float:
@@ -196,7 +221,7 @@ func handle_jump() -> bool:
   return should_jump
 
 
-func jump(velocity_y: float) -> float:
+func apply_jump(velocity_y: float) -> float:
   var new_velocity_y: float = velocity_y
 
   if jump_available:
@@ -204,18 +229,6 @@ func jump(velocity_y: float) -> float:
     jump_available = false
 
   return new_velocity_y
-
-
-func calculate_speed() -> float:
-  var speed: float = 0
-
-  if on_floor:
-    if move_direction != 0:
-      speed = run_speed if run_modifier_active else walk_speed
-  else:
-    speed = air_speed_running if run_modifier_active else air_speed
-
-  return speed
 
 
 func handle_movement(velocity_x: float, speed: float, delta: float) -> float:
