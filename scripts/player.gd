@@ -102,17 +102,24 @@ func _process(_delta: float) -> void:
       floor_normal_line.add_point(floor_normal * 20)
 
 
-func update_trajectory(new_velocity: Vector2, gravity: float, speed: float, delta: float) -> void:
-  var max_points: int = 300
-  trajectory_line.clear_points()
-  var pos: Vector2 = Vector2.ZERO
-  var vel: Vector2 = new_velocity * speed
-  # print(str(new_velocity) + ", " + str(speed) + ", " + str(gravity))
+# https://www.youtube.com/watch?app=desktop&v=Mry6FdWnN7I
+# https://www.reddit.com/r/godot/comments/qgg6dm/how_to_create_a_ballistic_trajectory_line/
+func update_trajectory(move_dir: float, delta: float) -> void:
+  if OS.is_debug_build() and draw_debug_lines:
+    # print("---------------------------")
+    var max_points: int = 50
+    var speed: float = air_speed
+    var gravity: float = 0
+    var vel: Vector2 = Vector2(move_dir * speed, jump_velocity)
+    var pos: Vector2 = Vector2.ZERO
+    trajectory_line.clear_points()
 
-  for i in max_points:
-    trajectory_line.add_point(pos)
-    vel.y += gravity * delta
-    pos += vel * delta
+    for i in max_points:
+      # print(vel)
+      trajectory_line.add_point(pos)
+      gravity = jump_gravity if vel.y < 0 else fall_gravity
+      vel.y += gravity * delta
+      pos += vel * delta
 
 
 func _physics_process(delta: float) -> void:
@@ -127,10 +134,12 @@ func _physics_process(delta: float) -> void:
   var new_velocity_x: float = calculate_velocity_x(velocity.x, speed, delta)
 
   var new_velocity: Vector2 = Vector2(new_velocity_x, new_velocity_y)
-
-  update_trajectory(new_velocity, gravity, speed, delta)
-
   velocity = new_velocity
+
+  # TODO: Pin trajectory line to global_position so that it doesn't move with player
+  if on_floor:
+    update_trajectory(last_move_direction, delta)
+  # print(velocity)
 
   rotate_sprite()
   flip_sprite()
@@ -204,6 +213,9 @@ func handle_jump() -> bool:
       if coyote_timer.is_stopped():
         coyote_timer.start(coyote_time)
   else:
+    # if not jump_available:
+    #   print("----LAND-----------------------")
+
     coyote_timer.stop()
     jump_available = true
 
@@ -225,6 +237,7 @@ func apply_jump(velocity_y: float) -> float:
   var new_velocity_y: float = velocity_y
 
   if jump_available:
+    # print("----JUMP-----------------------")
     new_velocity_y = jump_velocity
     jump_available = false
 
