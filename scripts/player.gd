@@ -116,14 +116,26 @@ func _process(_delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-  # Get the input direction: range between -1.0 and 1.0
-  move_direction = Input.get_axis("move_left", "move_right")
+  move_direction = Input.get_axis("move_left", "move_right") # Range between -1.0 and 1.0
   run_modifier_active = Input.is_action_pressed("run")
   on_floor = is_on_floor()
 
-  var gravity: float = apply_gravity(delta)
-  handle_jump()
-  var speed: float = handle_movement(delta)
+  var gravity: float = calculate_gravity(delta)
+  var new_velocity_y: float = apply_gravity(velocity.y, gravity, delta)
+  var should_jump: bool = handle_jump()
+
+  if (should_jump):
+    new_velocity_y = jump(new_velocity_y)
+
+  var speed: float = calculate_speed()
+  var new_velocity_x: float = handle_movement(velocity.x, speed, delta)
+
+  var new_velocity: Vector2 = Vector2(new_velocity_x, new_velocity_y)
+
+  # update_trajectory(new_velocity, speed, gravity, delta)
+
+  velocity = new_velocity
+
   rotate_sprite()
   flip_sprite()
   play_animation()
@@ -131,75 +143,99 @@ func _physics_process(delta: float) -> void:
   if move_direction != 0:
     last_move_direction = move_direction
 
-  #update_trajectory(velocity, speed, gravity, delta)
-
-  move_and_slide() # Apply velocity changes
+  move_and_slide()
 
 
-func apply_gravity(delta: float) -> float:
-  var gravity: float = 0.0
+func calculate_gravity(delta: float) -> float:
+  var gravity: float = 0
 
   if not on_floor:
-    if jump_available: # About to fall (did not jump)
-      if coyote_timer.is_stopped():
-        coyote_timer.start(coyote_time)
+    if jump_available: # Falling (did not jump)
       # Comment out to pause gravity until coyote timer has elapsed
       gravity = default_gravity # Fall
     else:
       if velocity.y < 0:
         gravity = jump_gravity # Jump ascent
       else:
-        gravity = fall_gravity # Jump descent
+        gravity = fall_gravity # Jump apex or descent
 
-    velocity.y += gravity * delta
+  return gravity
+
+
+func apply_gravity(velocity_y: float, gravity: float, delta: float) -> float:
+  var new_velocity_y: float = velocity_y
+
+  if not on_floor:
+    new_velocity_y += gravity * delta
+
+  return new_velocity_y
+
+
+func handle_jump() -> bool:
+  var should_jump: bool = false
+
+  if not on_floor:
+    if jump_available: # Falling (did not jump)
+      if coyote_timer.is_stopped():
+        coyote_timer.start(coyote_time)
   else:
     coyote_timer.stop()
     jump_available = true
 
     if jump_buffer:
-      jump()
+      should_jump = true
       jump_buffer = false
 
-  return gravity
-
-
-func handle_jump() -> void:
   if Input.is_action_just_pressed("jump"):
     if jump_available:
-      jump()
+      should_jump = true
     else:
       jump_buffer = true
       get_tree().create_timer(jump_buffer_time).timeout.connect(on_jump_buffer_timeout)
 
+  return should_jump
 
-func jump() -> void:
+
+func jump(velocity_y: float) -> float:
+  var new_velocity_y: float = velocity_y
+
   if jump_available:
-    velocity.y = jump_velocity
+    new_velocity_y = jump_velocity
     jump_available = false
 
+  return new_velocity_y
 
-func handle_movement(delta: float) -> float:
-  var speed: float = 0.0
+
+func calculate_speed() -> float:
+  var speed: float = 0
 
   if on_floor:
-    speed = run_speed if run_modifier_active else walk_speed
-
-    # This method provides tighter control over acceleration and deceleration
-    if move_direction < 0:
-      velocity.x = lerp(velocity.x, -speed, acceleration_speed * delta)
-    if move_direction > 0:
-      velocity.x = lerp(velocity.x, speed, acceleration_speed * delta)
-    if move_direction == 0:
-      velocity.x = lerp(velocity.x, 0.0, deceleration_speed * delta)
+    if move_direction != 0:
+      speed = run_speed if run_modifier_active else walk_speed
   else:
     speed = air_speed_running if run_modifier_active else air_speed
 
-    if move_direction:
-      velocity.x = move_direction * speed
-    else:
-      velocity.x = move_toward(velocity.x, 0, speed)
-
   return speed
+
+
+func handle_movement(velocity_x: float, speed: float, delta: float) -> float:
+  var new_velocity_x: float
+
+  if on_floor:
+    # This method provides tighter control over acceleration and deceleration
+    if move_direction < 0:
+      new_velocity_x = lerp(velocity_x, -speed, acceleration_speed * delta)
+    if move_direction > 0:
+      new_velocity_x = lerp(velocity_x, speed, acceleration_speed * delta)
+    if move_direction == 0:
+      new_velocity_x = lerp(velocity_x, 0.0, deceleration_speed * delta)
+  else:
+    if move_direction:
+      new_velocity_x = move_direction * speed
+    else:
+      new_velocity_x = move_toward(velocity_x, 0, speed)
+
+  return new_velocity_x
 
 
 func rotate_sprite() -> void:
