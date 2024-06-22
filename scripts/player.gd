@@ -6,6 +6,8 @@ extends CharacterBody2D
 # - https://www.youtube.com/watch?v=IOe1aGY6hXA
 # Which attempted to implement the physics principles described here:
 # - https://www.youtube.com/watch?v=hG9SzQxaCm8
+# See also:
+# - https://youtu.be/PlT44xr0iW0?si=v2mpnxFHaUXQxmo9&t=373
 
 # Jump buffering: https://www.youtube.com/watch?v=hRQW580zEJE
 # Coyote time: https://www.youtube.com/watch?v=4Vhcqh9S2LM
@@ -14,11 +16,12 @@ extends CharacterBody2D
 @onready var animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var ground_cast: RayCast2D = $GroundDetectionRaycast
+
 var is_dead: bool = false
 
 @export_category("Walking")
-@export var ground_speed: float = 130.0
-@export var ground_speed_running: float = 230.0
+@export var walk_speed: float = 130.0
+@export var run_speed: float = 230.0
 @export var acceleration_speed: float = 10
 @export var deceleration_speed: float = 15
 @export var rotate_on_slopes: bool = true
@@ -56,6 +59,7 @@ var jump_available: bool = true
 @onready var slope_line: Line2D = Line2D.new()
 @onready var velocity_line: Line2D = Line2D.new()
 @onready var floor_normal_line: Line2D = Line2D.new()
+#@onready var trajectory_line: Line2D = Line2D.new()
 
 func _ready() -> void:
   if OS.is_debug_build() and draw_debug_lines:
@@ -74,8 +78,13 @@ func _ready() -> void:
     floor_normal_line.width = 1
     add_child(floor_normal_line)
 
+    #trajectory_line.position = Vector2.ZERO
+    #trajectory_line.default_color = Color.AQUAMARINE
+    #trajectory_line.width = 1
+    #add_child(trajectory_line)
 
-func _process(delta: float) -> void:
+
+func _process(_delta: float) -> void:
   if OS.is_debug_build() and draw_debug_lines:
     # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
     slope_line.clear_points()
@@ -93,15 +102,28 @@ func _process(delta: float) -> void:
       floor_normal_line.add_point(floor_normal * 20)
 
 
+#func update_trajectory(dir: Vector2, speed: float, gravity: float, delta: float) -> void:
+  #var max_points: int = 300
+  #trajectory_line.clear_points()
+  #var pos: Vector2 = Vector2.ZERO
+  #var vel: Vector2 = dir * speed
+  #print(str(dir) + ", " + str(speed) + ", " + str(gravity))
+#
+  #for i in max_points:
+    #trajectory_line.add_point(pos)
+    #vel.y += gravity * delta
+    #pos += vel * delta
+
+
 func _physics_process(delta: float) -> void:
   # Get the input direction: range between -1.0 and 1.0
   move_direction = Input.get_axis("move_left", "move_right")
   run_modifier_active = Input.is_action_pressed("run")
   on_floor = is_on_floor()
 
-  apply_gravity(delta)
+  var gravity: float = apply_gravity(delta)
   handle_jump()
-  handle_movement(delta)
+  var speed: float = handle_movement(delta)
   rotate_sprite()
   flip_sprite()
   play_animation()
@@ -109,21 +131,27 @@ func _physics_process(delta: float) -> void:
   if move_direction != 0:
     last_move_direction = move_direction
 
+  #update_trajectory(velocity, speed, gravity, delta)
+
   move_and_slide() # Apply velocity changes
 
 
-func apply_gravity(delta: float) -> void:
+func apply_gravity(delta: float) -> float:
+  var gravity: float = 0.0
+
   if not on_floor:
     if jump_available: # About to fall (did not jump)
       if coyote_timer.is_stopped():
         coyote_timer.start(coyote_time)
       # Comment out to pause gravity until coyote timer has elapsed
-      velocity.y += default_gravity * delta # Fall
+      gravity = default_gravity # Fall
     else:
       if velocity.y < 0:
-        velocity.y += jump_gravity * delta # Jump ascent
+        gravity = jump_gravity # Jump ascent
       else:
-        velocity.y += fall_gravity * delta # Jump descent
+        gravity = fall_gravity # Jump descent
+
+    velocity.y += gravity * delta
   else:
     coyote_timer.stop()
     jump_available = true
@@ -132,9 +160,11 @@ func apply_gravity(delta: float) -> void:
       jump()
       jump_buffer = false
 
+  return gravity
+
 
 func handle_jump() -> void:
-  if Input.is_action_just_pressed("ui_accept"):
+  if Input.is_action_just_pressed("jump"):
     if jump_available:
       jump()
     else:
@@ -148,11 +178,11 @@ func jump() -> void:
     jump_available = false
 
 
-func handle_movement(delta: float) -> void:
-  var speed: float = 0
+func handle_movement(delta: float) -> float:
+  var speed: float = 0.0
 
   if on_floor:
-    speed = ground_speed_running if run_modifier_active else ground_speed
+    speed = run_speed if run_modifier_active else walk_speed
 
     # This method provides tighter control over acceleration and deceleration
     if move_direction < 0:
@@ -168,6 +198,8 @@ func handle_movement(delta: float) -> void:
       velocity.x = move_direction * speed
     else:
       velocity.x = move_toward(velocity.x, 0, speed)
+
+  return speed
 
 
 func rotate_sprite() -> void:
