@@ -12,6 +12,7 @@ extends CharacterBody2D
 # Jump buffering: https://www.youtube.com/watch?v=hRQW580zEJE
 # Coyote time: https://www.youtube.com/watch?v=4Vhcqh9S2LM
 
+@onready var game_manager: GameManager = %GameManager
 @onready var sprite_container: Node2D = $SpriteContainer
 @onready var animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
@@ -46,33 +47,32 @@ var floor_angle: float = 0
 @onready var jump_gravity: float = ((-2.0 * jump_height) / pow(jump_peak_time, 2)) * -1.0
 @onready var fall_gravity: float = ((-2.0 * jump_height) / pow(jump_fall_time, 2)) * -1.0
 @onready var jump_velocity: float = (jump_gravity * jump_peak_time) * -1.0
-@onready var air_speed: float = jump_distance / (jump_peak_time + jump_fall_time)
-@onready var air_speed_running: float = jump_distance_running / (jump_peak_time + jump_fall_time)
+@onready var jump_duration: float = jump_peak_time + jump_fall_time
+@onready var air_speed: float = jump_distance / jump_duration
+@onready var air_speed_running: float = jump_distance_running / jump_duration
 
 var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 var jump_buffer: bool = false
 var jump_available: bool = true
 var jump_input_pressed: bool = false
-var jump_input_released: bool = false
+# var jump_input_released: bool = false
 
 var jump_height_reached: float = 0
 var jump_distance_reached: float = 0
 var jump_start_pos: Vector2 = Vector2.ZERO
+var jump_start_dir: float = 0
 
-signal jump_preview
 signal jump_start
 signal jump_end
 signal died
 
-@export_category("Debugging")
-@export var draw_debug_lines: bool = true
-
+# Debugging
 @onready var slope_line: Line2D = Line2D.new()
 @onready var velocity_line: Line2D = Line2D.new()
 @onready var floor_normal_line: Line2D = Line2D.new()
 
 func _ready() -> void:
-  if OS.is_debug_build() and draw_debug_lines:
+  if OS.is_debug_build() and game_manager.debug_mode:
     slope_line.position = Vector2.ZERO
     slope_line.default_color = Color.WHITE
     slope_line.width = 1
@@ -90,7 +90,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-  if OS.is_debug_build() and draw_debug_lines:
+  if OS.is_debug_build() and game_manager.debug_mode:
     # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
     slope_line.clear_points()
     velocity_line.clear_points()
@@ -111,7 +111,7 @@ func _physics_process(delta: float) -> void:
   move_direction = Input.get_axis("move_left", "move_right") # Range between -1.0 and 1.0
   run_modifier_active = Input.is_action_pressed("run")
   jump_input_pressed = Input.is_action_just_pressed("jump")
-  jump_input_released = Input.is_action_just_released("jump")
+  # jump_input_released = Input.is_action_just_released("jump")
   on_floor = is_on_floor()
 
   var speed: float = calculate_speed()
@@ -129,21 +129,6 @@ func _physics_process(delta: float) -> void:
 
   var new_velocity: Vector2 = Vector2(new_velocity_x, new_velocity_y)
   velocity = new_velocity
-
-  # print(velocity)
-
-  if Input.is_action_pressed("jump_preview") and on_floor:
-    jump_preview.emit(
-      collision_shape.global_position,
-      last_move_direction,
-      run_modifier_active,
-      air_speed,
-      air_speed_running,
-      jump_velocity,
-      jump_gravity,
-      fall_gravity,
-      delta
-    )
 
   rotate_sprite()
   flip_sprite()
@@ -190,7 +175,7 @@ func calculate_velocity_y(velocity_y: float, gravity: float, delta: float) -> fl
   var should_jump: bool = handle_jump()
 
   if should_jump:
-    new_velocity_y = apply_jump(new_velocity_y)
+    new_velocity_y = apply_jump(new_velocity_y, delta)
 
   return new_velocity_y
 
@@ -219,10 +204,8 @@ func handle_jump() -> bool:
         coyote_timer.start(coyote_time)
   else:
     if not jump_available:
-      # print("----LAND-----------------------")
       jump_distance_reached = abs(position.x - jump_start_pos.x)
       jump_end.emit(jump_height_reached, jump_distance_reached)
-      # print("Jump height: " + str(jump_height_reached))
 
     coyote_timer.stop()
     jump_available = true
@@ -230,6 +213,7 @@ func handle_jump() -> bool:
     jump_height_reached = 0
     jump_distance_reached = 0
     jump_start_pos = Vector2.ZERO
+    jump_start_dir = 0
 
     if jump_buffer:
       should_jump = true
@@ -245,15 +229,27 @@ func handle_jump() -> bool:
   return should_jump
 
 
-func apply_jump(velocity_y: float) -> float:
+func apply_jump(velocity_y: float, delta: float) -> float:
   var new_velocity_y: float = velocity_y
 
   if jump_available:
-    # print("----JUMP-----------------------")
     new_velocity_y = jump_velocity
     jump_available = false
-    jump_start.emit()
     jump_start_pos = position
+    jump_start_dir = move_direction
+
+    var speed: float = air_speed_running if run_modifier_active else air_speed
+
+    jump_start.emit(
+      collision_shape.global_position,
+      jump_start_dir,
+      jump_duration,
+      speed,
+      jump_velocity,
+      jump_gravity,
+      fall_gravity,
+      delta
+    )
 
   return new_velocity_y
 
