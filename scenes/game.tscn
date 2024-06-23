@@ -842,6 +842,28 @@ shape = SubResource("WorldBoundaryShape2D_ti1d7")
 
 [node name="TrajectoryLine" parent="." instance=ExtResource("11_a2xbe")]
 
+[node name="UI" type="CanvasLayer" parent="."]
+scale = Vector2(2, 2)
+transform = Transform2D(2, 0, 0, 2, 0, 0)
+
+[node name="ColorRect" type="ColorRect" parent="UI"]
+offset_right = 134.0
+offset_bottom = 48.0
+color = Color(0, 0, 0, 0.7)
+
+[node name="StatsLabel" type="Label" parent="UI/ColorRect"]
+unique_name_in_owner = true
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 254.0
+offset_bottom = 42.0
+theme_override_fonts/font = ExtResource("7_kb8gi")
+theme_override_font_sizes/font_size = 8
+text = "Stats"
+autowrap_mode = 2
+
+[connection signal="died" from="Player" to="GameManager" method="_on_player_died"]
+[connection signal="jump_end" from="Player" to="GameManager" method="_on_player_jump_end"]
 [connection signal="jump_end" from="Player" to="TrajectoryLine" method="_on_player_jump_end"]
 [connection signal="jump_preview" from="Player" to="TrajectoryLine" method="_on_player_jump_preview"]
-[connection signal="jump_start" from="Player" to="TrajectoryLine" method="_on_player_jump_start"]
+[connection signal="jump_start" from="Player" to="GameManager" method="_on_player_jump_start"]

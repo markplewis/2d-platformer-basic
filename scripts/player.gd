@@ -54,12 +54,15 @@ var jump_buffer: bool = false
 var jump_available: bool = true
 var jump_input_pressed: bool = false
 var jump_input_released: bool = false
+
 var jump_height_reached: float = 0
-var jump_pos_start: float = 0
+var jump_distance_reached: float = 0
+var jump_start_pos: Vector2 = Vector2.ZERO
 
 signal jump_preview
 signal jump_start
 signal jump_end
+signal died
 
 @export_category("Debugging")
 @export var draw_debug_lines: bool = true
@@ -162,7 +165,7 @@ func calculate_gravity() -> float:
     else:
       if velocity.y < 0:
         gravity = jump_gravity # Jump ascent
-        jump_height_reached = abs(position.y - jump_pos_start)
+        jump_height_reached = abs(position.y - jump_start_pos.y)
       else:
         gravity = fall_gravity # Jump apex or descent
 
@@ -184,7 +187,7 @@ func calculate_speed() -> float:
 func calculate_velocity_y(velocity_y: float, gravity: float, delta: float) -> float:
   var new_velocity_y: float = velocity_y
   new_velocity_y = apply_gravity(velocity_y, gravity, delta)
-  var should_jump: bool = handle_jump(delta)
+  var should_jump: bool = handle_jump()
 
   if should_jump:
     new_velocity_y = apply_jump(new_velocity_y)
@@ -207,7 +210,7 @@ func apply_gravity(velocity_y: float, gravity: float, delta: float) -> float:
   return new_velocity_y
 
 
-func handle_jump(delta: float) -> bool:
+func handle_jump() -> bool:
   var should_jump: bool = false
 
   if not on_floor:
@@ -217,13 +220,16 @@ func handle_jump(delta: float) -> bool:
   else:
     if not jump_available:
       # print("----LAND-----------------------")
-      jump_end.emit()
-      print("Jump height: " + str(jump_height_reached))
+      jump_distance_reached = abs(position.x - jump_start_pos.x)
+      jump_end.emit(jump_height_reached, jump_distance_reached)
+      # print("Jump height: " + str(jump_height_reached))
 
     coyote_timer.stop()
     jump_available = true
+
     jump_height_reached = 0
-    jump_pos_start = 0
+    jump_distance_reached = 0
+    jump_start_pos = Vector2.ZERO
 
     if jump_buffer:
       should_jump = true
@@ -247,7 +253,7 @@ func apply_jump(velocity_y: float) -> float:
     new_velocity_y = jump_velocity
     jump_available = false
     jump_start.emit()
-    jump_pos_start = position.y
+    jump_start_pos = position
 
   return new_velocity_y
 
@@ -320,6 +326,7 @@ func play_animation() -> void:
 func die() -> void:
   is_dead = true;
   velocity.y = jump_velocity / 2
+  died.emit()
 
 
 func on_jump_buffer_timeout() -> void:

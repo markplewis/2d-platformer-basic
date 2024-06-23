@@ -13,7 +13,7 @@ func _ready() -> void:
 
 
 func _on_player_jump_preview(
-    global_position: Vector2,
+    global_pos: Vector2,
     move_direction: float,
     run_modifier_active: bool,
     air_speed: float,
@@ -27,7 +27,7 @@ func _on_player_jump_preview(
   # print("Player jumped")
 
   if OS.is_debug_build():
-    position = global_position
+    position = global_pos
     clear_points()
 
     # print("---------------------------")
@@ -47,7 +47,7 @@ func _on_player_jump_preview(
       pos += vel * delta
 
 
-func _on_player_jump_end() -> void:
+func _on_player_jump_end(_jump_height_reached: float, _jump_distance_reached: float) -> void:
   # print("Player landed")
 
   if OS.is_debug_build():
