@@ -1,8 +1,10 @@
 class_name TrajectoryLine
 extends Line2D
 
-# var fps: int = ProjectSettings.get_setting("physics/common/physics_ticks_per_second")
+# https://www.youtube.com/watch?app=desktop&v=Mry6FdWnN7I
+# https://www.reddit.com/r/godot/comments/qgg6dm/how_to_create_a_ballistic_trajectory_line/
 
+# var fps: int = ProjectSettings.get_setting("physics/common/physics_ticks_per_second")
 
 func _ready() -> void:
   if OS.is_debug_build():

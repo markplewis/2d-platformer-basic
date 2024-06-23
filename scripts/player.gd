@@ -53,6 +53,9 @@ var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gra
 var jump_buffer: bool = false
 var jump_available: bool = true
 var jump_input_pressed: bool = false
+var jump_input_released: bool = false
+var jump_height_reached: float = 0
+var jump_pos_start: float = 0
 
 signal jump_preview
 signal jump_start
@@ -64,7 +67,6 @@ signal jump_end
 @onready var slope_line: Line2D = Line2D.new()
 @onready var velocity_line: Line2D = Line2D.new()
 @onready var floor_normal_line: Line2D = Line2D.new()
-#@onready var trajectory_line: Line2D = Line2D.new()
 
 func _ready() -> void:
   if OS.is_debug_build() and draw_debug_lines:
@@ -82,11 +84,6 @@ func _ready() -> void:
     floor_normal_line.default_color = Color.INDIAN_RED
     floor_normal_line.width = 1
     add_child(floor_normal_line)
-
-    #trajectory_line.position = Vector2.ZERO
-    #trajectory_line.default_color = Color.AQUAMARINE
-    #trajectory_line.width = 1
-    #add_child(trajectory_line)
 
 
 func _process(_delta: float) -> void:
@@ -107,34 +104,22 @@ func _process(_delta: float) -> void:
       floor_normal_line.add_point(floor_normal * 20)
 
 
-# https://www.youtube.com/watch?app=desktop&v=Mry6FdWnN7I
-# https://www.reddit.com/r/godot/comments/qgg6dm/how_to_create_a_ballistic_trajectory_line/
-#func update_trajectory(move_dir: float, delta: float) -> void:
-  #if OS.is_debug_build() and draw_debug_lines:
-    ## print("---------------------------")
-    #var max_points: int = 50
-    #var speed: float = air_speed
-    #var gravity: float = 0
-    #var vel: Vector2 = Vector2(move_dir * speed, jump_velocity)
-    #var pos: Vector2 = Vector2.ZERO
-    #trajectory_line.clear_points()
-#
-    #for i in max_points:
-      ## print(vel)
-      #trajectory_line.add_point(pos)
-      #gravity = jump_gravity if vel.y < 0 else fall_gravity
-      #vel.y += gravity * delta
-      #pos += vel * delta
-
-
 func _physics_process(delta: float) -> void:
   move_direction = Input.get_axis("move_left", "move_right") # Range between -1.0 and 1.0
   run_modifier_active = Input.is_action_pressed("run")
   jump_input_pressed = Input.is_action_just_pressed("jump")
+  jump_input_released = Input.is_action_just_released("jump")
   on_floor = is_on_floor()
 
-  var gravity: float = calculate_gravity()
   var speed: float = calculate_speed()
+
+  #if not on_floor and jump_input_released:
+    #var percent_jump_height_reached: float = abs(position.y - jump_start_pos_y)
+    #print(percent_jump_height_reached)
+    #velocity.y = 0
+    ## velocity.y = move_toward(velocity.y, 0, speed)
+
+  var gravity: float = calculate_gravity()
 
   var new_velocity_y: float = calculate_velocity_y(velocity.y, gravity, delta)
   var new_velocity_x: float = calculate_velocity_x(velocity.x, speed, delta)
@@ -142,7 +127,6 @@ func _physics_process(delta: float) -> void:
   var new_velocity: Vector2 = Vector2(new_velocity_x, new_velocity_y)
   velocity = new_velocity
 
-  # update_trajectory(last_move_direction, delta)
   # print(velocity)
 
   if Input.is_action_pressed("jump_preview") and on_floor:
@@ -178,6 +162,7 @@ func calculate_gravity() -> float:
     else:
       if velocity.y < 0:
         gravity = jump_gravity # Jump ascent
+        jump_height_reached = abs(position.y - jump_pos_start)
       else:
         gravity = fall_gravity # Jump apex or descent
 
@@ -201,7 +186,7 @@ func calculate_velocity_y(velocity_y: float, gravity: float, delta: float) -> fl
   new_velocity_y = apply_gravity(velocity_y, gravity, delta)
   var should_jump: bool = handle_jump(delta)
 
-  if (should_jump):
+  if should_jump:
     new_velocity_y = apply_jump(new_velocity_y)
 
   return new_velocity_y
@@ -233,9 +218,12 @@ func handle_jump(delta: float) -> bool:
     if not jump_available:
       # print("----LAND-----------------------")
       jump_end.emit()
+      print("Jump height: " + str(jump_height_reached))
 
     coyote_timer.stop()
     jump_available = true
+    jump_height_reached = 0
+    jump_pos_start = 0
 
     if jump_buffer:
       should_jump = true
@@ -259,6 +247,7 @@ func apply_jump(velocity_y: float) -> float:
     new_velocity_y = jump_velocity
     jump_available = false
     jump_start.emit()
+    jump_pos_start = position.y
 
   return new_velocity_y
 
