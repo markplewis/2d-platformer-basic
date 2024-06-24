@@ -25,24 +25,15 @@ func add_point():
   update_text()
 
 
-func _on_player_jump_start(
-  _start_pos: Vector2,
-  _start_dir: float,
-  _duration: float,
-  _speed: float,
-  _jump_velocity: float,
-  _jump_gravity: float,
-  _fall_gravity: float,
-  _delta: float
-) -> void:
+func _on_player_jump_start(_dict: Dictionary) -> void:
   jump_height = 0
   jump_distance = 0
   update_text()
 
 
-func _on_player_jump_end(jump_height_reached: float, jump_distance_reached: float) -> void:
-  jump_height = round(jump_height_reached)
-  jump_distance = round(jump_distance_reached)
+func _on_player_jump_end(dict: Dictionary) -> void:
+  jump_height = round(dict.jump_height_reached)
+  jump_distance = round(dict.jump_distance_reached)
   update_text()
 
 

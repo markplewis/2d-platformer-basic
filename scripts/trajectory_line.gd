@@ -19,16 +19,15 @@ func _ready() -> void:
     width = 1
 
 
-func _on_player_jump_start(
-  start_pos: Vector2,
-  start_dir: float,
-  duration: float,
-  speed: float,
-  jump_velocity: float,
-  jump_gravity: float,
-  fall_gravity: float,
-  delta: float
-) -> void:
+func _on_player_jump_start(dict: Dictionary) -> void:
+  var start_pos: Vector2 = dict.start_pos
+  var start_dir: float = dict.start_dir
+  var duration: float = dict.duration
+  var speed: float = dict.speed
+  var jump_velocity: float = dict.jump_velocity
+  var jump_gravity: float = dict.jump_gravity
+  var fall_gravity: float = dict.fall_gravity
+  var delta: float = dict.delta
 
   if OS.is_debug_build() and game_manager.debug_mode:
     clear_points()
@@ -49,7 +48,7 @@ func _on_player_jump_start(
       pos += vel * delta
 
 
-func _on_player_jump_end(_jump_height_reached: float, _jump_distance_reached: float) -> void:
+func _on_player_jump_end(_dict: Dictionary) -> void:
   if OS.is_debug_build() and game_manager.debug_mode:
     timer.stop()
     timer.start(2)

@@ -1,6 +1,17 @@
 class_name JumpHandler
 extends Node
 
+# Parabolic jump trajectory (projectile motion equations) were borrowed from:
+# - https://www.youtube.com/watch?v=FvFx1R3p-aw
+# - https://www.youtube.com/watch?v=IOe1aGY6hXA
+# Which attempted to implement the physics principles described here:
+# - https://www.youtube.com/watch?v=hG9SzQxaCm8
+# See also:
+# - https://youtu.be/PlT44xr0iW0?si=v2mpnxFHaUXQxmo9&t=373
+
+# Jump buffering: https://www.youtube.com/watch?v=hRQW580zEJE
+# Coyote time: https://www.youtube.com/watch?v=4Vhcqh9S2LM
+
 @export var jump_height: float = 64.0 # Pixels
 @export var jump_distance: float = 64.0 # Pixels
 @export var jump_distance_running: float = 96.0 # Pixels
@@ -10,6 +21,7 @@ extends Node
 @export var coyote_time: float = 0.1
 
 @onready var coyote_timer: Timer = $CoyoteTimer
+# TODO: convert this into a method so these values can be dynamically recalculated
 @onready var jump_gravity: float = ((-2.0 * jump_height) / pow(jump_peak_time, 2)) * -1.0
 @onready var fall_gravity: float = ((-2.0 * jump_height) / pow(jump_fall_time, 2)) * -1.0
 @onready var jump_velocity: float = (jump_gravity * jump_peak_time) * -1.0
@@ -70,7 +82,11 @@ func handle_jump(
   else:
     if not jump_available:
       jump_distance_reached = abs(position_vector.x - jump_start_pos.x)
-      jump_end.emit(jump_height_reached, jump_distance_reached)
+
+      jump_end.emit({
+        "jump_height_reached": jump_height_reached,
+        "jump_distance_reached": jump_distance_reached
+      })
 
     coyote_timer.stop()
     jump_available = true
@@ -98,17 +114,16 @@ func handle_jump(
       jump_start_pos = position_vector
       jump_start_dir = move_direction
 
-      var speed: float = air_speed_running if run_button_pressed else air_speed
-      jump_start.emit(
-        entity.collision_shape.global_position,
-        jump_start_dir,
-        jump_duration,
-        speed,
-        jump_velocity,
-        jump_gravity,
-        fall_gravity,
-        delta
-      )
+      jump_start.emit({
+        "start_pos": entity.collision_shape.global_position,
+        "start_dir":  jump_start_dir,
+        "duration": jump_duration,
+        "speed": air_speed_running if run_button_pressed else air_speed,
+        "jump_velocity": jump_velocity,
+        "jump_gravity": jump_gravity,
+        "fall_gravity":  fall_gravity,
+        "delta": delta
+      })
 
   return { "velocity_y": velocity_y, "air_speed": air_speed, "air_speed_running": air_speed_running }
 

@@ -1,17 +1,6 @@
 class_name Player
 extends CharacterBody2D
 
-# Parabolic jump trajectory (projectile motion equations) were borrowed from:
-# - https://www.youtube.com/watch?v=FvFx1R3p-aw
-# - https://www.youtube.com/watch?v=IOe1aGY6hXA
-# Which attempted to implement the physics principles described here:
-# - https://www.youtube.com/watch?v=hG9SzQxaCm8
-# See also:
-# - https://youtu.be/PlT44xr0iW0?si=v2mpnxFHaUXQxmo9&t=373
-
-# Jump buffering: https://www.youtube.com/watch?v=hRQW580zEJE
-# Coyote time: https://www.youtube.com/watch?v=4Vhcqh9S2LM
-
 @export var rotate_on_slopes: bool = true
 
 # Game manager
@@ -176,30 +165,9 @@ func die() -> void:
   died.emit()
 
 
-func _on_jump_handler_jump_start(
-  start_pos: Vector2,
-  start_dir: float,
-  duration: float,
-  speed: float,
-  jump_velocity: float,
-  jump_gravity: float,
-  fall_gravity: float,
-  delta: float
-) -> void:
-
-  # Re-emit
-  jump_start.emit(
-    start_pos,
-    start_dir,
-    duration,
-    speed,
-    jump_velocity,
-    jump_gravity,
-    fall_gravity,
-    delta
-  )
+func _on_jump_handler_jump_start(dict: Dictionary) -> void:
+  jump_start.emit(dict) # Re-emit
 
 
-func _on_jump_handler_jump_end(jump_height_reached: float, jump_distance_reached: float) -> void:
-  # Re-emit
-  jump_end.emit(jump_height_reached, jump_distance_reached)
+func _on_jump_handler_jump_end(dict: Dictionary) -> void:
+  jump_end.emit(dict) # Re-emit
