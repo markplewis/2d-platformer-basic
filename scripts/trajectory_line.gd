@@ -35,7 +35,7 @@ func _on_player_jump_start(
     timer.stop()
     position = start_pos
 
-    var point_count: int = fps * duration + 2
+    var point_count: int = round(fps * duration + 2)
     var gravity: float = 0
     var vel: Vector2 = Vector2(start_dir * speed, jump_velocity)
     var pos: Vector2 = Vector2.ZERO

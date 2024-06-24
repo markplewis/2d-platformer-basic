@@ -12,64 +12,39 @@ extends CharacterBody2D
 # Jump buffering: https://www.youtube.com/watch?v=hRQW580zEJE
 # Coyote time: https://www.youtube.com/watch?v=4Vhcqh9S2LM
 
+@export var rotate_on_slopes: bool = true
+
+# Game manager
 @onready var game_manager: GameManager = %GameManager
+
+# Input
+@onready var input_handler: InputHandler = $InputHandler
+@onready var movement_handler: MovementHandler = $MovementHandler
+@onready var jump_handler: JumpHandler = $JumpHandler
+
+# Physics and visuals
 @onready var sprite_container: Node2D = $SpriteContainer
 @onready var animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var ground_cast: RayCast2D = $GroundDetectionRaycast
 
-var is_dead: bool = false
-
-@export_category("Walking")
-@export var walk_speed: float = 130.0
-@export var run_speed: float = 230.0
-@export var acceleration_speed: float = 10
-@export var deceleration_speed: float = 15
-@export var rotate_on_slopes: bool = true
-
-var move_direction: float = 0
-var last_move_direction: float = 1.0
-var run_modifier_active: bool = false
-var on_floor: bool = true
-var floor_normal: Vector2 = Vector2.UP
-var floor_angle: float = 0
-
-@export_category("Jumping")
-@export var jump_height: float = 64.0 # Pixels
-@export var jump_distance: float = 64.0 # Pixels
-@export var jump_distance_running: float = 96.0 # Pixels
-@export var jump_peak_time: float = 0.4
-@export var jump_fall_time: float = 0.3
-@export var jump_buffer_time: float = 0.1
-@export var coyote_time: float = 0.1
-
-@onready var coyote_timer: Timer = $CoyoteTimer
-@onready var jump_gravity: float = ((-2.0 * jump_height) / pow(jump_peak_time, 2)) * -1.0
-@onready var fall_gravity: float = ((-2.0 * jump_height) / pow(jump_fall_time, 2)) * -1.0
-@onready var jump_velocity: float = (jump_gravity * jump_peak_time) * -1.0
-@onready var jump_duration: float = jump_peak_time + jump_fall_time
-@onready var air_speed: float = jump_distance / jump_duration
-@onready var air_speed_running: float = jump_distance_running / jump_duration
-
-var default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
-var jump_buffer: bool = false
-var jump_available: bool = true
-var jump_input_pressed: bool = false
-# var jump_input_released: bool = false
-
-var jump_height_reached: float = 0
-var jump_distance_reached: float = 0
-var jump_start_pos: Vector2 = Vector2.ZERO
-var jump_start_dir: float = 0
-
-signal jump_start
-signal jump_end
-signal died
-
 # Debugging
 @onready var slope_line: Line2D = Line2D.new()
 @onready var velocity_line: Line2D = Line2D.new()
 @onready var floor_normal_line: Line2D = Line2D.new()
+
+var move_direction: float = 0
+var last_move_direction: float = 1.0
+var run_button_pressed: bool = false
+var jump_button_pressed: bool = false
+var on_floor: bool = true
+var floor_normal: Vector2 = Vector2.UP
+var floor_angle: float = 0
+var is_dead: bool = false
+
+signal jump_start
+signal jump_end
+signal died
 
 func _ready() -> void:
   if OS.is_debug_build() and game_manager.debug_mode:
@@ -108,24 +83,34 @@ func _process(_delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-  move_direction = Input.get_axis("move_left", "move_right") # Range between -1.0 and 1.0
-  run_modifier_active = Input.is_action_pressed("run")
-  jump_input_pressed = Input.is_action_just_pressed("jump")
-  # jump_input_released = Input.is_action_just_released("jump")
+  move_direction = input_handler.get_move_direction()
+  run_button_pressed = input_handler.get_run_button_pressed()
+  jump_button_pressed = input_handler.get_jump_button_pressed()
+  # jump_button_released = input_handler.get_jump_button_released()
+
   on_floor = is_on_floor()
 
-  var speed: float = calculate_speed()
+  # Y velocity
+  var dict: Dictionary = jump_handler.handle_jump(
+    self,
+    jump_button_pressed,
+    move_direction,
+    run_button_pressed,
+    delta
+  )
+  var new_velocity_y: float = dict.velocity_y
+  var air_speed: float = dict.air_speed
+  var air_speed_running: float = dict.air_speed_running
 
-  #if not on_floor and jump_input_released:
-    #var percent_jump_height_reached: float = abs(position.y - jump_start_pos_y)
-    #print(percent_jump_height_reached)
-    #velocity.y = 0
-    ## velocity.y = move_toward(velocity.y, 0, speed)
-
-  var gravity: float = calculate_gravity()
-
-  var new_velocity_y: float = calculate_velocity_y(velocity.y, gravity, delta)
-  var new_velocity_x: float = calculate_velocity_x(velocity.x, speed, delta)
+  # X velocity
+  var new_velocity_x: float = movement_handler.handle_movement(
+    self,
+    move_direction,
+    run_button_pressed,
+    air_speed,
+    air_speed_running,
+    delta
+  )
 
   var new_velocity: Vector2 = Vector2(new_velocity_x, new_velocity_y)
   velocity = new_velocity
@@ -138,140 +123,6 @@ func _physics_process(delta: float) -> void:
     last_move_direction = move_direction
 
   move_and_slide()
-
-
-func calculate_gravity() -> float:
-  var gravity: float = 0
-
-  if not on_floor:
-    if jump_available: # Falling (did not jump)
-      # Comment out to pause gravity until coyote timer has elapsed
-      gravity = default_gravity # Fall
-    else:
-      if velocity.y < 0:
-        gravity = jump_gravity # Jump ascent
-        jump_height_reached = abs(position.y - jump_start_pos.y)
-      else:
-        gravity = fall_gravity # Jump apex or descent
-
-  return gravity
-
-
-func calculate_speed() -> float:
-  var speed: float = 0
-
-  if on_floor:
-    if move_direction != 0:
-      speed = run_speed if run_modifier_active else walk_speed
-  else:
-    speed = air_speed_running if run_modifier_active else air_speed
-
-  return speed
-
-
-func calculate_velocity_y(velocity_y: float, gravity: float, delta: float) -> float:
-  var new_velocity_y: float = velocity_y
-  new_velocity_y = apply_gravity(velocity_y, gravity, delta)
-  var should_jump: bool = handle_jump()
-
-  if should_jump:
-    new_velocity_y = apply_jump(new_velocity_y, delta)
-
-  return new_velocity_y
-
-
-func calculate_velocity_x(velocity_x: float, speed: float, delta: float) -> float:
-  var new_velocity_x: float = velocity_x
-  new_velocity_x = handle_movement(velocity_x, speed, delta)
-  return new_velocity_x
-
-
-func apply_gravity(velocity_y: float, gravity: float, delta: float) -> float:
-  var new_velocity_y: float = velocity_y
-
-  if not on_floor:
-    new_velocity_y += gravity * delta
-
-  return new_velocity_y
-
-
-func handle_jump() -> bool:
-  var should_jump: bool = false
-
-  if not on_floor:
-    if jump_available: # Falling (did not jump)
-      if coyote_timer.is_stopped():
-        coyote_timer.start(coyote_time)
-  else:
-    if not jump_available:
-      jump_distance_reached = abs(position.x - jump_start_pos.x)
-      jump_end.emit(jump_height_reached, jump_distance_reached)
-
-    coyote_timer.stop()
-    jump_available = true
-
-    jump_height_reached = 0
-    jump_distance_reached = 0
-    jump_start_pos = Vector2.ZERO
-    jump_start_dir = 0
-
-    if jump_buffer:
-      should_jump = true
-      jump_buffer = false
-
-  if jump_input_pressed:
-    if jump_available:
-      should_jump = true
-    else:
-      jump_buffer = true
-      get_tree().create_timer(jump_buffer_time).timeout.connect(on_jump_buffer_timeout)
-
-  return should_jump
-
-
-func apply_jump(velocity_y: float, delta: float) -> float:
-  var new_velocity_y: float = velocity_y
-
-  if jump_available:
-    new_velocity_y = jump_velocity
-    jump_available = false
-    jump_start_pos = position
-    jump_start_dir = move_direction
-
-    var speed: float = air_speed_running if run_modifier_active else air_speed
-
-    jump_start.emit(
-      collision_shape.global_position,
-      jump_start_dir,
-      jump_duration,
-      speed,
-      jump_velocity,
-      jump_gravity,
-      fall_gravity,
-      delta
-    )
-
-  return new_velocity_y
-
-
-func handle_movement(velocity_x: float, speed: float, delta: float) -> float:
-  var new_velocity_x: float
-
-  if on_floor:
-    # This method provides tighter control over acceleration and deceleration
-    if move_direction < 0:
-      new_velocity_x = lerp(velocity_x, -speed, acceleration_speed * delta)
-    if move_direction > 0:
-      new_velocity_x = lerp(velocity_x, speed, acceleration_speed * delta)
-    if move_direction == 0:
-      new_velocity_x = lerp(velocity_x, 0.0, deceleration_speed * delta)
-  else:
-    if move_direction:
-      new_velocity_x = move_direction * speed
-    else:
-      new_velocity_x = move_toward(velocity_x, 0, speed)
-
-  return new_velocity_x
 
 
 func rotate_sprite() -> void:
@@ -321,13 +172,34 @@ func play_animation() -> void:
 
 func die() -> void:
   is_dead = true;
-  velocity.y = jump_velocity / 2
+  velocity.y = -150.0
   died.emit()
 
 
-func on_jump_buffer_timeout() -> void:
-  jump_buffer = false
+func _on_jump_handler_jump_start(
+  start_pos: Vector2,
+  start_dir: float,
+  duration: float,
+  speed: float,
+  jump_velocity: float,
+  jump_gravity: float,
+  fall_gravity: float,
+  delta: float
+) -> void:
+
+  # Re-emit
+  jump_start.emit(
+    start_pos,
+    start_dir,
+    duration,
+    speed,
+    jump_velocity,
+    jump_gravity,
+    fall_gravity,
+    delta
+  )
 
 
-func _on_coyote_timer_timeout() -> void:
-  jump_available = false
+func _on_jump_handler_jump_end(jump_height_reached: float, jump_distance_reached: float) -> void:
+  # Re-emit
+  jump_end.emit(jump_height_reached, jump_distance_reached)
