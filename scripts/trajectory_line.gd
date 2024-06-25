@@ -20,12 +20,12 @@ func _ready() -> void:
 
 
 func _on_player_jump_start(dict: Dictionary) -> void:
-  var start_pos_offset: Vector2 = dict.start_pos_offset
-  var start_pos: Vector2 = dict.start_pos
   var start_dir: float = dict.start_dir
+  var start_pos: Vector2 = dict.start_pos
+  var start_pos_offset: Vector2 = dict.start_pos_offset
   var duration: float = dict.duration
   var speed: float = dict.speed
-  var jump_velocity: float = dict.jump_velocity
+  var jump_velocity: float = dict.velocity
   var rise_gravity: float = dict.rise_gravity
   var fall_gravity: float = dict.fall_gravity
   var delta: float = dict.delta

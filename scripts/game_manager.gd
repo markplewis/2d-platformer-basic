@@ -58,10 +58,10 @@ func add_point():
 
 
 func _on_player_jump_start(_dict: Dictionary) -> void:
-  jump_start_pos = Vector2.ZERO
   jump_start_dir = 0
-  jump_end_pos = Vector2.ZERO
+  jump_start_pos = Vector2.ZERO
   jump_end_dir = 0
+  jump_end_pos = Vector2.ZERO
   jump_height = 0
   jump_height_percent = 0
   jump_distance = 0
@@ -70,14 +70,14 @@ func _on_player_jump_start(_dict: Dictionary) -> void:
 
 
 func _on_player_jump_end(dict: Dictionary) -> void:
-  jump_start_pos = dict.start_pos
   jump_start_dir = dict.start_dir
-  jump_end_pos = dict.end_pos
+  jump_start_pos = dict.start_pos
   jump_end_dir = dict.end_dir
+  jump_end_pos = dict.end_pos
   jump_height = round(dict.height_reached)
-  jump_height_percent = dict.height_percent_reached
+  jump_height_percent = dict.height_reached_percent
   jump_distance = round(dict.distance_reached)
-  jump_distance_percent = dict.distance_percent_reached
+  jump_distance_percent = dict.distance_reached_percent
   update_text()
 
 
