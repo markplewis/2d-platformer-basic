@@ -3,8 +3,8 @@ extends Node
 
 @export var walk_speed: float = 130.0
 @export var run_speed: float = 230.0
-@export var acceleration_speed: float = 10
-@export var deceleration_speed: float = 15
+@export var acceleration: float = 10
+@export var friction: float = 15
 
 
 func handle_movement(entity: CharacterBody2D, move_direction: float, is_running: bool, air_speed: float, air_speed_running: float, delta: float) -> float:
@@ -25,12 +25,10 @@ func handle_movement(entity: CharacterBody2D, move_direction: float, is_running:
 
   # Calculate velocity
   if on_floor:
-    if move_direction < 0:
-      velocity_x = lerp(velocity_x, -speed, acceleration_speed * delta)
-    if move_direction > 0:
-      velocity_x = lerp(velocity_x, speed, acceleration_speed * delta)
-    if move_direction == 0:
-      velocity_x = lerp(velocity_x, 0.0, deceleration_speed * delta)
+    if move_direction != 0:
+      velocity_x = lerp(velocity_x, move_direction * speed, acceleration * delta)
+    else:
+      velocity_x = lerp(velocity_x, 0.0, friction * delta)
   else:
     if move_direction:
       velocity_x = move_direction * speed

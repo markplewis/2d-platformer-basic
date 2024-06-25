@@ -4,13 +4,15 @@ extends Node
 # Parabolic jump trajectory (projectile motion equations) were borrowed from:
 # - https://www.youtube.com/watch?v=FvFx1R3p-aw
 # - https://www.youtube.com/watch?v=IOe1aGY6hXA
-# Which attempted to implement the physics principles described here:
-# - https://www.youtube.com/watch?v=hG9SzQxaCm8
-# See also:
 # - https://youtu.be/PlT44xr0iW0?si=v2mpnxFHaUXQxmo9&t=373
+# Which attempt to implement the physics principles described here:
+# - https://www.youtube.com/watch?v=hG9SzQxaCm8
 
 # Jump buffering: https://www.youtube.com/watch?v=hRQW580zEJE
 # Coyote time: https://www.youtube.com/watch?v=4Vhcqh9S2LM
+
+# TODO: implement variable jump height:
+# https://gist.github.com/sjvnnings/5f02d2f2fc417f3804e967daa73cccfd?permalink_comment_id=5074318#gistcomment-5074318
 
 signal jump_start
 signal jump_end
@@ -23,6 +25,11 @@ signal jump_end
 
 var _default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
+# TODO: because we're using CharacterBody2D instead of RigidBody2D, the jump_height may vary
+# based on the game's frame rate. There doesn't seem to be any way around this, unfortunately.
+# - https://www.reddit.com/r/godot/comments/16fgryr/help_jumping_height_frame_dependent_even_though_i/
+# - https://www.gamedev.net/blogs/entry/2265460-fixing-your-timestep-and-evaluating-godot/
+
 # Jump calculation input (default)
 @export var jump_height: float = 64.0 # Pixels
 @export var jump_peak_time: float = 0.4
@@ -31,11 +38,11 @@ var _default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gr
 @export var jump_distance_running: float = 96.0 # Pixels
 
 # Jump calculation input (current)
-@onready var _base_height: float = jump_height
-@onready var _base_peak_time: float = jump_peak_time
-@onready var _base_fall_time: float = jump_fall_time
-@onready var _base_distance: float = jump_distance
-@onready var _base_distance_running: float = jump_distance_running
+@onready var _jump_height: float = jump_height
+@onready var _jump_peak_time: float = jump_peak_time
+@onready var _jump_fall_time: float = jump_fall_time
+@onready var _jump_distance: float = jump_distance
+@onready var _jump_distance_running: float = jump_distance_running
 
 # Jump calculation output
 var _calc_rise_gravity: float
@@ -64,13 +71,17 @@ var _metric_distance_reached_percent: float = 0.0
 
 func _ready() -> void:
   _calculate_jump_params(
-    _base_height,
-    _base_peak_time,
-    _base_fall_time,
-    _base_distance,
-    _base_distance_running
+    _jump_height,
+    _jump_peak_time,
+    _jump_fall_time,
+    _jump_distance,
+    _jump_distance_running
   )
 
+
+# TODO: calculate the percentage of the jump's total height/distance that the user is expected to
+# travel and scale these numbers by multiplying them by that percentage (i.e. user releases move
+# buttons or jump button early, before jump has completed)
 
 func _calculate_jump_params(
   height: float,
@@ -83,13 +94,11 @@ func _calculate_jump_params(
   _calc_rise_gravity = ((-2.0 * height) / pow(peak_time, 2)) * -1.0
   _calc_fall_gravity = ((-2.0 * height) / pow(fall_time, 2)) * -1.0
   _calc_velocity = (_calc_rise_gravity * peak_time) * -1.0
+  # _calc_velocity = ((2.0 * height) / peak_time) * -1.0
+
   _calc_duration = peak_time + fall_time
   _calc_air_speed = distance / _calc_duration
   _calc_air_speed_running = distance_running / _calc_duration
-
-  # TODO: calculate the percentage of the jump's total height/distance that the user is expected to
-  # travel and scale these numbers by multiplying them by that percentage (i.e. user releases move
-  # buttons or jump button early, before jump has completed)
 
 
 func handle_jump(
@@ -110,16 +119,16 @@ func handle_jump(
     # Calculate gravity
     if _jump_available:
       # Falling (did not jump)
-      # (Comment out to pause gravity until coyote timer has elapsed)
+      # (comment out to pause gravity until coyote timer has elapsed)
       gravity = _default_gravity # Fall
     else:
       if velocity_y < 0:
         gravity = _calc_rise_gravity # Jump ascent
         _metric_height_reached = abs(position_vector.y - _metric_start_pos.y)
 
-        if _metric_height_reached != 0.0 and _base_height != 0.0:
-          _metric_height_reached_percent = round(_metric_height_reached / _base_height * 100.0)
-          #_metric_height_reached_percent = round(clamp(_metric_height_reached / _base_height, 0, 1) * 100)
+        if _metric_height_reached != 0.0 and _jump_height != 0.0:
+          _metric_height_reached_percent = round(_metric_height_reached / _jump_height * 100.0)
+          # _metric_height_reached_percent = round(clamp(_metric_height_reached / _jump_height, 0, 1) * 100)
         else:
           _metric_height_reached_percent = 0.0
       else:
@@ -140,7 +149,7 @@ func handle_jump(
 
       if _metric_distance_reached != 0.0 and _metric_start_max_distance != 0.0:
         _metric_distance_reached_percent = round(_metric_distance_reached / _metric_start_max_distance * 100.0)
-        #_metric_distance_reached_percent = round(clamp(_metric_distance_reached / _metric_start_max_distance, 0, 1) * 100)
+        # _metric_distance_reached_percent = round(clamp(_metric_distance_reached / _metric_start_max_distance, 0, 1) * 100)
       else:
         _metric_distance_reached_percent = 0.0
   else:
@@ -198,7 +207,7 @@ func handle_jump(
       # Jump metrics
       _metric_start_dir = move_direction
       _metric_start_pos = position_vector
-      _metric_start_max_distance = _base_distance_running if run_button_pressed else _base_distance
+      _metric_start_max_distance = _jump_distance_running if run_button_pressed else _jump_distance
       _metric_start_speed = _calc_air_speed_running if run_button_pressed else _calc_air_speed
 
       jump_start.emit({
