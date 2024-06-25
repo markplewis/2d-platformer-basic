@@ -848,7 +848,7 @@ scale = Vector2(2, 2)
 transform = Transform2D(2, 0, 0, 2, 0, 0)
 
 [node name="ColorRect" type="ColorRect" parent="UI"]
-offset_right = 134.0
+offset_right = 179.0
 offset_bottom = 48.0
 color = Color(0, 0, 0, 0.7)
 

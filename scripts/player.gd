@@ -80,16 +80,16 @@ func _physics_process(delta: float) -> void:
   on_floor = is_on_floor()
 
   # Y velocity
-  var dict: Dictionary = jump_handler.handle_jump(
+  var jump_values: Dictionary = jump_handler.handle_jump(
     self,
     jump_button_pressed,
     move_direction,
     run_button_pressed,
     delta
   )
-  var new_velocity_y: float = dict.velocity_y
-  var air_speed: float = dict.air_speed
-  var air_speed_running: float = dict.air_speed_running
+  var new_velocity_y: float = jump_values.velocity_y
+  var air_speed: float = jump_values.air_speed
+  var air_speed_running: float = jump_values.air_speed_running
 
   # X velocity
   var new_velocity_x: float = movement_handler.handle_movement(
@@ -166,8 +166,8 @@ func die() -> void:
 
 
 func _on_jump_handler_jump_start(dict: Dictionary) -> void:
-  jump_start.emit(dict) # Re-emit
+  jump_start.emit(dict)
 
 
 func _on_jump_handler_jump_end(dict: Dictionary) -> void:
-  jump_end.emit(dict) # Re-emit
+  jump_end.emit(dict)

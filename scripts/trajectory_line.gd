@@ -20,19 +20,20 @@ func _ready() -> void:
 
 
 func _on_player_jump_start(dict: Dictionary) -> void:
+  var start_pos_offset: Vector2 = dict.start_pos_offset
   var start_pos: Vector2 = dict.start_pos
   var start_dir: float = dict.start_dir
   var duration: float = dict.duration
   var speed: float = dict.speed
   var jump_velocity: float = dict.jump_velocity
-  var jump_gravity: float = dict.jump_gravity
+  var rise_gravity: float = dict.rise_gravity
   var fall_gravity: float = dict.fall_gravity
   var delta: float = dict.delta
 
   if OS.is_debug_build() and game_manager.debug_mode:
     clear_points()
     timer.stop()
-    position = start_pos
+    position = start_pos_offset
 
     var point_count: int = round(fps * duration + 2)
     var gravity: float = 0
@@ -41,7 +42,7 @@ func _on_player_jump_start(dict: Dictionary) -> void:
 
     for i in point_count:
       add_point(pos)
-      gravity = jump_gravity if vel.y < 0 else fall_gravity
+      gravity = rise_gravity if vel.y < 0 else fall_gravity
 
       if i > 0:
         vel.y += gravity * delta
