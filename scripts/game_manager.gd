@@ -20,16 +20,25 @@ var jump_distance_percent: float = 0
 
 
 func update_text():
-  #var multiplier: float = 1
+  # Determine whether player landed beyond their starting jump position or behind it
+  var multiplier: float = 1
 
-  #if jump_start_dir >= 0 and jump_end_pos.x >= jump_start_pos.x:
-    #multiplier = 1
-  #if jump_start_dir < 0 and jump_end_pos.x < jump_start_pos.x:
-    #multiplier = 1
-  #if jump_start_dir >= 0 and jump_end_pos.x < jump_start_pos.x:
-    #multiplier = -1
-  #if jump_start_dir < 0 and jump_end_pos.x >= jump_start_pos.x:
-    #multiplier = -1
+  var moved_right: bool = jump_end_pos.x > jump_start_pos.x
+  var moved_left: bool = jump_end_pos.x < jump_start_pos.x
+  var did_not_move: bool = jump_end_pos.x == jump_start_pos.x
+
+  var stated_moving_right: bool = jump_start_dir == 1
+  var stated_moving_left: bool = jump_start_dir == -1
+  var did_not_start_moving: bool = jump_start_dir == 0
+
+  if (stated_moving_right and moved_right) or (stated_moving_left and moved_left):
+    multiplier = 1
+
+  if (stated_moving_right and moved_left) or (stated_moving_left and moved_right):
+    multiplier = -1
+
+  if did_not_start_moving:
+    multiplier = 1
 
   score_label.text = "You collected " + str(score) + " coins!"
 
@@ -39,7 +48,7 @@ func update_text():
     Jump distance: %s (%s%%)
   """
   stats_label.text = format_string.dedent().strip_edges() % [
-    score, jump_height, jump_height_percent, jump_distance, jump_distance_percent
+    score, jump_height, jump_height_percent, jump_distance * multiplier, jump_distance_percent
   ]
 
 
