@@ -50,14 +50,16 @@ var _jump_buffer: bool = false
 var _jump_available: bool = true
 
 # Jump metrics
-var _metric_start_dir: float = 0
+var _metric_start_dir: float = 0.0
 var _metric_start_pos: Vector2 = Vector2.ZERO
-var _metric_end_dir: float = 0
+var _metric_start_max_distance: float = 0.0
+var _metric_start_speed: float = 0.0
+var _metric_end_dir: float = 0.0
 var _metric_end_pos: Vector2 = Vector2.ZERO
-var _metric_height_reached: float = 0
-var _metric_height_reached_percent: float = 0
-var _metric_distance_reached: float = 0
-var _metric_distance_reached_percent: float = 0
+var _metric_height_reached: float = 0.0
+var _metric_height_reached_percent: float = 0.0
+var _metric_distance_reached: float = 0.0
+var _metric_distance_reached_percent: float = 0.0
 
 
 func _ready() -> void:
@@ -101,7 +103,7 @@ func handle_jump(
   var on_floor: bool = entity.is_on_floor()
   var velocity_y: float = entity.velocity.y
   var position_vector: Vector2 = entity.position
-  var gravity: float = 0
+  var gravity: float = 0.0
   var should_jump: bool = false
 
   if not on_floor:
@@ -114,7 +116,12 @@ func handle_jump(
       if velocity_y < 0:
         gravity = _calc_rise_gravity # Jump ascent
         _metric_height_reached = abs(position_vector.y - _metric_start_pos.y)
-        _metric_height_reached_percent = round(clamp(_metric_height_reached / _base_height, 0, 1) * 100)
+
+        if _metric_height_reached != 0.0 and _base_height != 0.0:
+          _metric_height_reached_percent = round(_metric_height_reached / _base_height * 100.0)
+          #_metric_height_reached_percent = round(clamp(_metric_height_reached / _base_height, 0, 1) * 100)
+        else:
+          _metric_height_reached_percent = 0.0
       else:
         gravity = _calc_fall_gravity # Jump apex or descent
 
@@ -129,13 +136,19 @@ func handle_jump(
         _coyote_timer.start(coyote_time)
     else:
       # Jumping
-      _metric_end_dir = move_direction
-      _metric_end_pos = position_vector
       _metric_distance_reached = abs(position_vector.x - _metric_start_pos.x)
-      _metric_distance_reached_percent = round(clamp(_metric_distance_reached / _base_distance, 0, 1) * 100)
+
+      if _metric_distance_reached != 0.0 and _metric_start_max_distance != 0.0:
+        _metric_distance_reached_percent = round(_metric_distance_reached / _metric_start_max_distance * 100.0)
+        #_metric_distance_reached_percent = round(clamp(_metric_distance_reached / _metric_start_max_distance, 0, 1) * 100)
+      else:
+        _metric_distance_reached_percent = 0.0
   else:
     if not _jump_available:
       # Landed on floor (after jumping or falling)
+      _metric_end_dir = move_direction
+      _metric_end_pos = position_vector
+
       jump_end.emit({
         "start_dir": _metric_start_dir,
         "start_pos": _metric_start_pos,
@@ -152,14 +165,16 @@ func handle_jump(
     _jump_available = true
 
     # Reset jump metrics
-    _metric_start_dir = 0
+    _metric_start_dir = 0.0
     _metric_start_pos = Vector2.ZERO
-    _metric_end_dir = 0
+    _metric_start_max_distance = 0.0
+    _metric_start_speed = 0.0
+    _metric_end_dir = 0.0
     _metric_end_pos = Vector2.ZERO
-    _metric_height_reached = 0
-    _metric_height_reached_percent = 0
-    _metric_distance_reached = 0
-    _metric_distance_reached_percent = 0
+    _metric_height_reached = 0.0
+    _metric_height_reached_percent = 0.0
+    _metric_distance_reached = 0.0
+    _metric_distance_reached_percent = 0.0
 
     if _jump_buffer:
       # Initiate delayed/buffered jump
@@ -181,20 +196,23 @@ func handle_jump(
       _jump_available = false
 
       # Jump metrics
-      _metric_start_pos = position_vector
       _metric_start_dir = move_direction
+      _metric_start_pos = position_vector
+      _metric_start_max_distance = _base_distance_running if run_button_pressed else _base_distance
+      _metric_start_speed = _calc_air_speed_running if run_button_pressed else _calc_air_speed
 
       jump_start.emit({
-        "start_dir":  _metric_start_dir,
+        "start_dir": _metric_start_dir,
         "start_pos": _metric_start_pos,
         # Emit collider.global_position so that it aligns with trajectory line,
         # because player's global_position is aligned to bottom of sprite
         "start_pos_offset": entity.collision_shape.global_position,
         "duration": _calc_duration,
-        "speed": _calc_air_speed_running if run_button_pressed else _calc_air_speed,
+        "speed": _metric_start_speed,
+        "max_distance": _metric_start_max_distance,
         "velocity": _calc_velocity,
         "rise_gravity": _calc_rise_gravity,
-        "fall_gravity":  _calc_fall_gravity,
+        "fall_gravity": _calc_fall_gravity,
         "delta": delta
       })
 
