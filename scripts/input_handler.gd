@@ -16,3 +16,7 @@ func get_jump_button_just_pressed() -> bool:
 
 func get_jump_button_pressed() -> bool:
   return Input.is_action_pressed("jump")
+
+
+func get_jump_button_just_released() -> bool:
+  return Input.is_action_just_released("jump")
