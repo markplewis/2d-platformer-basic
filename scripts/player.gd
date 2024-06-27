@@ -1,6 +1,10 @@
 class_name Player
 extends CharacterBody2D
 
+signal jump_start
+signal jump_end
+signal died
+
 @export var rotate_on_slopes: bool = true
 
 # Game manager
@@ -26,14 +30,12 @@ var move_direction: float = 0
 var last_move_direction: float = 1.0
 var run_button_pressed: bool = false
 var jump_button_pressed: bool = false
+var jump_button_just_pressed: bool = false
 var on_floor: bool = true
 var floor_normal: Vector2 = Vector2.UP
 var floor_angle: float = 0
 var is_dead: bool = false
 
-signal jump_start
-signal jump_end
-signal died
 
 func _ready() -> void:
   if OS.is_debug_build() and game_manager.debug_mode:
@@ -74,8 +76,8 @@ func _process(_delta: float) -> void:
 func _physics_process(delta: float) -> void:
   move_direction = input_handler.get_move_direction()
   run_button_pressed = input_handler.get_run_button_pressed()
-  jump_button_pressed = input_handler.get_jump_button_pressed()
-  # jump_button_released = input_handler.get_jump_button_released()
+  jump_button_pressed = input_handler.get_jump_button_just_pressed()
+  jump_button_just_pressed = input_handler.get_jump_button_just_pressed()
 
   on_floor = is_on_floor()
 
@@ -83,6 +85,7 @@ func _physics_process(delta: float) -> void:
   var jump_values: Dictionary = jump_handler.handle_jump(
     self,
     jump_button_pressed,
+    jump_button_just_pressed,
     move_direction,
     run_button_pressed,
     delta
