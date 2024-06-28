@@ -31,6 +31,7 @@ var last_move_direction: float = 1.0
 var run_button_pressed: bool = false
 var jump_button_pressed: bool = false
 var jump_button_just_pressed: bool = false
+var jump_button_released: bool = false
 var jump_button_just_released: bool = false
 
 var on_floor: bool = true
@@ -80,6 +81,7 @@ func _physics_process(delta: float) -> void:
   run_button_pressed = input_handler.get_run_button_pressed()
   jump_button_pressed = input_handler.get_jump_button_just_pressed()
   jump_button_just_pressed = input_handler.get_jump_button_just_pressed()
+  jump_button_released = input_handler.get_jump_button_released()
   jump_button_just_released = input_handler.get_jump_button_just_released()
 
   on_floor = is_on_floor()
@@ -89,6 +91,7 @@ func _physics_process(delta: float) -> void:
     self,
     jump_button_pressed,
     jump_button_just_pressed,
+    jump_button_released,
     jump_button_just_released,
     move_direction,
     run_button_pressed,

@@ -11,9 +11,10 @@ extends Node
 # Jump buffering: https://www.youtube.com/watch?v=hRQW580zEJE
 # Coyote time: https://www.youtube.com/watch?v=4Vhcqh9S2LM
 
-# TODO: implement variable jump height:
-# https://gist.github.com/sjvnnings/5f02d2f2fc417f3804e967daa73cccfd?permalink_comment_id=5074318#gistcomment-5074318
-# https://www.reddit.com/r/godot/comments/17ate0w/adding_variable_jump_height/
+# Variable jump height:
+# - https://gist.github.com/sjvnnings/5f02d2f2fc417f3804e967daa73cccfd?permalink_comment_id=5074318#gistcomment-5074318
+# - https://www.reddit.com/r/godot/comments/17ate0w/adding_variable_jump_height/
+# - https://www.youtube.com/watch?v=5D0XXRM5gMQ
 
 signal jump_start
 signal jump_end
@@ -37,8 +38,8 @@ var _default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gr
 @export var jump_height_time: float = 0.5
 @export var jump_peak_time: float = 0.4
 @export var jump_fall_time: float = 0.3
-@export var jump_distance: float = 64.0 # Pixels
-@export var jump_distance_running: float = 96.0 # Pixels
+@export var jump_distance: float = 80.0 # Pixels
+@export var jump_distance_running: float = 112.0 # Pixels
 
 # Jump calculation input (current)
 @onready var _jump_height: float = jump_height
@@ -88,6 +89,7 @@ func _calculate_jump_params(
   _calc_rise_gravity = ((-2.0 * height) / pow(peak_time, 2)) * -1.0
   _calc_fall_gravity = ((-2.0 * height) / pow(fall_time, 2)) * -1.0
   _calc_velocity = (_calc_rise_gravity * peak_time) * -1.0
+  # The above line is functionally the same as this:
   # _calc_velocity = ((2.0 * height) / peak_time) * -1.0
 
   _calc_duration = peak_time + fall_time
@@ -105,32 +107,11 @@ func _ready() -> void:
   )
 
 
-func _apply_gravity(on_floor: bool, velocity_y: float, position_vector: Vector2, delta: float) -> float:
-  var new_velocity_y: float = velocity_y
-  var gravity: float = 0.0
-
-  if not on_floor:
-    if _can_jump:
-      # Falling (did not jump)
-      # (comment out to pause gravity until coyote timer has elapsed)
-      gravity = _default_gravity # Fall
-    else:
-      if new_velocity_y < 0:
-        gravity = _calc_rise_gravity # Jump ascent
-        _capture_jump_height_metrics(position_vector)
-      else:
-        gravity = _calc_fall_gravity # Jump apex or descent
-      _capture_jump_distance_metrics(position_vector)
-
-    new_velocity_y += gravity * delta
-
-  return new_velocity_y
-
-
 func handle_jump(
   entity: CharacterBody2D,
   jump_button_pressed: bool,
   jump_button_just_pressed: bool,
+  jump_button_released: bool,
   jump_button_just_released: bool,
   move_direction: float,
   run_button_pressed: bool,
@@ -141,8 +122,6 @@ func handle_jump(
   var velocity_y: float = entity.velocity.y
   var position_vector: Vector2 = entity.position
   var should_jump: bool = false
-
-  # velocity_y = _apply_gravity(on_floor, velocity_y, position_vector, delta)
 
   # Handle jump
   if not on_floor:
@@ -177,7 +156,7 @@ func handle_jump(
 
   # Apply jump
   if _can_jump and should_jump:
-    velocity_y = _calc_velocity # + abs(air_speed / 3) # Jump
+    velocity_y = _calc_velocity # Start jumping
     _can_jump = false
     should_jump = false
     _jump_timer.start()
@@ -185,16 +164,43 @@ func handle_jump(
 
   # keep checking input while timer is running
   if jump_button_pressed and not _jump_timer.is_stopped():
-    velocity_y = _calc_velocity # + abs(air_speed / 3) # Continue jumping
+    velocity_y = _calc_velocity # Continue jumping
 
   if jump_button_just_released:
-    _jump_timer.stop()
+     _jump_timer.stop()
+    # velocity_y = move_toward(velocity_y, 0, air_speed)
+
+  if jump_button_released:
+    if velocity_y < 0:
+      velocity_y *= 0.5 # Cut the velocity each frame
     # TODO: make trajectory curve smoother (by calling _calculate_jump_params() again?)
-    velocity_y = move_toward(velocity_y, 0, air_speed)
+    #var percent_height_reached: float = _metric_height_reached / _jump_height
 
   velocity_y = _apply_gravity(on_floor, velocity_y, position_vector, delta)
 
   return { "velocity_y": velocity_y, "air_speed": _calc_air_speed, "air_speed_running": _calc_air_speed_running }
+
+
+func _apply_gravity(on_floor: bool, velocity_y: float, position_vector: Vector2, delta: float) -> float:
+  var new_velocity_y: float = velocity_y
+  var gravity: float = 0.0
+
+  if not on_floor:
+    if _can_jump:
+      # Falling (did not jump)
+      # (comment out to pause gravity until coyote timer has elapsed)
+      gravity = _default_gravity # Fall
+    else:
+      if new_velocity_y < 0:
+        gravity = _calc_rise_gravity # Jump ascent
+        _capture_jump_height_metrics(position_vector)
+      else:
+        gravity = _calc_fall_gravity # Jump apex or descent
+      _capture_jump_distance_metrics(position_vector)
+
+    new_velocity_y += gravity * delta
+
+  return new_velocity_y
 
 
 func _on_jump_buffer_timeout() -> void:
