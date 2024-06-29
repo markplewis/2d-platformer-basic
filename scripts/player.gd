@@ -1,8 +1,8 @@
 class_name Player
 extends CharacterBody2D
 
-signal jump_start_metrics
-signal jump_end_metrics
+signal jump_started
+signal jump_ended
 signal died
 
 @export var rotate_on_slopes: bool = true
@@ -180,9 +180,9 @@ func _draw_debug_lines() -> void:
       floor_normal_line.add_point(floor_normal * 20)
 
 
-func _on_jump_handler_start_metrics(dict: Dictionary) -> void:
-  jump_start_metrics.emit(dict)
+func _on_jump_handler_jump_started(dict: Dictionary) -> void:
+  jump_started.emit(dict)
 
 
-func _on_jump_handler_end_metrics(dict: Dictionary) -> void:
-  jump_end_metrics.emit(dict)
+func _on_jump_handler_jump_ended(dict: Dictionary) -> void:
+  jump_ended.emit(dict)

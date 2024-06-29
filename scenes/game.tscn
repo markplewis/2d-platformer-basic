@@ -511,21 +511,9 @@ limit_bottom = 120
 limit_smoothed = true
 position_smoothing_enabled = true
 
-[node name="Press space to jump" type="Label" parent="."]
-offset_left = -103.0
-offset_top = -42.0
-offset_right = -22.0
-offset_bottom = -15.0
-theme_override_colors/font_color = Color(0.00784314, 0.14902, 0.34902, 1)
-theme_override_fonts/font = ExtResource("7_kb8gi")
-theme_override_font_sizes/font_size = 8
-text = "Press space to jump"
-horizontal_alignment = 1
-autowrap_mode = 2
+[node name="JumpStatsLabels" type="Node" parent="."]
 
-[node name="Labels" type="Node" parent="."]
-
-[node name="Label2" type="Label" parent="Labels"]
+[node name="Label2" type="Label" parent="JumpStatsLabels"]
 offset_left = -227.0
 offset_top = 54.0
 offset_right = -178.0
@@ -538,7 +526,7 @@ text = "16-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label22" type="Label" parent="Labels"]
+[node name="Label22" type="Label" parent="JumpStatsLabels"]
 offset_left = -243.0
 offset_top = 54.0
 offset_right = -194.0
@@ -551,7 +539,7 @@ text = "0-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label13" type="Label" parent="Labels"]
+[node name="Label13" type="Label" parent="JumpStatsLabels"]
 offset_left = -211.0
 offset_top = 54.0
 offset_right = -162.0
@@ -564,7 +552,7 @@ text = "32-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label14" type="Label" parent="Labels"]
+[node name="Label14" type="Label" parent="JumpStatsLabels"]
 offset_left = -195.0
 offset_top = 54.0
 offset_right = -146.0
@@ -577,7 +565,7 @@ text = "48-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label15" type="Label" parent="Labels"]
+[node name="Label15" type="Label" parent="JumpStatsLabels"]
 offset_left = -179.0
 offset_top = 54.0
 offset_right = -130.0
@@ -590,7 +578,7 @@ text = "64-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label16" type="Label" parent="Labels"]
+[node name="Label16" type="Label" parent="JumpStatsLabels"]
 offset_left = -163.0
 offset_top = 54.0
 offset_right = -114.0
@@ -603,7 +591,7 @@ text = "80-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label17" type="Label" parent="Labels"]
+[node name="Label17" type="Label" parent="JumpStatsLabels"]
 offset_left = -147.0
 offset_top = 54.0
 offset_right = -98.0
@@ -616,7 +604,7 @@ text = "96-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label18" type="Label" parent="Labels"]
+[node name="Label18" type="Label" parent="JumpStatsLabels"]
 offset_left = -131.0
 offset_top = 54.0
 offset_right = -82.0
@@ -629,7 +617,7 @@ text = "112-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label19" type="Label" parent="Labels"]
+[node name="Label19" type="Label" parent="JumpStatsLabels"]
 offset_left = -115.0
 offset_top = 54.0
 offset_right = -66.0
@@ -642,7 +630,7 @@ text = "128-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label20" type="Label" parent="Labels"]
+[node name="Label20" type="Label" parent="JumpStatsLabels"]
 offset_left = -99.0
 offset_top = 54.0
 offset_right = -50.0
@@ -655,7 +643,7 @@ text = "144-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label21" type="Label" parent="Labels"]
+[node name="Label21" type="Label" parent="JumpStatsLabels"]
 offset_left = -83.0
 offset_top = 54.0
 offset_right = -34.0
@@ -668,7 +656,7 @@ text = "160-----"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label12" type="Label" parent="Labels"]
+[node name="Label12" type="Label" parent="JumpStatsLabels"]
 offset_left = -264.0
 offset_top = -3.0
 offset_right = -227.0
@@ -680,7 +668,7 @@ text = "16--------"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label3" type="Label" parent="Labels"]
+[node name="Label3" type="Label" parent="JumpStatsLabels"]
 offset_left = -264.0
 offset_top = -19.0
 offset_right = -227.0
@@ -692,7 +680,7 @@ text = "32--------"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label4" type="Label" parent="Labels"]
+[node name="Label4" type="Label" parent="JumpStatsLabels"]
 offset_left = -264.0
 offset_top = -35.0
 offset_right = -227.0
@@ -704,7 +692,7 @@ text = "48--------"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label5" type="Label" parent="Labels"]
+[node name="Label5" type="Label" parent="JumpStatsLabels"]
 offset_left = -264.0
 offset_top = -51.0
 offset_right = -227.0
@@ -716,7 +704,7 @@ text = "64--------"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label6" type="Label" parent="Labels"]
+[node name="Label6" type="Label" parent="JumpStatsLabels"]
 offset_left = -264.0
 offset_top = -67.0
 offset_right = -227.0
@@ -728,7 +716,7 @@ text = "80--------"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label7" type="Label" parent="Labels"]
+[node name="Label7" type="Label" parent="JumpStatsLabels"]
 offset_left = -264.0
 offset_top = -83.0
 offset_right = -227.0
@@ -740,7 +728,7 @@ text = "96--------"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label8" type="Label" parent="Labels"]
+[node name="Label8" type="Label" parent="JumpStatsLabels"]
 offset_left = -264.0
 offset_top = -99.0
 offset_right = -227.0
@@ -752,7 +740,7 @@ text = "112--------"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label9" type="Label" parent="Labels"]
+[node name="Label9" type="Label" parent="JumpStatsLabels"]
 offset_left = -264.0
 offset_top = -115.0
 offset_right = -227.0
@@ -764,7 +752,7 @@ text = "128--------"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label10" type="Label" parent="Labels"]
+[node name="Label10" type="Label" parent="JumpStatsLabels"]
 offset_left = -264.0
 offset_top = -131.0
 offset_right = -227.0
@@ -776,7 +764,7 @@ text = "144--------"
 horizontal_alignment = 2
 autowrap_mode = 2
 
-[node name="Label11" type="Label" parent="Labels"]
+[node name="Label11" type="Label" parent="JumpStatsLabels"]
 offset_left = -264.0
 offset_top = -147.0
 offset_right = -227.0
@@ -786,6 +774,20 @@ theme_override_fonts/font = ExtResource("7_kb8gi")
 theme_override_font_sizes/font_size = 8
 text = "160--------"
 horizontal_alignment = 2
+autowrap_mode = 2
+
+[node name="OtherLabels" type="Node" parent="."]
+
+[node name="Press space to jump" type="Label" parent="OtherLabels"]
+offset_left = -103.0
+offset_top = -42.0
+offset_right = -22.0
+offset_bottom = -15.0
+theme_override_colors/font_color = Color(0.00784314, 0.14902, 0.34902, 1)
+theme_override_fonts/font = ExtResource("7_kb8gi")
+theme_override_font_sizes/font_size = 8
+text = "Press space to jump"
+horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="Coins" type="Node" parent="."]
@@ -865,7 +867,7 @@ text = "Stats"
 autowrap_mode = 2
 
 [connection signal="died" from="Player" to="GameManager" method="_on_player_died"]
-[connection signal="jump_end_metrics" from="Player" to="GameManager" method="_on_player_jump_end_metrics"]
-[connection signal="jump_end_metrics" from="Player" to="TrajectoryLine" method="_on_player_jump_end_metrics"]
-[connection signal="jump_start_metrics" from="Player" to="GameManager" method="_on_player_jump_start_metrics"]
-[connection signal="jump_start_metrics" from="Player" to="TrajectoryLine" method="_on_player_jump_start_metrics"]
+[connection signal="jump_ended" from="Player" to="GameManager" method="_on_player_jump_ended"]
+[connection signal="jump_ended" from="Player" to="TrajectoryLine" method="_on_player_jump_ended"]
+[connection signal="jump_started" from="Player" to="GameManager" method="_on_player_jump_started"]
+[connection signal="jump_started" from="Player" to="TrajectoryLine" method="_on_player_jump_started"]

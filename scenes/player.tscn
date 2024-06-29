@@ -221,13 +221,6 @@ shape = SubResource("CircleShape2D_0krl3")
 [node name="MovementHandler" parent="." instance=ExtResource("4_5h253")]
 
 [node name="JumpHandler" parent="." instance=ExtResource("5_qcfde")]
-coyote_time = null
-jump_buffer_time = null
-jump_height = null
-jump_rise_time = null
-jump_fall_time = null
-jump_distance = null
-jump_friction = null
 
 [node name="Trail" parent="." instance=ExtResource("3_rmtyy")]
 top_level = true
@@ -237,5 +230,5 @@ max_length = 30
 [node name="GroundDetectionRaycast" type="RayCast2D" parent="."]
 target_position = Vector2(0, 3)
 
-[connection signal="jump_end_metrics" from="JumpHandler" to="." method="_on_jump_handler_end_metrics"]
-[connection signal="jump_start_metrics" from="JumpHandler" to="." method="_on_jump_handler_start_metrics"]
+[connection signal="jump_ended" from="JumpHandler" to="." method="_on_jump_handler_jump_ended"]
+[connection signal="jump_started" from="JumpHandler" to="." method="_on_jump_handler_jump_started"]

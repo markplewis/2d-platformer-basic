@@ -16,18 +16,19 @@ extends Node
 # - https://www.reddit.com/r/godot/comments/17ate0w/adding_variable_jump_height/
 # - https://www.youtube.com/watch?v=5D0XXRM5gMQ
 
-signal jump_start_metrics
-signal jump_end_metrics
+signal jump_started
+signal jump_ended
 
 # Globals
 @export var coyote_time: float = 0.1
 @export var jump_buffer_time: float = 0.1
 
-@onready var _coyote_timer: Timer = $CoyoteTimer
-@onready var _jump_timer: Timer = $JumpTimer
-@onready var _jump_metrics: JumpMetrics = $JumpMetrics
-
+const JumpMetrics: Resource = preload("res://scripts/jump_metrics.gd")
 var _default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
+
+@onready var _coyote_timer: Timer = $CoyoteTimer
+@onready var _jump_timer: Timer = Timer.new()
+@onready var _jump_metrics: JumpMetrics = JumpMetrics.new()
 
 # TODO: because we're using CharacterBody2D instead of RigidBody2D, the jump_height may vary
 # based on the game's frame rate. There doesn't seem to be any way around this, unfortunately.
@@ -57,6 +58,12 @@ var _jump_buffer: bool = false
 var _can_jump: bool = true
 
 
+func _ready() -> void:
+  # Should be more than enough time (is setting this even necessary?)
+  _jump_timer.wait_time = _jump_duration
+  add_child(_jump_timer)
+
+
 func handle_jump(
   entity: CharacterBody2D,
   jump_button_pressed: bool,
@@ -82,12 +89,12 @@ func handle_jump(
   else:
     if not _can_jump:
       # Landed on floor (after jumping or falling)
-      _jump_metrics.log_jump_end(position_vector, move_direction)
+      jump_ended.emit(_jump_metrics.on_jump_end(position_vector, move_direction))
 
     _coyote_timer.stop()
     _jump_timer.stop()
-    _can_jump = true
     _jump_metrics.reset()
+    _can_jump = true
 
     if _jump_buffer:
       # Initiate delayed/buffered jump
@@ -120,7 +127,7 @@ func handle_jump(
     _can_jump = false
     _jump_timer.start()
 
-    _jump_metrics.log_jump_start(
+    jump_started.emit(_jump_metrics.on_jump_start(
       entity.collision_shape.global_position,
       position_vector,
       move_direction,
@@ -131,7 +138,7 @@ func handle_jump(
       _jump_rise_gravity,
       _jump_fall_gravity,
       delta
-    )
+    ))
 
   # Keep checking input while timer is running
   if jump_button_pressed and not _jump_timer.is_stopped():
@@ -165,9 +172,9 @@ func _apply_gravity(on_floor: bool, velocity_y: float, position_vector: Vector2,
         gravity = _jump_fall_gravity # Jump apex or descent
       else:
         gravity = _jump_rise_gravity # Jump ascent
-        _jump_metrics.log_jump_height(position_vector, _jump_height)
+        _jump_metrics.calculate_jump_height(position_vector, _jump_height)
 
-      _jump_metrics.log_jump_distance(position_vector)
+      _jump_metrics.calculate_jump_distance(position_vector)
 
     new_velocity_y += gravity * delta
 
@@ -180,11 +187,3 @@ func _on_jump_buffer_timeout() -> void:
 
 func _on_coyote_timer_timeout() -> void:
   _can_jump = false
-
-
-func _on_jump_start_metrics(dict: Dictionary) -> void:
-  jump_start_metrics.emit(dict)
-
-
-func _on_jump_end_metrics(dict: Dictionary) -> void:
-  jump_end_metrics.emit(dict)

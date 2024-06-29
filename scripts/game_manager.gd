@@ -56,7 +56,7 @@ func add_point():
   update_text()
 
 
-func _on_player_jump_start_metrics(_dict: Dictionary) -> void:
+func _on_player_jump_started(_dict: Dictionary) -> void:
   _jump_start_dir = 0
   _jump_start_pos = Vector2.ZERO
   _jump_end_pos = Vector2.ZERO
@@ -67,7 +67,7 @@ func _on_player_jump_start_metrics(_dict: Dictionary) -> void:
   update_text()
 
 
-func _on_player_jump_end_metrics(dict: Dictionary) -> void:
+func _on_player_jump_ended(dict: Dictionary) -> void:
   _jump_start_dir = dict.start_dir
   _jump_start_pos = dict.start_pos
   _jump_end_pos = dict.end_pos
@@ -83,4 +83,3 @@ func _on_player_died() -> void:
   _jump_height = 0
   _jump_distance = 0
   update_text()
-
