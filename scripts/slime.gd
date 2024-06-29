@@ -7,15 +7,15 @@ extends Node2D
 
 @export var move_speed: float = 60.0
 
-var direction: int = 1
+var _direction: int = 1
 
 func _process(delta: float) -> void:
   if ray_cast_left.is_colliding():
-    direction = 1
+    _direction = 1
     animated_sprite.flip_h = false;
 
   if ray_cast_right.is_colliding():
-    direction = -1
+    _direction = -1
     animated_sprite.flip_h = true;
 
-  position.x += direction * move_speed * delta
+  position.x += _direction * move_speed * delta

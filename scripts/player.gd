@@ -1,8 +1,8 @@
 class_name Player
 extends CharacterBody2D
 
-signal jump_start
-signal jump_end
+signal jump_start_metrics
+signal jump_end_metrics
 signal died
 
 @export var rotate_on_slopes: bool = true
@@ -41,39 +41,11 @@ var is_dead: bool = false
 
 
 func _ready() -> void:
-  if OS.is_debug_build() and game_manager.debug_mode:
-    slope_line.position = Vector2.ZERO
-    slope_line.default_color = Color.WHITE
-    slope_line.width = 1
-    add_child(slope_line)
-
-    velocity_line.position = collision_shape.position
-    velocity_line.default_color = Color.CHARTREUSE
-    velocity_line.width = 1
-    add_child(velocity_line)
-
-    floor_normal_line.position = Vector2.ZERO
-    floor_normal_line.default_color = Color.INDIAN_RED
-    floor_normal_line.width = 1
-    add_child(floor_normal_line)
+  _init_debug_lines()
 
 
 func _process(_delta: float) -> void:
-  if OS.is_debug_build() and game_manager.debug_mode:
-    # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
-    slope_line.clear_points()
-    velocity_line.clear_points()
-    floor_normal_line.clear_points()
-
-    if on_floor and not is_dead:
-      slope_line.add_point(Vector2.from_angle(floor_angle) * -10)
-      slope_line.add_point(Vector2.from_angle(floor_angle) * 10)
-
-      velocity_line.add_point(Vector2.ZERO)
-      velocity_line.add_point(velocity.normalized() * 15)
-
-      floor_normal_line.add_point(Vector2.ZERO)
-      floor_normal_line.add_point(floor_normal * 20)
+  _draw_debug_lines()
 
 
 func _physics_process(delta: float) -> void:
@@ -83,10 +55,9 @@ func _physics_process(delta: float) -> void:
   jump_button_just_pressed = input_handler.get_jump_button_just_pressed()
   jump_button_released = input_handler.get_jump_button_released()
   jump_button_just_released = input_handler.get_jump_button_just_released()
-
   on_floor = is_on_floor()
 
-  # Y velocity
+  # Vertical velocity
   var jump_values: Dictionary = jump_handler.handle_jump(
     self,
     jump_button_pressed,
@@ -98,16 +69,14 @@ func _physics_process(delta: float) -> void:
     delta
   )
   var new_velocity_y: float = jump_values.velocity_y
-  var air_speed: float = jump_values.air_speed
-  var air_speed_running: float = jump_values.air_speed_running
+  var move_speed: float = jump_values.move_speed
 
-  # X velocity
+  # Horizontal velocity
   var new_velocity_x: float = movement_handler.handle_movement(
     self,
     move_direction,
+    move_speed,
     run_button_pressed,
-    air_speed,
-    air_speed_running,
     delta
   )
 
@@ -175,9 +144,45 @@ func die() -> void:
   died.emit()
 
 
-func _on_jump_handler_jump_start(dict: Dictionary) -> void:
-  jump_start.emit(dict)
+func _init_debug_lines() -> void:
+  if OS.is_debug_build() and game_manager.debug_mode:
+    slope_line.position = Vector2.ZERO
+    slope_line.default_color = Color.WHITE
+    slope_line.width = 1
+    add_child(slope_line)
+
+    velocity_line.position = collision_shape.position
+    velocity_line.default_color = Color.CHARTREUSE
+    velocity_line.width = 1
+    add_child(velocity_line)
+
+    floor_normal_line.position = Vector2.ZERO
+    floor_normal_line.default_color = Color.INDIAN_RED
+    floor_normal_line.width = 1
+    add_child(floor_normal_line)
 
 
-func _on_jump_handler_jump_end(dict: Dictionary) -> void:
-  jump_end.emit(dict)
+func _draw_debug_lines() -> void:
+  if OS.is_debug_build() and game_manager.debug_mode:
+    # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
+    slope_line.clear_points()
+    velocity_line.clear_points()
+    floor_normal_line.clear_points()
+
+    if on_floor and not is_dead:
+      slope_line.add_point(Vector2.from_angle(floor_angle) * -10)
+      slope_line.add_point(Vector2.from_angle(floor_angle) * 10)
+
+      velocity_line.add_point(Vector2.ZERO)
+      velocity_line.add_point(velocity.normalized() * 15)
+
+      floor_normal_line.add_point(Vector2.ZERO)
+      floor_normal_line.add_point(floor_normal * 20)
+
+
+func _on_jump_handler_start_metrics(dict: Dictionary) -> void:
+  jump_start_metrics.emit(dict)
+
+
+func _on_jump_handler_end_metrics(dict: Dictionary) -> void:
+  jump_end_metrics.emit(dict)

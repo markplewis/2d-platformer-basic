@@ -1,12 +1,25 @@
-[gd_scene load_steps=2 format=3 uid="uid://b0d6las3wnd6b"]
+[gd_scene load_steps=3 format=3 uid="uid://b0d6las3wnd6b"]
 
 [ext_resource type="Script" path="res://scripts/jump_handler.gd" id="1_8eidm"]
+[ext_resource type="Script" path="res://scripts/jump_metrics.gd" id="2_vax70"]
 
 [node name="JumpHandler" type="Node"]
 script = ExtResource("1_8eidm")
+coyote_time = null
+jump_buffer_time = null
+jump_height = null
+jump_rise_time = null
+jump_fall_time = null
+jump_distance = null
+jump_friction = null
 
 [node name="CoyoteTimer" type="Timer" parent="."]
 
 [node name="JumpTimer" type="Timer" parent="."]
 
+[node name="JumpMetrics" type="Node" parent="."]
+script = ExtResource("2_vax70")
+
 [connection signal="timeout" from="CoyoteTimer" to="." method="_on_coyote_timer_timeout"]
+[connection signal="jump_end_metrics" from="JumpMetrics" to="." method="_on_jump_end_metrics"]
+[connection signal="jump_start_metrics" from="JumpMetrics" to="." method="_on_jump_start_metrics"]
