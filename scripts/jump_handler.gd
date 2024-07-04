@@ -38,7 +38,7 @@ var _default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gr
 # Settings
 @export var jump_height: float = 48.0 # Pixels
 @export var jump_rise_time: float = 0.4
-@export var jump_fall_time: float = 0.25
+@export var jump_fall_time: float = 0.3
 @export var jump_distance: float = 128.0 # Pixels
 @export var jump_friction: float = 0.625 # 128 * 0.625 = 80
 
@@ -66,6 +66,7 @@ func _ready() -> void:
 
 func handle_jump(
   entity: CharacterBody2D,
+  collision_shape_position: Vector2,
   jump_button_pressed: bool,
   jump_button_just_pressed: bool,
   jump_button_released: bool,
@@ -128,7 +129,7 @@ func handle_jump(
     _jump_timer.start()
 
     jump_started.emit(_jump_metrics.on_jump_start(
-      entity.collision_shape.global_position,
+      collision_shape_position,
       position_vector,
       move_direction,
       move_speed,

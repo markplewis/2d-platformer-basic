@@ -1,10 +1,11 @@
 class_name GameManager
 extends Node
 
+@export var debug_mode: bool = false
+
+@onready var debug: bool = OS.is_debug_build() and debug_mode
 @onready var score_label: Label = $ScoreLabel
 @onready var stats_label: Label = %StatsLabel
-
-@export var debug_mode: bool = false
 
 var _score: int = 0
 
@@ -24,7 +25,6 @@ func update_text():
 
   var moved_right: bool = _jump_end_pos.x > _jump_start_pos.x
   var moved_left: bool = _jump_end_pos.x < _jump_start_pos.x
-  var did_not_move: bool = _jump_end_pos.x == _jump_start_pos.x
 
   var stated_moving_right: bool = _jump_start_dir == 1
   var stated_moving_left: bool = _jump_start_dir == -1
