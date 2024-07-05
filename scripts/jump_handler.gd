@@ -23,12 +23,13 @@ signal jump_ended
 @export var coyote_time: float = 0.1
 @export var jump_buffer_time: float = 0.1
 
-const JumpMetrics: Resource = preload("res://scripts/jump_metrics.gd")
 var _default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
 @onready var _coyote_timer: Timer = $CoyoteTimer
 @onready var _jump_timer: Timer = Timer.new()
-@onready var _jump_metrics: JumpMetrics = JumpMetrics.new()
+
+const _jump_metrics_class: Resource = preload("res://scripts/jump_metrics.gd")
+@onready var _jump_metrics: JumpMetrics = _jump_metrics_class.new()
 
 # TODO: because we're using CharacterBody2D instead of RigidBody2D, the jump_height may vary
 # based on the game's frame rate. There doesn't seem to be any way around this, unfortunately.
@@ -69,7 +70,7 @@ func handle_jump(
   collision_shape_position: Vector2,
   jump_button_pressed: bool,
   jump_button_just_pressed: bool,
-  jump_button_released: bool,
+  # jump_button_released: bool,
   jump_button_just_released: bool,
   move_direction: float,
   run_button_pressed: bool,
@@ -167,12 +168,14 @@ func _apply_gravity(on_floor: bool, velocity_y: float, position_vector: Vector2,
     if _can_jump:
       # Falling (did not jump)
       # (comment out to pause gravity until coyote timer has elapsed)
-      gravity = _default_gravity # Fall
+      gravity = _default_gravity # Regular fall
     else:
       if new_velocity_y >= 0 or _jump_timer.is_stopped():
-        gravity = _jump_fall_gravity # Jump apex or descent
+        gravity = _jump_fall_gravity # Jump apex or descent (accelerated fall)
       else:
         gravity = _jump_rise_gravity # Jump ascent
+
+      if new_velocity_y < 0:
         _jump_metrics.calculate_jump_height(position_vector, _jump_height)
 
       _jump_metrics.calculate_jump_distance(position_vector)

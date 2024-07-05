@@ -10,6 +10,11 @@ signal died
 # Game manager
 @onready var _game_manager: GameManager = %GameManager
 
+# Ways to access the scene's root node:
+# @onready var _root_node: Node = $"/root/Game"
+# @onready var _root_node: Node = get_node(^"/root/Game")
+# @onready var _root_node: Node = self.owner
+
 # Input
 @onready var _input_handler: InputHandler = $InputHandler
 @onready var _movement_handler: MovementHandler = $MovementHandler
@@ -18,12 +23,12 @@ signal died
 # Physics and visuals
 @onready var _sprite_container: Node2D = $SpriteContainer
 @onready var _animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite2D
-@onready var _collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var _collision_shape: CollisionShape2D = $CollisionShape
 @onready var _ground_cast: RayCast2D = $GroundDetectionRaycast
 
 # Debugging
-const PlayerDebugLines: Resource = preload("res://scripts/player_debug_lines.gd")
-@onready var _player_debug_lines: PlayerDebugLines = PlayerDebugLines.new()
+const _player_debug_lines_class: Resource = preload("res://scripts/player_debug_lines.gd")
+@onready var _player_debug_lines: PlayerDebugLines = _player_debug_lines_class.new()
 
 var _move_direction: float = 0
 var _last_move_direction: float = 1.0
@@ -66,7 +71,7 @@ func _physics_process(delta: float) -> void:
     collision_shape_pos,
     _jump_button_pressed,
     _jump_button_just_pressed,
-    _jump_button_released,
+    # _jump_button_released,
     _jump_button_just_released,
     _move_direction,
     _run_button_pressed,

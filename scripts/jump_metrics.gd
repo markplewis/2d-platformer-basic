@@ -82,6 +82,8 @@ func on_jump_end(position_vector: Vector2, move_direction: float) -> Dictionary:
 
 func calculate_jump_height(position_vector: Vector2, jump_height: float) -> void:
   _metric_height_reached = abs(position_vector.y - _metric_start_pos.y)
+  #print("Start: " + str(_metric_start_pos.y))
+  #print("End: " + str(position_vector.y))
 
   if _metric_height_reached != 0.0 and jump_height != 0.0:
     _metric_height_percent_reached = round(_metric_height_reached / jump_height * 100.0)

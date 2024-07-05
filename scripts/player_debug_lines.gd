@@ -3,16 +3,12 @@ extends Resource
 
 # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
 
-var _slope_line: Line2D
-var _velocity_line: Line2D
-var _floor_normal_line: Line2D
+var _slope_line: Line2D = Line2D.new()
+var _velocity_line: Line2D = Line2D.new()
+var _floor_normal_line: Line2D = Line2D.new()
 
 
 func init(entity: CharacterBody2D, velocity_line_pos: Vector2) -> void:
-  _slope_line = Line2D.new()
-  _velocity_line = Line2D.new()
-  _floor_normal_line = Line2D.new()
-
   _slope_line.position = Vector2.ZERO
   _slope_line.default_color = Color.WHITE
   _slope_line.width = 1
