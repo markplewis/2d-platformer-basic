@@ -1,18 +1,13 @@
-class_name Player
-extends CharacterBody2D
+class_name Player extends CharacterBody2D
 
 signal jump_started
 signal jump_ended
-signal died
 
 @export var rotate_on_slopes: bool = true
 
-# Game manager
-@onready var _game_manager: GameManager = %GameManager
-
 # Ways to access the scene's root node:
-# @onready var _root_node: Node = $"/root/Game"
-# @onready var _root_node: Node = get_node(^"/root/Game")
+# @onready var _root_node: Node = $"/root/Main"
+# @onready var _root_node: Node = get_node(^"/root/Main")
 # @onready var _root_node: Node = self.owner
 
 # Input
@@ -45,12 +40,12 @@ var _is_dead: bool = false
 
 
 func _ready() -> void:
-  if _game_manager.debug and not _is_dead:
+  if Global.debug and not _is_dead:
     _player_debug_lines.init(self, _collision_shape.position)
 
 
 func _process(_delta: float) -> void:
-  if _game_manager.debug and not _is_dead:
+  if Global.debug and not _is_dead:
     _player_debug_lines.draw(_on_floor, _floor_normal, _floor_angle, velocity)
 
 
@@ -150,7 +145,7 @@ func _play_animation() -> void:
 func die() -> void:
   _is_dead = true;
   velocity.y = -150.0
-  died.emit()
+  Global.kill_player()
 
 
 func _on_jump_handler_jump_started(dict: Dictionary) -> void:

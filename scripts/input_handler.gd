@@ -1,5 +1,4 @@
-class_name InputHandler
-extends Node
+class_name InputHandler extends Node
 
 var _jump_button_released: bool = false
 

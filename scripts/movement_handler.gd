@@ -1,5 +1,4 @@
-class_name MovementHandler
-extends Node
+class_name MovementHandler extends Node
 
 @export var walk_speed: float = 130.0
 @export var run_speed: float = 200.0

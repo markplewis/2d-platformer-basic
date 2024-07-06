@@ -1,5 +1,4 @@
-class_name PlayerDebugLines
-extends Resource
+class_name PlayerDebugLines extends Resource
 
 # https://www.reddit.com/r/godot/comments/17d4cyg/how_do_you_draw_lines_for_visualising_the_velocity/
 

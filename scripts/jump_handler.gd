@@ -1,5 +1,4 @@
-class_name JumpHandler
-extends Node
+class_name JumpHandler extends Node
 
 # Parabolic jump trajectory (projectile motion equations) were borrowed from:
 # - https://www.youtube.com/watch?v=FvFx1R3p-aw

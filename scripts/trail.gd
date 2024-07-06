@@ -1,5 +1,4 @@
-class_name Trail
-extends Line2D
+class_name Trail extends Line2D
 
 # See: https://www.youtube.com/watch?v=y8bi0_Fggn0
 

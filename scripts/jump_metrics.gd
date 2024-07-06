@@ -1,5 +1,4 @@
-class_name JumpMetrics
-extends Resource
+class_name JumpMetrics extends Resource
 
 var _metric_pos_offset: Vector2 = Vector2.ZERO
 var _metric_start_pos: Vector2 = Vector2.ZERO

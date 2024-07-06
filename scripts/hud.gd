@@ -1,5 +1,4 @@
-class_name HUD
-extends Node
+class_name HUD extends Node
 
 @onready var _stats_label: Label = $ColorRect/StatsLabel
 
@@ -15,7 +14,12 @@ var _jump_distance: float = 0
 var _jump_distance_percent: float = 0
 
 
-func _update_text():
+func _ready() -> void:
+  Global.player_died.connect(_on_player_died)
+  Global.score_changed.connect(_on_score_changed)
+
+
+func _update_text() -> void:
   # Determine whether player landed beyond their starting jump position or behind it
   var multiplier: float = 1
 
@@ -45,11 +49,6 @@ func _update_text():
   ]
 
 
-func add_point():
-  _score += 1
-  _update_text()
-
-
 func _on_player_jump_started(_dict: Dictionary) -> void:
   _jump_start_dir = 0
   _jump_start_pos = Vector2.ZERO
@@ -73,7 +72,11 @@ func _on_player_jump_ended(dict: Dictionary) -> void:
 
 
 func _on_player_died() -> void:
-  _score = 0
   _jump_height = 0
   _jump_distance = 0
+  _update_text()
+
+
+func _on_score_changed(score: int) -> void:
+  _score = score
   _update_text()
