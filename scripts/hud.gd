@@ -16,7 +16,7 @@ var _jump_distance_percent: float = 0
 
 func _ready() -> void:
   Global.player_died.connect(_on_player_died)
-  Global.score_changed.connect(_on_score_changed)
+  Global.player_score_changed.connect(_on_score_changed)
 
 
 func _update_text() -> void:
