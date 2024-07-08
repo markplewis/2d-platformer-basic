@@ -1,5 +1,6 @@
-[gd_scene load_steps=15 format=3 uid="uid://dvv8dc774a25k"]
+[gd_scene load_steps=16 format=3 uid="uid://dvv8dc774a25k"]
 
+[ext_resource type="Script" path="res://scripts/levels/level_01.gd" id="1_7cpxh"]
 [ext_resource type="Texture2D" uid="uid://co4837rvrwkys" path="res://assets/sprites/world_tileset.png" id="1_iepya"]
 [ext_resource type="Texture2D" uid="uid://b3mvaeqkskaqi" path="res://assets/sprites/slopes.png" id="2_ngt61"]
 [ext_resource type="FontFile" uid="uid://bxjubaf4wm1rg" path="res://assets/fonts/PixelOperator8.ttf" id="3_ssoj2"]
@@ -469,6 +470,7 @@ _data = {
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_ti1d7"]
 
 [node name="Level01" type="Node"]
+script = ExtResource("1_7cpxh")
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = SubResource("TileSet_xbcvc")

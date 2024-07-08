@@ -6,8 +6,8 @@ signal jump_ended
 @export var rotate_on_slopes: bool = true
 
 # Ways to access the scene's root node:
-# @onready var _root_node: Node = $"/root/Main"
-# @onready var _root_node: Node = get_node(^"/root/Main")
+# @onready var _root_node: Node = $"/root/GameWorld"
+# @onready var _root_node: Node = get_node(^"/root/GameWorld")
 # @onready var _root_node: Node = self.owner
 
 # Input
@@ -20,6 +20,7 @@ signal jump_ended
 @onready var _animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite2D
 @onready var _collision_shape: CollisionShape2D = $CollisionShape
 @onready var _ground_cast: RayCast2D = $GroundDetectionRaycast
+@onready var _trail: Trail = $Trail
 
 # Debugging
 const _player_debug_lines_class: Resource = preload("res://scripts/player_debug_lines.gd")
@@ -32,6 +33,7 @@ var _jump_button_pressed: bool = false
 var _jump_button_just_pressed: bool = false
 var _jump_button_released: bool = false
 var _jump_button_just_released: bool = false
+var _interact_button_just_pressed: bool = false
 
 var _on_floor: bool = true
 var _floor_normal: Vector2 = Vector2.UP
@@ -56,7 +58,12 @@ func _physics_process(delta: float) -> void:
   _jump_button_just_pressed = _input_handler.get_jump_button_just_pressed()
   _jump_button_released = _input_handler.get_jump_button_released()
   _jump_button_just_released = _input_handler.get_jump_button_just_released()
+  _interact_button_just_pressed = _input_handler.get_interact_button_just_pressed()
   _on_floor = is_on_floor()
+
+  if _interact_button_just_pressed:
+    Global.go_to_next_level()
+    return
 
   var collision_shape_pos: Vector2 = Vector2.ZERO if _is_dead else _collision_shape.global_position
 
@@ -144,8 +151,34 @@ func _play_animation() -> void:
 
 func die() -> void:
   _is_dead = true;
+  _collision_shape.set_deferred("disabled", true)
+  _trail.disable()
   velocity.y = -150.0
   Global.kill_player()
+
+
+func dead() -> void:
+  Global.restart_level()
+
+
+func resurrect(pos: Vector2) -> void:
+  _is_dead = false;
+  _trail.enable()
+  velocity = Vector2.ZERO
+  position = pos
+  # Due to the following bug, we must wait exactly 2 physics frames before re-enabling the player's
+  # collision shape. Otherwise, if the player died by falling into a "Killzone" (an Area2D node
+  # with a WorldBoundary collision shape), then the Area2D's body_entered signal will fire twice
+  # (once when the player touches it and again when the level/scene re-loads, even if the player
+  # has moved by that point and is no longer touching it).
+  # https://github.com/godotengine/godot/issues/88592#issuecomment-1958670810
+  # https://github.com/godotengine/godot/issues/61584
+  # https://github.com/godotengine/godot/issues/14578
+  # https://github.com/godotengine/godot/issues/18748
+  # https://www.reddit.com/r/godot/comments/1d285xl/player_is_dying_twice/
+  await get_tree().physics_frame
+  await get_tree().physics_frame
+  _collision_shape.set_deferred("disabled", false)
 
 
 func _on_jump_handler_jump_started(dict: Dictionary) -> void:
