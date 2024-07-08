@@ -54,3 +54,9 @@ func _on_player_jump_ended(_dict: Dictionary) -> void:
 func _on_timer_timeout() -> void:
   if Global.debug:
     clear_points()
+
+
+func _on_player_resurrected() -> void:
+  if Global.debug:
+    _timer.stop()
+    clear_points()

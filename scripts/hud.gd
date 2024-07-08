@@ -15,8 +15,18 @@ var _jump_distance_percent: float = 0
 
 
 func _ready() -> void:
-  Global.player_died.connect(_on_player_died)
-  Global.player_score_changed.connect(_on_score_changed)
+  Global.player_dying.connect(_on_global_player_dying)
+  Global.player_resurrected.connect(_on_global_player_resurrected)
+  Global.player_score_changed.connect(_on_global_score_changed)
+  _update_text()
+
+
+func _reset() -> void:
+  _score = 0
+  _jump_height = 0
+  _jump_height_percent = 0
+  _jump_distance = 0
+  _jump_distance_percent = 0
 
 
 func _update_text() -> void:
@@ -49,6 +59,9 @@ func _update_text() -> void:
   ]
 
 
+# Manually-connected signals from the Player node
+
+
 func _on_player_jump_started(_dict: Dictionary) -> void:
   _jump_start_dir = 0
   _jump_start_pos = Vector2.ZERO
@@ -71,12 +84,19 @@ func _on_player_jump_ended(dict: Dictionary) -> void:
   _update_text()
 
 
-func _on_player_died() -> void:
-  _jump_height = 0
-  _jump_distance = 0
+# Programmatically-connected signals from the Global autoload scope
+
+
+func _on_global_player_dying() -> void:
+  _reset()
   _update_text()
 
 
-func _on_score_changed(score: int) -> void:
+func _on_global_player_resurrected() -> void:
+  _reset()
+  _update_text()
+
+
+func _on_global_score_changed(score: int) -> void:
   _score = score
   _update_text()

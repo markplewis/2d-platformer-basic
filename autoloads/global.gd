@@ -3,10 +3,12 @@ extends Node
 # https://docs.godotengine.org/en/stable/tutorials/scripting/singletons_autoload.html
 # https://docs.godotengine.org/en/stable/tutorials/io/background_loading.html
 
-signal player_died
+signal player_dying
+signal player_dead
+signal player_resurrected
 signal player_score_changed
 signal player_health_changed
-signal level_changed
+# signal level_changed
 
 var debug_mode: bool = true
 var debug: bool = OS.is_debug_build() and debug_mode
@@ -62,15 +64,27 @@ func _deferred_go_to_level(file_name: String) -> void:
   _levels_node.add_child(_current_level)
   # Optionally, to make it compatible with the SceneTree.change_scene_to_file() API.
   # get_tree().current_scene = _current_level
+
   if _current_level.has_method("init"):
     _current_level.init(_player)
-    #_current_level.call_deferred("init", _player)
+
+  # get_tree().create_timer(10).timeout.connect(func(): level_changed.emit())
+  # level_changed.emit()
 
 
-func kill_player() -> void:
+func on_player_dying() -> void:
+  player_dying.emit()
   set_player_score(_score_default)
   set_player_health(_health_default)
-  player_died.emit()
+
+
+func on_player_dead() -> void:
+  player_dead.emit()
+  restart_level()
+
+
+func on_player_resurrected() -> void:
+  player_resurrected.emit()
 
 
 func increase_player_score(value: int = 1) -> void:

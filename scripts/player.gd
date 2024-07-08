@@ -1,5 +1,8 @@
 class_name Player extends CharacterBody2D
 
+signal dying
+signal dead
+signal resurrected
 signal jump_started
 signal jump_ended
 
@@ -15,6 +18,8 @@ signal jump_ended
 @onready var _movement_handler: MovementHandler = $MovementHandler
 @onready var _jump_handler: JumpHandler = $JumpHandler
 
+var _controls_disabled: bool = false
+
 # Physics and visuals
 @onready var _sprite_container: Node2D = $SpriteContainer
 @onready var _animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite2D
@@ -26,7 +31,7 @@ signal jump_ended
 const _player_debug_lines_class: Resource = preload("res://scripts/player_debug_lines.gd")
 @onready var _player_debug_lines: PlayerDebugLines = _player_debug_lines_class.new()
 
-var _move_direction: float = 0
+var _move_direction: float = 0.0
 var _last_move_direction: float = 1.0
 var _run_button_pressed: bool = false
 var _jump_button_pressed: bool = false
@@ -37,7 +42,7 @@ var _interact_button_just_pressed: bool = false
 
 var _on_floor: bool = true
 var _floor_normal: Vector2 = Vector2.UP
-var _floor_angle: float = 0
+var _floor_angle: float = 0.0
 var _is_dead: bool = false
 
 
@@ -52,16 +57,18 @@ func _process(_delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-  _move_direction = _input_handler.get_move_direction()
-  _run_button_pressed = _input_handler.get_run_button_pressed()
-  _jump_button_pressed = _input_handler.get_jump_button_just_pressed()
-  _jump_button_just_pressed = _input_handler.get_jump_button_just_pressed()
-  _jump_button_released = _input_handler.get_jump_button_released()
-  _jump_button_just_released = _input_handler.get_jump_button_just_released()
-  _interact_button_just_pressed = _input_handler.get_interact_button_just_pressed()
+  _move_direction = 0.0 if _controls_disabled else _input_handler.get_move_direction()
+  _run_button_pressed = false if _controls_disabled else _input_handler.get_run_button_pressed()
+  _jump_button_pressed = false if _controls_disabled else _input_handler.get_jump_button_just_pressed()
+  _jump_button_just_pressed = false if _controls_disabled else _input_handler.get_jump_button_just_pressed()
+  _jump_button_released = false if _controls_disabled else _input_handler.get_jump_button_released()
+  _jump_button_just_released = false if _controls_disabled else _input_handler.get_jump_button_just_released()
+  _interact_button_just_pressed = false if _controls_disabled else _input_handler.get_interact_button_just_pressed()
+
   _on_floor = is_on_floor()
 
-  if _interact_button_just_pressed:
+  if _interact_button_just_pressed: # TODO: create actual doors
+    _controls_disabled = true
     Global.go_to_next_level()
     return
 
@@ -98,16 +105,16 @@ func _physics_process(delta: float) -> void:
   _flip_sprite()
   _play_animation()
 
-  if _move_direction != 0:
+  if _move_direction != 0.0:
     _last_move_direction = _move_direction
 
   move_and_slide()
 
 
 func _rotate_sprite() -> void:
-  _sprite_container.rotation = 0
+  _sprite_container.rotation = 0.0
   # up_direction = Vector2.UP
-  # rotation = 0
+  # rotation = 0.0
 
   # https://www.reddit.com/r/godot/comments/1agit6k/why_is_the_characterbody2d_property_max_floor/
   if _on_floor and _ground_cast.is_colliding():
@@ -120,17 +127,17 @@ func _rotate_sprite() -> void:
       _sprite_container.rotation = _floor_angle
       # up_direction = _floor_normal
       # rotation = _floor_angle
-      # rotation = lerp_angle(rotation, _floor_angle, delta * 20)
+      # rotation = lerp_angle(rotation, _floor_angle, delta * 20.0)
       # velocity = raw_velocity.rotated(_floor_angle)
 
 
 func _flip_sprite() -> void:
-  if _move_direction > 0:
+  if _move_direction > 0.0:
     _animated_sprite.flip_h = false
-  elif _move_direction < 0:
+  elif _move_direction < 0.0:
     _animated_sprite.flip_h = true
   else:
-    _animated_sprite.flip_h = _last_move_direction < 0
+    _animated_sprite.flip_h = _last_move_direction < 0.0
 
 
 func _play_animation() -> void:
@@ -138,27 +145,30 @@ func _play_animation() -> void:
     _animated_sprite.play("die")
   else:
     if _on_floor:
-      if _move_direction == 0:
+      if _move_direction == 0.0:
         _animated_sprite.play("idle")
       else:
         _animated_sprite.play("run")
     else:
-      if velocity.y < 0:
+      if velocity.y < 0.0:
         _animated_sprite.play("jump")
       else:
         _animated_sprite.play("fall")
 
 
-func die() -> void:
+func kill() -> void:
   _is_dead = true;
+  _controls_disabled = true
   _collision_shape.set_deferred("disabled", true)
   _trail.disable()
   velocity.y = -150.0
-  Global.kill_player()
+  Global.on_player_dying()
+  dying.emit()
 
 
-func dead() -> void:
-  Global.restart_level()
+func killed() -> void:
+  Global.on_player_dead()
+  dead.emit()
 
 
 func resurrect(pos: Vector2) -> void:
@@ -166,6 +176,10 @@ func resurrect(pos: Vector2) -> void:
   _trail.enable()
   velocity = Vector2.ZERO
   position = pos
+
+  get_tree().create_timer(0.5).timeout.connect(func(): _controls_disabled = false)
+  # _controls_disabled = false
+
   # Due to the following bug, we must wait exactly 2 physics frames before re-enabling the player's
   # collision shape. Otherwise, if the player died by falling into a "Killzone" (an Area2D node
   # with a WorldBoundary collision shape), then the Area2D's body_entered signal will fire twice
@@ -179,6 +193,12 @@ func resurrect(pos: Vector2) -> void:
   await get_tree().physics_frame
   await get_tree().physics_frame
   _collision_shape.set_deferred("disabled", false)
+
+  Global.on_player_resurrected()
+  resurrected.emit()
+
+
+# Manually-connected signals from the JumpHandler node
 
 
 func _on_jump_handler_jump_started(dict: Dictionary) -> void:

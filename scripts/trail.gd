@@ -7,6 +7,7 @@ class_name Trail extends Line2D
 var _queue: Array
 var _disabled: bool = false
 
+
 func _process(_delta: float) -> void:
   if not _disabled:
     var pos = get_parent().position

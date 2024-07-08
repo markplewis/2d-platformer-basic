@@ -56,3 +56,4 @@ position_smoothing_enabled = true
 [connection signal="jump_ended" from="Player" to="TrajectoryLine" method="_on_player_jump_ended"]
 [connection signal="jump_started" from="Player" to="UI/HUD" method="_on_player_jump_started"]
 [connection signal="jump_started" from="Player" to="TrajectoryLine" method="_on_player_jump_started"]
+[connection signal="resurrected" from="Player" to="TrajectoryLine" method="_on_player_resurrected"]

@@ -12,14 +12,14 @@ func _on_body_entered(body: Node2D) -> void:
     Engine.time_scale = 0.5
     _timer.start()
 
-    if _body.has_method("die"):
-      _body.die()
+    if _body.has_method("kill"):
+      _body.kill()
 
 
 func _on_timer_timeout() -> void:
   Engine.time_scale = 1
 
-  if _body.has_method("dead"):
-    _body.dead()
+  if _body.has_method("killed"):
+    _body.killed()
 
   _body = null
