@@ -3,6 +3,7 @@ class_name Player extends CharacterBody2D
 signal dying
 signal dead
 signal resurrected
+signal changing_level
 signal jump_started
 signal jump_ended
 
@@ -70,6 +71,7 @@ func _physics_process(delta: float) -> void:
   if _interact_button_just_pressed: # TODO: create actual doors
     _controls_disabled = true
     Global.go_to_next_level()
+    changing_level.emit()
     return
 
   var collision_shape_pos: Vector2 = Vector2.ZERO if _is_dead else _collision_shape.global_position
