@@ -2,15 +2,16 @@ class_name Trail extends Line2D
 
 # See: https://www.youtube.com/watch?v=y8bi0_Fggn0
 
+@export var target_node: Node2D = null
 @export var max_length: int = 20
 
-var _queue: Array
+var _queue: Array = Array()
 var _disabled: bool = false
 
 
 func _process(_delta: float) -> void:
-  if not _disabled:
-    var pos = get_parent().position
+  if target_node and not _disabled:
+    var pos: Vector2 = target_node.position
     _queue.push_front(pos)
 
     if _queue.size() > max_length:

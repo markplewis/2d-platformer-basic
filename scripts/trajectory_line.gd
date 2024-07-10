@@ -8,15 +8,14 @@ class_name TrajectoryLine extends Line2D
 var _fps: int = ProjectSettings.get_setting("physics/common/physics_ticks_per_second")
 
 
-func _ready() -> void:
-  if Global.debug:
-    var col: Color = Color.WHITE
-    col.a = 0.5
-    default_color = col
-    width = 1
+# Note: there are two ways of preventing this node from inheriting the transform of its parent:
+#   1. The declarative solution: place a Node in between them (which I have done)
+#   2. The imperative solution: use the top_level property (commented out, below)
+# See: https://docs.godotengine.org/en/stable/tutorials/best_practices/scene_organization.html
+# func _ready() -> void: set_as_top_level(true)
 
 
-func _on_player_jump_started(dict: Dictionary) -> void:
+func _on_jump_handler_jump_started(dict: Dictionary) -> void:
   if Global.debug:
     var start_dir: float = dict.start_dir
     var start_pos_offset: Vector2 = dict.start_pos_offset
@@ -45,7 +44,7 @@ func _on_player_jump_started(dict: Dictionary) -> void:
       pos += vel * delta
 
 
-func _on_player_jump_ended(_dict: Dictionary) -> void:
+func _on_jump_handler_jump_ended(_dict: Dictionary) -> void:
   if Global.debug:
     _timer.stop()
     _timer.start(2)
@@ -60,3 +59,4 @@ func _on_player_resurrected() -> void:
   if Global.debug:
     _timer.stop()
     clear_points()
+
