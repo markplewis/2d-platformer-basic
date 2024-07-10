@@ -1,27 +1,27 @@
 [gd_scene load_steps=8 format=3 uid="uid://bhbo7e00k16xj"]
 
-[ext_resource type="PackedScene" uid="uid://cc8t8evbdsw27" path="res://scenes/player.tscn" id="1_1oa66"]
-[ext_resource type="Script" path="res://scripts/game_world.gd" id="1_uwbgq"]
-[ext_resource type="Script" path="res://scripts/hud.gd" id="2_6tqe4"]
-[ext_resource type="PackedScene" uid="uid://dvv8dc774a25k" path="res://scenes/levels/level_01.tscn" id="2_l0ec5"]
-[ext_resource type="Script" path="res://scripts/main_camera.gd" id="7_gqpfk"]
-[ext_resource type="FontFile" uid="uid://bxjubaf4wm1rg" path="res://assets/fonts/PixelOperator8.ttf" id="7_kb8gi"]
-[ext_resource type="PackedScene" uid="uid://byg3y5diuqwmc" path="res://scenes/trajectory_line.tscn" id="11_a2xbe"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_mb51x"]
+[ext_resource type="PackedScene" uid="uid://dvv8dc774a25k" path="res://scenes/levels/level_01.tscn" id="2_3vm8g"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="3_xru3t"]
+[ext_resource type="FontFile" uid="uid://bxjubaf4wm1rg" path="res://assets/fonts/PixelOperator8.ttf" id="4_gntik"]
+[ext_resource type="PackedScene" uid="uid://byg3y5diuqwmc" path="res://scenes/trajectory_line.tscn" id="5_gudde"]
+[ext_resource type="PackedScene" uid="uid://cc8t8evbdsw27" path="res://scenes/player.tscn" id="6_4t4yh"]
+[ext_resource type="Script" path="res://scripts/main_camera.gd" id="7_lq44e"]
 
-[node name="GameWorld" type="Node2D"]
-script = ExtResource("1_uwbgq")
+[node name="Main" type="Node2D"]
+script = ExtResource("1_mb51x")
 
 [node name="Levels" type="Node" parent="."]
 editor_description = "A container for the level scenes"
 
-[node name="Level01" parent="Levels" instance=ExtResource("2_l0ec5")]
+[node name="Level01" parent="Levels" instance=ExtResource("2_3vm8g")]
 
 [node name="UI" type="CanvasLayer" parent="."]
 scale = Vector2(2, 2)
 transform = Transform2D(2, 0, 0, 2, 0, 0)
 
 [node name="HUD" type="Node" parent="UI"]
-script = ExtResource("2_6tqe4")
+script = ExtResource("3_xru3t")
 
 [node name="ColorRect" type="ColorRect" parent="UI/HUD"]
 offset_right = 179.0
@@ -34,15 +34,15 @@ offset_left = 8.0
 offset_top = 8.0
 offset_right = 254.0
 offset_bottom = 42.0
-theme_override_fonts/font = ExtResource("7_kb8gi")
+theme_override_fonts/font = ExtResource("4_gntik")
 theme_override_font_sizes/font_size = 8
 text = "Stats"
 autowrap_mode = 2
 
-[node name="TrajectoryLine" parent="." instance=ExtResource("11_a2xbe")]
+[node name="TrajectoryLine" parent="." instance=ExtResource("5_gudde")]
 z_index = 4
 
-[node name="Player" parent="." instance=ExtResource("1_1oa66")]
+[node name="Player" parent="." instance=ExtResource("6_4t4yh")]
 floor_snap_length = 5.0
 rotate_on_slopes = false
 
@@ -51,7 +51,7 @@ zoom = Vector2(4, 4)
 limit_bottom = 120
 limit_smoothed = true
 position_smoothing_enabled = true
-script = ExtResource("7_gqpfk")
+script = ExtResource("7_lq44e")
 target_node = NodePath("../Player")
 
 [connection signal="dead" from="Player" to="MainCamera" method="_on_player_dead"]

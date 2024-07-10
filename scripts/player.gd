@@ -9,8 +9,8 @@ signal jump_ended
 @export var rotate_on_slopes: bool = true
 
 # Ways to access the scene's root node:
-# @onready var _root_node: Node = $"/root/GameWorld"
-# @onready var _root_node: Node = get_node(^"/root/GameWorld")
+# @onready var _root_node: Node = $"/root/Main"
+# @onready var _root_node: Node = get_node(^"/root/Main")
 # @onready var _root_node: Node = self.owner
 
 # Input

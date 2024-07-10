@@ -1,4 +1,4 @@
-class_name GameWorld extends Node2D
+class_name Main extends Node2D
 
 #@onready var _levels: Node = $Levels
 #
