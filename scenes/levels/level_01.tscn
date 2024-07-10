@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://dvv8dc774a25k"]
+[gd_scene load_steps=17 format=3 uid="uid://dvv8dc774a25k"]
 
 [ext_resource type="Script" path="res://scripts/levels/level_01.gd" id="1_7cpxh"]
 [ext_resource type="Texture2D" uid="uid://co4837rvrwkys" path="res://assets/sprites/world_tileset.png" id="1_iepya"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://c4s33xnl8p2xn" path="res://scenes/platform.tscn" id="5_anxk3"]
 [ext_resource type="PackedScene" uid="uid://c12237pkckka3" path="res://scenes/slime.tscn" id="6_ixqxs"]
 [ext_resource type="PackedScene" uid="uid://dbssua4ob4uoo" path="res://scenes/kill_zone.tscn" id="7_002c6"]
+[ext_resource type="PackedScene" uid="uid://2njcjlgdflnx" path="res://scenes/door.tscn" id="8_q1afr"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ne1kq"]
 texture = ExtResource("1_iepya")
@@ -806,6 +807,10 @@ autoplay = "move"
 
 [node name="Slime" parent="Enemies" instance=ExtResource("6_ixqxs")]
 position = Vector2(512, 64)
+
+[node name="Door" parent="." instance=ExtResource("8_q1afr")]
+position = Vector2(-120, 88)
+door_id = "level_02"
 
 [node name="Killzone" parent="." instance=ExtResource("7_002c6")]
 position = Vector2(374, 91)

@@ -3,7 +3,6 @@ class_name Player extends CharacterBody2D
 signal dying
 signal dead
 signal resurrected
-signal changing_level
 signal jump_started
 signal jump_ended
 
@@ -48,6 +47,9 @@ var _is_dead: bool = false
 
 
 func _ready() -> void:
+  Global.level_changing.connect(_on_level_changing)
+  Global.level_changed.connect(_on_level_changed)
+
   if Global.debug and not _is_dead:
     _player_debug_lines.init(self, _collision_shape.position)
 
@@ -68,11 +70,8 @@ func _physics_process(delta: float) -> void:
 
   _on_floor = is_on_floor()
 
-  if _interact_button_just_pressed: # TODO: create actual doors
-    _controls_disabled = true
-    Global.go_to_next_level()
-    changing_level.emit()
-    return
+  if _interact_button_just_pressed:
+    Global.on_player_interacted()
 
   var collision_shape_pos: Vector2 = Vector2.ZERO if _is_dead else _collision_shape.global_position
 
@@ -180,7 +179,6 @@ func resurrect(pos: Vector2) -> void:
   position = pos
 
   get_tree().create_timer(0.5).timeout.connect(func(): _controls_disabled = false)
-  # _controls_disabled = false
 
   # Due to the following bug, we must wait exactly 2 physics frames before re-enabling the player's
   # collision shape. Otherwise, if the player died by falling into a "Killzone" (an Area2D node
@@ -209,3 +207,14 @@ func _on_jump_handler_jump_started(dict: Dictionary) -> void:
 
 func _on_jump_handler_jump_ended(dict: Dictionary) -> void:
   jump_ended.emit(dict)
+
+
+# Programmatically-connected signals from the Global autoload scope
+
+
+func _on_level_changing() -> void:
+  _controls_disabled = true
+
+
+func _on_level_changed(new_level: Node) -> void:
+  resurrect(new_level.player_start_pos)

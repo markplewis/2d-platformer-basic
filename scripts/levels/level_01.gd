@@ -1,13 +1,10 @@
 class_name Level01 extends Level
 
+@onready var _door: Door = $Door
+@onready var player_start_pos: Vector2 = _door.position
 
-func get_level_name() -> String:
-  return "level_01"
-
-
-func get_next_level_name() -> String:
-  return "level_02"
+const LEVEL_NAME: String = "level_01"
 
 
-func init(player: Player) -> void:
-  player.resurrect(Vector2(0, 0))
+func init() -> void:
+  pass

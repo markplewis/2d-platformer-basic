@@ -54,7 +54,6 @@ position_smoothing_enabled = true
 script = ExtResource("7_gqpfk")
 target_node = NodePath("../Player")
 
-[connection signal="changing_level" from="Player" to="MainCamera" method="_on_player_changing_level"]
 [connection signal="dead" from="Player" to="MainCamera" method="_on_player_dead"]
 [connection signal="jump_ended" from="Player" to="UI/HUD" method="_on_player_jump_ended"]
 [connection signal="jump_ended" from="Player" to="TrajectoryLine" method="_on_player_jump_ended"]
