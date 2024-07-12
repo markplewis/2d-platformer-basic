@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://ce83qj35htn5a"]
+[gd_scene load_steps=12 format=3 uid="uid://ce83qj35htn5a"]
 
 [ext_resource type="Script" path="res://scripts/levels/level_02.gd" id="1_mvgii"]
 [ext_resource type="Texture2D" uid="uid://co4837rvrwkys" path="res://assets/sprites/world_tileset.png" id="1_vjf46"]
@@ -427,6 +427,9 @@ physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_ne1kq")
 sources/2 = SubResource("TileSetAtlasSource_63gdx")
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6cfdk"]
+size = Vector2(16, 16)
+
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_r81ut"]
 
 [node name="Level02" type="Node"]
@@ -451,9 +454,28 @@ position = Vector2(264, 37)
 [node name="Coin3" parent="Coins" instance=ExtResource("4_jhcoy")]
 position = Vector2(248, 37)
 
-[node name="Door" parent="." instance=ExtResource("5_wlts4")]
-position = Vector2(-72, 72)
-door_id = "level_01"
+[node name="DoorInLevel2" parent="." instance=ExtResource("5_wlts4")]
+position = Vector2(-24, 72)
+collision_mask = 2
+transition_type = "fade_to_black"
+path_to_new_scene = "res://scenes/levels/level_01.tscn"
+entry_door_name = "DoorInLevel1"
+
+[node name="Door" type="Sprite2D" parent="DoorInLevel2"]
+texture = ExtResource("1_vjf46")
+hframes = 16
+vframes = 16
+frame = 55
+
+[node name="Decoration" type="Sprite2D" parent="DoorInLevel2"]
+position = Vector2(0, -16)
+texture = ExtResource("1_vjf46")
+hframes = 16
+vframes = 16
+frame = 56
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DoorInLevel2"]
+shape = SubResource("RectangleShape2D_6cfdk")
 
 [node name="Killzone" parent="." instance=ExtResource("5_b878a")]
 position = Vector2(374, 91)

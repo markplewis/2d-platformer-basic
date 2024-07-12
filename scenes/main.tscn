@@ -50,7 +50,5 @@ position_smoothing_enabled = true
 script = ExtResource("7_lq44e")
 target_node = NodePath("../Player")
 
-[connection signal="dead" from="Player" to="MainCamera" method="_on_player_dead"]
 [connection signal="jump_ended" from="Player" to="UI/HUD" method="_on_player_jump_ended"]
 [connection signal="jump_started" from="Player" to="UI/HUD" method="_on_player_jump_started"]
-[connection signal="resurrected" from="Player" to="MainCamera" method="_on_player_resurrected"]

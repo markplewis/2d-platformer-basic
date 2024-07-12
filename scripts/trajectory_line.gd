@@ -15,6 +15,10 @@ var _fps: int = ProjectSettings.get_setting("physics/common/physics_ticks_per_se
 # func _ready() -> void: set_as_top_level(true)
 
 
+func _ready() -> void:
+  Global.player_resurrected.connect(_on_global_player_resurrected)
+
+
 func _on_jump_handler_jump_started(dict: Dictionary) -> void:
   if Global.debug:
     var start_dir: float = dict.start_dir
@@ -44,6 +48,9 @@ func _on_jump_handler_jump_started(dict: Dictionary) -> void:
       pos += vel * delta
 
 
+# Manually-connected signals from nodes within this scene or the scene where this is instantiated
+
+
 func _on_jump_handler_jump_ended(_dict: Dictionary) -> void:
   if Global.debug:
     _timer.stop()
@@ -55,7 +62,10 @@ func _on_timer_timeout() -> void:
     clear_points()
 
 
-func _on_player_resurrected() -> void:
+# Programmatically-connected signals from the Global autoload scope
+
+
+func _on_global_player_resurrected() -> void:
   if Global.debug:
     _timer.stop()
     clear_points()

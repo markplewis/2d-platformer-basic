@@ -1,32 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://2njcjlgdflnx"]
+[gd_scene load_steps=2 format=3 uid="uid://2njcjlgdflnx"]
 
-[ext_resource type="Texture2D" uid="uid://co4837rvrwkys" path="res://assets/sprites/world_tileset.png" id="1_dqsfe"]
 [ext_resource type="Script" path="res://scripts/door.gd" id="2_aeym1"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_r52se"]
-size = Vector2(16, 16)
-
-[node name="Door" type="Node2D"]
+[node name="Area2D" type="Area2D"]
 script = ExtResource("2_aeym1")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("1_dqsfe")
-hframes = 16
-vframes = 16
-frame = 55
-
-[node name="Sprite2D2" type="Sprite2D" parent="."]
-position = Vector2(0, -16)
-texture = ExtResource("1_dqsfe")
-hframes = 16
-vframes = 16
-frame = 56
-
-[node name="DoorArea" type="Area2D" parent="."]
-collision_mask = 2
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DoorArea"]
-shape = SubResource("RectangleShape2D_r52se")
-
-[connection signal="body_entered" from="DoorArea" to="." method="_on_door_area_body_entered"]
-[connection signal="body_exited" from="DoorArea" to="." method="_on_door_area_body_exited"]
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

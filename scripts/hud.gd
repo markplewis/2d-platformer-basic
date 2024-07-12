@@ -15,6 +15,7 @@ var _jump_distance_percent: float = 0
 
 
 func _ready() -> void:
+  #SceneManager.scene_added.connect(_on_scene_manager_scene_added)
   Global.player_dying.connect(_on_global_player_dying)
   Global.player_resurrected.connect(_on_global_player_resurrected)
   Global.player_score_changed.connect(_on_global_score_changed)
@@ -85,6 +86,11 @@ func _on_player_jump_ended(dict: Dictionary) -> void:
 
 
 # Programmatically-connected signals from the Global autoload scope
+
+
+#func _on_scene_manager_scene_added(incoming_scene, _loading_screen) -> void:
+  #_reset()
+  #_update_text()
 
 
 func _on_global_player_dying() -> void:

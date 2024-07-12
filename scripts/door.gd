@@ -1,28 +1,34 @@
-class_name Door extends Node2D
+class_name Door extends Area2D
 
-signal door_opened
+@export_enum("fade_to_black", "wipe_to_right", "no_transition") var transition_type: String
+@export var path_to_new_scene: String # Scene we want to load when entering this door
+@export var entry_door_name: String # Name of door we're entering through in the next room
 
-# Must match the destination level's file name (e.g. "level_02")
-@export var door_id: String
-
-var _can_open_door: bool = false
+var _within_range: bool = false
+var _locked: bool = false
 
 
 func _ready() -> void:
   Global.player_interacted.connect(_on_global_player_interacted)
 
 
+# Manually-connected signals from this node
+
+
+func _on_body_entered(body: Node2D) -> void:
+  if body is Player:
+    _within_range = true
+
+
+func _on_body_exited(body: Node2D) -> void:
+  if body is Player:
+    _within_range = false
+
+
+# Programmatically-connected signals from the Global autoload scope
+
+
 func _on_global_player_interacted() -> void:
-  if _can_open_door:
-    Global.on_player_opened_door(door_id)
-    door_opened.emit(door_id)
-
-
-func _on_door_area_body_entered(body: Node2D) -> void:
-  if body is Player:
-    _can_open_door = true
-
-
-func _on_door_area_body_exited(body: Node2D) -> void:
-  if body is Player:
-    _can_open_door = false
+  if _within_range and not _locked:
+    _locked = true
+    Global.on_door_opened(self, path_to_new_scene, transition_type)

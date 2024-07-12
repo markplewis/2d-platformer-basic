@@ -9,8 +9,6 @@ signal player_dead
 signal player_resurrected
 signal player_score_changed
 signal player_health_changed
-signal level_changing
-signal level_changed
 
 var debug_mode: bool = true
 var debug: bool = OS.is_debug_build() and debug_mode
@@ -21,53 +19,9 @@ var _health_default: int = 100
 var _score: int = _score_default
 var _health: int = _health_default
 
-var _levels_node: Node = null
-var _current_level: Node = null
-# var _player: Player = null
 
-
-func _ready() -> void:
-  var root: Node = get_tree().root
-  var main: Node = root.get_child(root.get_child_count() - 1)
-  _levels_node = main.get_node("Levels")
-  _current_level = _levels_node.get_child(0)
-  # _player = main.get_node("Player")
-
-
-func restart_level() -> void:
-  go_to_level(_current_level.LEVEL_NAME)
-
-
-func go_to_level(level_file_name: String) -> void:
-  # This function will usually be called from a signal callback,
-  # or some other function in the current scene.
-  # Deleting the current scene at this point is
-  # a bad idea, because it may still be executing code.
-  # This will result in a crash or unexpected behavior.
-  # The solution is to defer the load to a later time, when
-  # we can be sure that no code from the current scene is running:
-  call_deferred("_deferred_go_to_level", level_file_name)
-
-
-func _deferred_go_to_level(level_file_name: String) -> void:
-  level_changing.emit()
-
-  _current_level.free()
-  var s: PackedScene = ResourceLoader.load("res://scenes/levels/" + level_file_name + ".tscn")
-  _current_level = s.instantiate()
-  _levels_node.add_child(_current_level)
-  # Optionally, to make it compatible with the SceneTree.change_scene_to_file() API.
-  # get_tree().current_scene = _current_level
-
-  if _current_level.has_method("init"):
-    _current_level.init()
-
-  # get_tree().create_timer(10).timeout.connect(func(): level_changed.emit())
-  level_changed.emit(_current_level)
-
-
-func on_player_opened_door(level_file_name: String) -> void:
-  go_to_level(level_file_name)
+func on_door_opened(_door: Door, path_to_new_scene: String, _transition_type: String) -> void:
+  SceneManager.swap_scenes(path_to_new_scene, "fade_to_black")
 
 
 func on_player_interacted() -> void:
@@ -75,14 +29,17 @@ func on_player_interacted() -> void:
 
 
 func on_player_dying() -> void:
-  player_dying.emit()
+  Engine.time_scale = 0.5
   set_player_score(_score_default)
   set_player_health(_health_default)
+  get_tree().create_timer(0.6).timeout.connect(_on_player_dead_timeout)
+  player_dying.emit()
 
 
-func on_player_dead() -> void:
+func _on_player_dead_timeout() -> void:
+  Engine.time_scale = 1
   player_dead.emit()
-  restart_level()
+  SceneManager.swap_scenes("", "fade_to_black") # Reload scene
 
 
 func on_player_resurrected() -> void:

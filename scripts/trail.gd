@@ -23,10 +23,14 @@ func _process(_delta: float) -> void:
       add_point(point)
 
 
-func enable() -> void:
-  _disabled = false
+func clear() -> void:
   _queue.clear()
   clear_points()
+
+
+func enable() -> void:
+  _disabled = false
+  clear()
 
 
 func disable() -> void:

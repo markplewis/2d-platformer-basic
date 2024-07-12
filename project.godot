@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 Music="*res://autoloads/music.tscn"
 Global="*res://autoloads/global.gd"
+SceneManager="*res://autoloads/scene_manager.gd"
 
 [input]
 
