@@ -242,6 +242,4 @@ max_length = 30
 target_position = Vector2(0, 3)
 
 [connection signal="jump_ended" from="JumpHandler" to="." method="_on_jump_handler_jump_ended"]
-[connection signal="jump_ended" from="JumpHandler" to="Node/TrajectoryLine" method="_on_jump_handler_jump_ended"]
 [connection signal="jump_started" from="JumpHandler" to="." method="_on_jump_handler_jump_started"]
-[connection signal="jump_started" from="JumpHandler" to="Node/TrajectoryLine" method="_on_jump_handler_jump_started"]

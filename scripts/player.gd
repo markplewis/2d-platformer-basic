@@ -1,7 +1,6 @@
 class_name Player extends CharacterBody2D
 
-signal jump_started
-signal jump_ended
+# Player has no signals. Instead, all events are dispatched to the Global autoload.
 
 @export var rotate_on_slopes: bool = true
 
@@ -69,7 +68,7 @@ func _physics_process(delta: float) -> void:
   _on_floor = is_on_floor()
 
   if _interact_button_just_pressed:
-    Global.on_player_interacted()
+    PlayerContext.dispatch_interacted()
 
   var collision_shape_pos: Vector2 = Vector2.ZERO if _is_dead else _collision_shape.global_position
 
@@ -161,23 +160,23 @@ func dead() -> void:
   _collision_shape.set_deferred("disabled", true)
   _trail.disable()
   velocity.y = -150.0
-  Global.on_player_dying()
+  PlayerContext.dispatch_dying()
 
 
 func _resurrect() -> void:
   _is_dead = false;
-  Global.on_player_resurrected()
+  PlayerContext.dispatch_resurrected()
 
 
 # Manually-connected signals from the JumpHandler node
 
 
 func _on_jump_handler_jump_started(dict: Dictionary) -> void:
-  jump_started.emit(dict)
+  PlayerContext.dispatch_jump_started(dict)
 
 
 func _on_jump_handler_jump_ended(dict: Dictionary) -> void:
-  jump_ended.emit(dict)
+  PlayerContext.dispatch_jump_ended(dict)
 
 
 # Programmatically-connected signals from autoload scope(s)

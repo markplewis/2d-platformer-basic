@@ -9,7 +9,7 @@ var _locked: bool = false
 
 
 func _ready() -> void:
-  Global.player_interacted.connect(_on_global_player_interacted)
+  PlayerContext.interacted.connect(_on_player_context_interacted)
 
 
 # Manually-connected signals from this node
@@ -28,7 +28,7 @@ func _on_body_exited(body: Node2D) -> void:
 # Programmatically-connected signals from the Global autoload scope
 
 
-func _on_global_player_interacted() -> void:
+func _on_player_context_interacted() -> void:
   if _within_range and not _locked:
     _locked = true
-    Global.on_door_opened(self, path_to_new_scene, transition_type)
+    PlayerContext.dispatch_opened_door(self, path_to_new_scene, transition_type)

@@ -1,4 +1,4 @@
-class_name LoadingScreen extends Node2D
+class_name LoadingScreen extends Control
 
 signal transition_in_complete
 
@@ -56,5 +56,5 @@ func _on_timer_timeout() -> void:
   progress_bar.visible = true
 
 
-func update_bar(val:float) -> void:
+func update_bar(val: float) -> void:
   progress_bar.value = val

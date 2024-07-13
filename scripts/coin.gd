@@ -4,5 +4,5 @@ class_name Coin extends Area2D
 
 
 func _on_body_entered(_body: Node2D) -> void:
-  Global.increase_player_score(1)
+  PlayerContext.increase_score(1)
   _animation_player.play("pickup")
