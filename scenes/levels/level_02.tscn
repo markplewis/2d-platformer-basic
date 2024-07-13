@@ -3,9 +3,9 @@
 [ext_resource type="Script" path="res://scripts/levels/level_02.gd" id="1_mvgii"]
 [ext_resource type="Texture2D" uid="uid://co4837rvrwkys" path="res://assets/sprites/world_tileset.png" id="1_vjf46"]
 [ext_resource type="Texture2D" uid="uid://b3mvaeqkskaqi" path="res://assets/sprites/slopes.png" id="2_phwxa"]
-[ext_resource type="PackedScene" uid="uid://b2vkvemxq8180" path="res://scenes/coin.tscn" id="4_jhcoy"]
-[ext_resource type="PackedScene" uid="uid://dbssua4ob4uoo" path="res://scenes/kill_zone.tscn" id="5_b878a"]
-[ext_resource type="PackedScene" uid="uid://2njcjlgdflnx" path="res://scenes/door.tscn" id="5_wlts4"]
+[ext_resource type="PackedScene" uid="uid://b2vkvemxq8180" path="res://scenes/world/coin.tscn" id="4_jhcoy"]
+[ext_resource type="PackedScene" uid="uid://dbssua4ob4uoo" path="res://scenes/world/kill_zone.tscn" id="5_b878a"]
+[ext_resource type="PackedScene" uid="uid://2njcjlgdflnx" path="res://scenes/world/door.tscn" id="5_wlts4"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ne1kq"]
 texture = ExtResource("1_vjf46")

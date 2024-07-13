@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://byg3y5diuqwmc"]
 
-[ext_resource type="Script" path="res://scripts/trajectory_line.gd" id="1_3qxe7"]
+[ext_resource type="Script" path="res://scripts/player/trajectory_line.gd" id="1_3qxe7"]
 
 [node name="TrajectoryLine" type="Line2D"]
 script = ExtResource("1_3qxe7")

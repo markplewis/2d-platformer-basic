@@ -15,7 +15,6 @@ var _jump_distance_percent: float = 0
 
 
 func _ready() -> void:
-  #SceneManager.scene_added.connect(_on_scene_manager_scene_added)
   PlayerContext.jump_started.connect(_on_player_context_jump_started)
   PlayerContext.jump_ended.connect(_on_player_context_jump_ended)
   PlayerContext.dying.connect(_on_player_context_dying)
@@ -85,11 +84,6 @@ func _on_player_context_jump_ended(dict: Dictionary) -> void:
   _jump_distance = round(dict.distance_reached)
   _jump_distance_percent = dict.distance_percent_reached
   _update_text()
-
-
-#func _on_scene_manager_scene_added(incoming_scene, _loading_screen) -> void:
-  #_reset()
-  #_update_text()
 
 
 func _on_player_context_dying() -> void:

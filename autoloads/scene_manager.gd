@@ -8,7 +8,7 @@ signal _content_finished_loading(content) ## Triggered when content is loaded an
 signal _content_invalid(content_path: String) ## Triggered when attempting to load invalid content (e.g. an asset does not exist or path is incorrect)
 signal _content_failed_to_load(content_path: String) ## Triggered when loading has started but failed to complete
 
-var _loading_screen_scene: PackedScene = preload("res://scenes/loading_screen.tscn") ## Reference to loading screen PackedScene
+var _loading_screen_scene: PackedScene = preload("res://scenes/ui/loading_screen.tscn") ## Reference to loading screen PackedScene
 var _loading_screen: LoadingScreen ## Reference to loading screen instance
 
 var _transition: String ## Transition being used for current load

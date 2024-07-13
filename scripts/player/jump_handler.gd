@@ -27,7 +27,7 @@ var _default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gr
 @onready var _coyote_timer: Timer = $CoyoteTimer
 @onready var _jump_timer: Timer = Timer.new()
 
-const _jump_metrics_class: Resource = preload("res://scripts/jump_metrics.gd")
+const _jump_metrics_class: Resource = preload("res://scripts/player/jump_metrics.gd")
 @onready var _jump_metrics: JumpMetrics = _jump_metrics_class.new()
 
 # TODO: because we're using CharacterBody2D instead of RigidBody2D, the jump_height may vary

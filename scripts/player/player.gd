@@ -24,7 +24,7 @@ var _controls_disabled: bool = false
 @onready var _trail: Trail = $Trail
 
 # Debugging
-const _player_debug_lines_class: Resource = preload("res://scripts/player_debug_lines.gd")
+const _player_debug_lines_class: Resource = preload("res://scripts/player/player_debug_lines.gd")
 @onready var _player_debug_lines: PlayerDebugLines = _player_debug_lines_class.new()
 
 var _move_direction: float = 0.0
