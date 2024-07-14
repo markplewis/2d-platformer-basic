@@ -1,0 +1,19 @@
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://bqopjrl5mnphy"]
+
+[ext_resource type="FontFile" uid="uid://bwnek6rkl0lgk" path="res://assets/fonts/PixelOperator8-Bold.ttf" id="1_d7r2c"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5tba5"]
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+bg_color = Color(0.174626, 0.174626, 0.174626, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[resource]
+default_font = ExtResource("1_d7r2c")
+default_font_size = 16
+Button/styles/normal = SubResource("StyleBoxFlat_5tba5")
