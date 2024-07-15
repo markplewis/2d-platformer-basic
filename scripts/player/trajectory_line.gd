@@ -3,7 +3,7 @@ class_name TrajectoryLine extends Line2D
 # https://www.youtube.com/watch?app=desktop&v=Mry6FdWnN7I
 # https://www.reddit.com/r/godot/comments/qgg6dm/how_to_create_a_ballistic_trajectory_line/
 
-@onready var _clear_points_timer: Timer = $Timer # Erase the trajectory line after X seconds
+@onready var _clear_points_timer: Timer = $ClearPointsTimer # Erase the trajectory line after X seconds
 
 var _fps: int = ProjectSettings.get_setting("physics/common/physics_ticks_per_second")
 
@@ -15,16 +15,7 @@ var _fps: int = ProjectSettings.get_setting("physics/common/physics_ticks_per_se
 # func _ready() -> void: set_as_top_level(true)
 
 
-func _ready() -> void:
-  PlayerContext.jump_started.connect(_on_player_context_jump_started)
-  PlayerContext.jump_ended.connect(_on_player_context_jump_ended)
-  PlayerContext.resurrected.connect(_on_player_context_resurrected)
-
-
-# Programmatically-connected signals from autoload scope(s)
-
-
-func _on_player_context_jump_started(dict: Dictionary) -> void:
+func _on_player_jump_started(dict: Dictionary) -> void:
   if Global.debug:
     var start_dir: float = dict.start_dir
     var start_pos_offset: Vector2 = dict.start_pos_offset
@@ -53,20 +44,18 @@ func _on_player_context_jump_started(dict: Dictionary) -> void:
       pos += vel * delta
 
 
-func _on_player_context_jump_ended(_dict: Dictionary) -> void:
+func _on_player_jump_ended(_dict: Dictionary) -> void:
   if Global.debug:
     _clear_points_timer.stop()
     _clear_points_timer.start(2)
 
 
-func _on_player_context_resurrected() -> void:
+func _on_player_resurrected() -> void:
   if Global.debug:
     _clear_points_timer.stop()
     clear_points()
 
 
-# Manually-connected signals from nodes within this scene or the scene where this node is instantiated
-
-func _on_timer_timeout() -> void:
+func _on_clear_points_timer_timeout() -> void:
   if Global.debug:
     clear_points()

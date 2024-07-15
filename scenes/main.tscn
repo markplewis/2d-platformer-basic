@@ -1,12 +1,15 @@
-[gd_scene load_steps=6 format=3 uid="uid://bhbo7e00k16xj"]
+[gd_scene load_steps=8 format=3 uid="uid://bhbo7e00k16xj"]
 
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_wo22j"]
 [ext_resource type="PackedScene" uid="uid://dvv8dc774a25k" path="res://scenes/levels/level_01.tscn" id="2_3vm8g"]
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="3_xru3t"]
 [ext_resource type="FontFile" uid="uid://bxjubaf4wm1rg" path="res://assets/fonts/PixelOperator8.ttf" id="4_gntik"]
+[ext_resource type="PackedScene" uid="uid://dgmyfklcviqme" path="res://scenes/ui/main_menu.tscn" id="4_rgr8o"]
 [ext_resource type="PackedScene" uid="uid://cc8t8evbdsw27" path="res://scenes/player/player.tscn" id="6_4t4yh"]
 [ext_resource type="Script" path="res://scripts/main_camera.gd" id="7_lq44e"]
 
 [node name="Main" type="Node2D"]
+script = ExtResource("1_wo22j")
 
 [node name="Levels" type="Node" parent="."]
 editor_description = "A container for the level scenes"
@@ -36,6 +39,9 @@ theme_override_font_sizes/font_size = 8
 text = "Stats"
 autowrap_mode = 2
 
+[node name="MainMenu" parent="UI" instance=ExtResource("4_rgr8o")]
+unique_name_in_owner = true
+
 [node name="Player" parent="." instance=ExtResource("6_4t4yh")]
 floor_snap_length = 5.0
 rotate_on_slopes = false
@@ -47,3 +53,14 @@ limit_smoothed = true
 position_smoothing_enabled = true
 script = ExtResource("7_lq44e")
 target_node = NodePath("../Player")
+
+[connection signal="acquired_item" from="Player" to="." method="_on_player_acquired_item"]
+[connection signal="dead" from="Player" to="." method="_on_player_dead"]
+[connection signal="dying" from="Player" to="." method="_on_player_dying"]
+[connection signal="dying" from="Player" to="UI/HUD" method="_on_player_dying"]
+[connection signal="interacted" from="Player" to="." method="_on_player_interacted"]
+[connection signal="jump_ended" from="Player" to="UI/HUD" method="_on_player_jump_ended"]
+[connection signal="jump_started" from="Player" to="UI/HUD" method="_on_player_jump_started"]
+[connection signal="opened_door" from="Player" to="." method="_on_player_opened_door"]
+[connection signal="resurrected" from="Player" to="UI/HUD" method="_on_player_resurrected"]
+[connection signal="score_changed" from="Player" to="UI/HUD" method="_on_player_score_changed"]

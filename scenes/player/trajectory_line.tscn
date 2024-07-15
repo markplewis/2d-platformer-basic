@@ -5,6 +5,6 @@
 [node name="TrajectoryLine" type="Line2D"]
 script = ExtResource("1_3qxe7")
 
-[node name="Timer" type="Timer" parent="."]
+[node name="ClearPointsTimer" type="Timer" parent="."]
 
-[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="timeout" from="ClearPointsTimer" to="." method="_on_clear_points_timer_timeout"]

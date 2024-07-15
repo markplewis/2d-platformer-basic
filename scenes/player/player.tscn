@@ -241,5 +241,8 @@ max_length = 30
 [node name="GroundDetectionRaycast" type="RayCast2D" parent="."]
 target_position = Vector2(0, 3)
 
+[connection signal="jump_ended" from="." to="Node/TrajectoryLine" method="_on_player_jump_ended"]
+[connection signal="jump_started" from="." to="Node/TrajectoryLine" method="_on_player_jump_started"]
+[connection signal="resurrected" from="." to="Node/TrajectoryLine" method="_on_player_resurrected"]
 [connection signal="jump_ended" from="JumpHandler" to="." method="_on_jump_handler_jump_ended"]
 [connection signal="jump_started" from="JumpHandler" to="." method="_on_jump_handler_jump_started"]

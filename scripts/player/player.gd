@@ -1,6 +1,15 @@
 class_name Player extends CharacterBody2D
 
-# Player has no signals. Instead, all events are dispatched to the Global autoload.
+signal acquired_item(dict: Dictionary)
+signal interacted(entity: Node2D)
+signal opened_door(dict: Dictionary)
+signal jump_started(dict: Dictionary)
+signal jump_ended(dict: Dictionary)
+signal dying()
+signal dead()
+signal resurrected()
+signal score_changed(int)
+signal health_changed(int)
 
 @export var rotate_on_slopes: bool = true
 
@@ -27,6 +36,7 @@ var _controls_disabled: bool = false
 const _player_debug_lines_class: Resource = preload("res://scripts/player/player_debug_lines.gd")
 @onready var _player_debug_lines: PlayerDebugLines = _player_debug_lines_class.new()
 
+# State
 var _move_direction: float = 0.0
 var _last_move_direction: float = 1.0
 var _run_button_pressed: bool = false
@@ -40,6 +50,12 @@ var _on_floor: bool = true
 var _floor_normal: Vector2 = Vector2.UP
 var _floor_angle: float = 0.0
 var _is_dead: bool = false
+
+var _score_default: int = 0
+var _health_default: int = 100
+
+var _score: int = _score_default
+var _health: int = _health_default
 
 
 func _ready() -> void:
@@ -68,7 +84,7 @@ func _physics_process(delta: float) -> void:
   _on_floor = is_on_floor()
 
   if _interact_button_just_pressed:
-    PlayerContext.dispatch_interacted()
+    interacted.emit(self)
 
   var collision_shape_pos: Vector2 = Vector2.ZERO if _is_dead else _collision_shape.global_position
 
@@ -154,32 +170,97 @@ func _play_animation() -> void:
         _animated_sprite.play("fall")
 
 
-func dead() -> void:
+# Death
+
+
+func die() -> void:
   _is_dead = true;
   _controls_disabled = true
   _collision_shape.set_deferred("disabled", true)
   _trail.disable()
   velocity.y = -150.0
-  PlayerContext.dispatch_dying()
+  set_score(_score_default)
+  set_health(_health_default)
+  dying.emit()
+  get_tree().create_timer(0.6).timeout.connect(func(): dead.emit())
 
 
 func _resurrect() -> void:
   _is_dead = false;
-  PlayerContext.dispatch_resurrected()
+  resurrected.emit()
 
 
-# Manually-connected signals from the JumpHandler node
+# Interactions
+
+
+func open_door(dict: Dictionary) -> void:
+  dict.merge({ "entity": self })
+  opened_door.emit(dict)
+
+
+# Items
+
+
+func acquire_item(item: Node2D) -> void:
+  acquired_item.emit({ "entity": self, "item": item })
+
+
+# Score
+
+
+func get_score() -> int:
+  return _score
+
+
+func set_score(value: int = 0) -> void:
+  _score = value
+  score_changed.emit(_score)
+
+
+func increase_score(value: int = 1) -> void:
+  _score += value
+  score_changed.emit(_score)
+
+
+func decrease_score(value: int = 1) -> void:
+  _score -= value
+  score_changed.emit(_score)
+
+
+# Health
+
+
+func get_health() -> int:
+  return _health
+
+
+func set_health(value: int = 0) -> void:
+  _health = value
+  health_changed.emit(_health)
+
+
+func increase_health(value: int = 1) -> void:
+  _health += value
+  health_changed.emit(_health)
+
+
+func decrease_health(value: int = 1) -> void:
+  _health -= value
+  health_changed.emit(_health)
+
+
+# Jump handler
 
 
 func _on_jump_handler_jump_started(dict: Dictionary) -> void:
-  PlayerContext.dispatch_jump_started(dict)
+  jump_started.emit(dict)
 
 
 func _on_jump_handler_jump_ended(dict: Dictionary) -> void:
-  PlayerContext.dispatch_jump_ended(dict)
+  jump_ended.emit(dict)
 
 
-# Programmatically-connected signals from autoload scope(s)
+# Scene manager
 
 
 func _on_scene_manager_load_start(_loading_screen) -> void:

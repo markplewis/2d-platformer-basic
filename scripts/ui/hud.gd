@@ -15,11 +15,6 @@ var _jump_distance_percent: float = 0
 
 
 func _ready() -> void:
-  PlayerContext.jump_started.connect(_on_player_context_jump_started)
-  PlayerContext.jump_ended.connect(_on_player_context_jump_ended)
-  PlayerContext.dying.connect(_on_player_context_dying)
-  PlayerContext.resurrected.connect(_on_player_context_resurrected)
-  PlayerContext.score_changed.connect(_on_global_score_changed)
   _update_text()
 
 
@@ -61,10 +56,7 @@ func _update_text() -> void:
   ]
 
 
-# Programmatically-connected signals from autoload scope(s)
-
-
-func _on_player_context_jump_started(_dict: Dictionary) -> void:
+func _on_player_jump_started(_dict: Dictionary) -> void:
   _jump_start_dir = 0
   _jump_start_pos = Vector2.ZERO
   _jump_end_pos = Vector2.ZERO
@@ -75,7 +67,7 @@ func _on_player_context_jump_started(_dict: Dictionary) -> void:
   _update_text()
 
 
-func _on_player_context_jump_ended(dict: Dictionary) -> void:
+func _on_player_jump_ended(dict: Dictionary) -> void:
   _jump_start_dir = dict.start_dir
   _jump_start_pos = dict.start_pos
   _jump_end_pos = dict.end_pos
@@ -86,16 +78,16 @@ func _on_player_context_jump_ended(dict: Dictionary) -> void:
   _update_text()
 
 
-func _on_player_context_dying() -> void:
+func _on_player_dying() -> void:
   _reset()
   _update_text()
 
 
-func _on_player_context_resurrected() -> void:
+func _on_player_resurrected() -> void:
   _reset()
   _update_text()
 
 
-func _on_global_score_changed(score: int) -> void:
+func _on_player_score_changed(score: int) -> void:
   _score = score
   _update_text()
