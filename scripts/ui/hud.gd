@@ -91,7 +91,3 @@ func _on_player_resurrected() -> void:
 func _on_player_score_changed(score: int) -> void:
   _score = score
   _update_text()
-
-
-func _on_player_interacted(entity: Node2D) -> void:
-  pass # Replace with function body.

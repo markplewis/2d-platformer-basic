@@ -233,6 +233,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 
 [node name="Trail" parent="." node_paths=PackedStringArray("target_node") instance=ExtResource("3_rmtyy")]
+visible = false
 top_level = true
 position = Vector2(0, -5)
 target_node = NodePath("..")

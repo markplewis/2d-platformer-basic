@@ -41,7 +41,6 @@ visible = false
 [connection signal="dead" from="Player" to="." method="_on_player_dead"]
 [connection signal="dying" from="Player" to="." method="_on_player_dying"]
 [connection signal="dying" from="Player" to="UICanvas/HUD" method="_on_player_dying"]
-[connection signal="interacted" from="Player" to="UICanvas/HUD" method="_on_player_interacted"]
 [connection signal="jump_ended" from="Player" to="UICanvas/HUD" method="_on_player_jump_ended"]
 [connection signal="jump_started" from="Player" to="UICanvas/HUD" method="_on_player_jump_started"]
 [connection signal="opened_door" from="Player" to="." method="_on_player_opened_door"]
