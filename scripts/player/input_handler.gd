@@ -33,3 +33,7 @@ func get_move_direction() -> float:
 
 func get_interact_button_just_pressed() -> bool:
   return Input.is_action_just_pressed("interact")
+
+
+func get_pause_button_just_pressed() -> bool:
+  return Input.is_action_just_pressed("pause")

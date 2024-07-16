@@ -1,10 +1,10 @@
 [gd_scene load_steps=7 format=3 uid="uid://bhbo7e00k16xj"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_wo22j"]
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="3_xru3t"]
-[ext_resource type="FontFile" uid="uid://bxjubaf4wm1rg" path="res://assets/fonts/PixelOperator8.ttf" id="4_gntik"]
 [ext_resource type="PackedScene" uid="uid://dgmyfklcviqme" path="res://scenes/ui/main_menu.tscn" id="4_rgr8o"]
+[ext_resource type="PackedScene" uid="uid://s2j02r8e6flk" path="res://scenes/ui/hud.tscn" id="4_w46jh"]
 [ext_resource type="PackedScene" uid="uid://cc8t8evbdsw27" path="res://scenes/player/player.tscn" id="6_4t4yh"]
+[ext_resource type="PackedScene" uid="uid://tupi4dy6fp8j" path="res://scenes/ui/pause_menu.tscn" id="7_il87t"]
 [ext_resource type="Script" path="res://scripts/main_camera.gd" id="7_lq44e"]
 
 [node name="Main" type="Node2D"]
@@ -28,34 +28,25 @@ target_node = NodePath("../Player")
 
 [node name="UICanvas" type="CanvasLayer" parent="."]
 
-[node name="HUD" type="Node" parent="UICanvas"]
-script = ExtResource("3_xru3t")
+[node name="HUD" parent="UICanvas" instance=ExtResource("4_w46jh")]
+visible = false
 
-[node name="ColorRect" type="ColorRect" parent="UICanvas/HUD"]
-offset_right = 360.0
-offset_bottom = 81.0
-color = Color(0, 0, 0, 0.7)
-
-[node name="StatsLabel" type="Label" parent="UICanvas/HUD/ColorRect"]
-layout_mode = 0
-offset_left = 12.0
-offset_top = 12.0
-offset_right = 349.0
-offset_bottom = 70.0
-theme_override_fonts/font = ExtResource("4_gntik")
-theme_override_font_sizes/font_size = 16
-text = "Stats"
-autowrap_mode = 2
+[node name="PauseMenu" parent="UICanvas" instance=ExtResource("7_il87t")]
+visible = false
 
 [node name="MainMenu" parent="UICanvas" instance=ExtResource("4_rgr8o")]
+visible = false
 
 [connection signal="acquired_item" from="Player" to="." method="_on_player_acquired_item"]
 [connection signal="dead" from="Player" to="." method="_on_player_dead"]
 [connection signal="dying" from="Player" to="." method="_on_player_dying"]
 [connection signal="dying" from="Player" to="UICanvas/HUD" method="_on_player_dying"]
+[connection signal="interacted" from="Player" to="UICanvas/HUD" method="_on_player_interacted"]
 [connection signal="jump_ended" from="Player" to="UICanvas/HUD" method="_on_player_jump_ended"]
 [connection signal="jump_started" from="Player" to="UICanvas/HUD" method="_on_player_jump_started"]
 [connection signal="opened_door" from="Player" to="." method="_on_player_opened_door"]
+[connection signal="paused_game" from="Player" to="." method="_on_player_paused_game"]
 [connection signal="resurrected" from="Player" to="UICanvas/HUD" method="_on_player_resurrected"]
 [connection signal="score_changed" from="Player" to="UICanvas/HUD" method="_on_player_score_changed"]
-[connection signal="start_game" from="UICanvas/MainMenu" to="." method="_on_main_menu_start_game"]
+[connection signal="resumed_game" from="UICanvas/PauseMenu" to="." method="_on_pause_menu_resumed_game"]
+[connection signal="started_game" from="UICanvas/MainMenu" to="." method="_on_main_menu_started_game"]

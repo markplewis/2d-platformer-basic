@@ -2,6 +2,7 @@ class_name Player extends CharacterBody2D
 
 signal acquired_item(dict: Dictionary)
 signal interacted(entity: Node2D)
+signal paused_game()
 signal opened_door(dict: Dictionary)
 signal jump_started(dict: Dictionary)
 signal jump_ended(dict: Dictionary)
@@ -45,6 +46,7 @@ var _jump_button_just_pressed: bool = false
 var _jump_button_released: bool = false
 var _jump_button_just_released: bool = false
 var _interact_button_just_pressed: bool = false
+var _pause_button_just_pressed: bool = false
 
 var _on_floor: bool = true
 var _floor_normal: Vector2 = Vector2.UP
@@ -81,11 +83,15 @@ func _physics_process(delta: float) -> void:
   _jump_button_released = false if _controls_disabled else _input_handler.get_jump_button_released()
   _jump_button_just_released = false if _controls_disabled else _input_handler.get_jump_button_just_released()
   _interact_button_just_pressed = false if _controls_disabled else _input_handler.get_interact_button_just_pressed()
+  _pause_button_just_pressed = false if _controls_disabled else _input_handler.get_pause_button_just_pressed()
 
   _on_floor = is_on_floor()
 
   if _interact_button_just_pressed:
     interacted.emit(self)
+
+  if _pause_button_just_pressed:
+    paused_game.emit()
 
   var collision_shape_pos: Vector2 = Vector2.ZERO if _is_dead else _collision_shape.global_position
 
