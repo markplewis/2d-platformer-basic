@@ -59,6 +59,7 @@ var _health: int = _health_default
 
 
 func _ready() -> void:
+  _disable()
   SceneManager.load_start.connect(_on_scene_manager_load_start)
   SceneManager.scene_added.connect(_on_scene_manager_scene_added)
   SceneManager.load_complete.connect(_on_scene_manager_load_complete)
@@ -175,9 +176,8 @@ func _play_animation() -> void:
 
 func die() -> void:
   _is_dead = true;
-  _controls_disabled = true
-  _collision_shape.set_deferred("disabled", true)
-  _trail.disable()
+  _disable_movement()
+  _disable_collider()
   velocity.y = -150.0
   set_score(_score_default)
   set_health(_health_default)
@@ -194,6 +194,7 @@ func _resurrect() -> void:
 
 
 func open_door(dict: Dictionary) -> void:
+  _disable_movement()
   dict.merge({ "entity": self })
   opened_door.emit(dict)
 
@@ -260,37 +261,62 @@ func _on_jump_handler_jump_ended(dict: Dictionary) -> void:
   jump_ended.emit(dict)
 
 
-# Scene manager
+# Disable/enable stuff
 
 
-func _on_scene_manager_load_start(_loading_screen) -> void:
+func _disable() -> void:
+  hide()
+  _disable_movement()
+  _disable_collider()
+
+
+func _disable_movement() -> void:
   velocity = Vector2.ZERO
   _controls_disabled = true
   _trail.disable()
 
 
-func _on_scene_manager_scene_added(incoming_scene, _loading_screen) -> void:
-  position = incoming_scene.player_start_pos
-  _trail.clear()
-
-  if _is_dead:
-    _resurrect()
-    # Due to the following bug, we must wait exactly 2 physics frames before re-enabling the
-    # player's collision shape. Otherwise, if the player died by falling into a "Killzone"
-    # (an Area2D node with a WorldBoundary collision shape), then the Area2D's body_entered signal
-    # will fire twice (once when the player touches it and again when the level/scene re-loads,
-    # even if the player's position has changed by that point and they're no longer touching it).
-    # https://github.com/godotengine/godot/issues/88592#issuecomment-1958670810
-    # https://github.com/godotengine/godot/issues/61584
-    # https://github.com/godotengine/godot/issues/14578
-    # https://github.com/godotengine/godot/issues/18748
-    # https://www.reddit.com/r/godot/comments/1d285xl/player_is_dying_twice/
-    await get_tree().physics_frame
-    await get_tree().physics_frame
-    _collision_shape.set_deferred("disabled", false)
-
-
-func _on_scene_manager_load_complete(_incoming_scene) -> void:
+func _enable_movement() -> void:
   _controls_disabled = false
   _trail.enable()
 
+
+func _disable_collider() -> void:
+  _collision_shape.set_deferred("disabled", true)
+
+
+func _enable_collider() -> void:
+  # Due to the following bug, we must wait exactly 2 physics frames before re-enabling the
+  # player's collision shape. Otherwise, if the player died by falling into a "Killzone"
+  # (an Area2D node with a WorldBoundary collision shape), then the Area2D's body_entered signal
+  # will fire twice (once when the player touches it and again when the level/scene re-loads,
+  # even if the player's position has changed by that point and they're no longer touching it).
+  # https://github.com/godotengine/godot/issues/88592#issuecomment-1958670810
+  # https://github.com/godotengine/godot/issues/61584
+  # https://github.com/godotengine/godot/issues/14578
+  # https://github.com/godotengine/godot/issues/18748
+  # https://www.reddit.com/r/godot/comments/1d285xl/player_is_dying_twice/
+  await get_tree().physics_frame
+  await get_tree().physics_frame
+  _collision_shape.set_deferred("disabled", false)
+
+
+# Scene manager
+
+
+func _on_scene_manager_load_start(_loading_screen) -> void:
+  _disable_movement()
+
+
+func _on_scene_manager_scene_added(incoming_scene, _loading_screen) -> void:
+  position = incoming_scene.player_start_pos
+  _trail.clear()
+  _enable_collider()
+  show() # In case this is the first level and player hasn't appeared yet
+
+  if _is_dead:
+    _resurrect()
+
+
+func _on_scene_manager_load_complete(_incoming_scene) -> void:
+  _enable_movement()

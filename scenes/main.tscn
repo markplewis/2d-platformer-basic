@@ -1,7 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://bhbo7e00k16xj"]
+[gd_scene load_steps=7 format=3 uid="uid://bhbo7e00k16xj"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_wo22j"]
-[ext_resource type="PackedScene" uid="uid://dvv8dc774a25k" path="res://scenes/levels/level_01.tscn" id="2_3vm8g"]
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="3_xru3t"]
 [ext_resource type="FontFile" uid="uid://bxjubaf4wm1rg" path="res://assets/fonts/PixelOperator8.ttf" id="4_gntik"]
 [ext_resource type="PackedScene" uid="uid://dgmyfklcviqme" path="res://scenes/ui/main_menu.tscn" id="4_rgr8o"]
@@ -11,38 +10,11 @@
 [node name="Main" type="Node2D"]
 script = ExtResource("1_wo22j")
 
-[node name="Levels" type="Node" parent="."]
+[node name="LevelContainer" type="Node" parent="."]
 editor_description = "A container for the level scenes"
 
-[node name="Level01" parent="Levels" instance=ExtResource("2_3vm8g")]
-
-[node name="UI" type="CanvasLayer" parent="."]
-scale = Vector2(2, 2)
-transform = Transform2D(2, 0, 0, 2, 0, 0)
-
-[node name="HUD" type="Node" parent="UI"]
-script = ExtResource("3_xru3t")
-
-[node name="ColorRect" type="ColorRect" parent="UI/HUD"]
-offset_right = 179.0
-offset_bottom = 48.0
-color = Color(0, 0, 0, 0.7)
-
-[node name="StatsLabel" type="Label" parent="UI/HUD/ColorRect"]
-layout_mode = 0
-offset_left = 8.0
-offset_top = 8.0
-offset_right = 254.0
-offset_bottom = 42.0
-theme_override_fonts/font = ExtResource("4_gntik")
-theme_override_font_sizes/font_size = 8
-text = "Stats"
-autowrap_mode = 2
-
-[node name="MainMenu" parent="UI" instance=ExtResource("4_rgr8o")]
-unique_name_in_owner = true
-
 [node name="Player" parent="." instance=ExtResource("6_4t4yh")]
+visible = false
 floor_snap_length = 5.0
 rotate_on_slopes = false
 
@@ -54,13 +26,36 @@ position_smoothing_enabled = true
 script = ExtResource("7_lq44e")
 target_node = NodePath("../Player")
 
+[node name="UICanvas" type="CanvasLayer" parent="."]
+
+[node name="HUD" type="Node" parent="UICanvas"]
+script = ExtResource("3_xru3t")
+
+[node name="ColorRect" type="ColorRect" parent="UICanvas/HUD"]
+offset_right = 360.0
+offset_bottom = 81.0
+color = Color(0, 0, 0, 0.7)
+
+[node name="StatsLabel" type="Label" parent="UICanvas/HUD/ColorRect"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 349.0
+offset_bottom = 70.0
+theme_override_fonts/font = ExtResource("4_gntik")
+theme_override_font_sizes/font_size = 16
+text = "Stats"
+autowrap_mode = 2
+
+[node name="MainMenu" parent="UICanvas" instance=ExtResource("4_rgr8o")]
+
 [connection signal="acquired_item" from="Player" to="." method="_on_player_acquired_item"]
 [connection signal="dead" from="Player" to="." method="_on_player_dead"]
 [connection signal="dying" from="Player" to="." method="_on_player_dying"]
-[connection signal="dying" from="Player" to="UI/HUD" method="_on_player_dying"]
-[connection signal="interacted" from="Player" to="." method="_on_player_interacted"]
-[connection signal="jump_ended" from="Player" to="UI/HUD" method="_on_player_jump_ended"]
-[connection signal="jump_started" from="Player" to="UI/HUD" method="_on_player_jump_started"]
+[connection signal="dying" from="Player" to="UICanvas/HUD" method="_on_player_dying"]
+[connection signal="jump_ended" from="Player" to="UICanvas/HUD" method="_on_player_jump_ended"]
+[connection signal="jump_started" from="Player" to="UICanvas/HUD" method="_on_player_jump_started"]
 [connection signal="opened_door" from="Player" to="." method="_on_player_opened_door"]
-[connection signal="resurrected" from="Player" to="UI/HUD" method="_on_player_resurrected"]
-[connection signal="score_changed" from="Player" to="UI/HUD" method="_on_player_score_changed"]
+[connection signal="resurrected" from="Player" to="UICanvas/HUD" method="_on_player_resurrected"]
+[connection signal="score_changed" from="Player" to="UICanvas/HUD" method="_on_player_score_changed"]
+[connection signal="start_game" from="UICanvas/MainMenu" to="." method="_on_main_menu_start_game"]

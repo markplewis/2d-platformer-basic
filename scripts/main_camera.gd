@@ -24,6 +24,6 @@ func _on_scene_manager_load_start(_loading_screen) -> void:
 func _on_scene_manager_scene_added(_incoming_scene, _loading_screen) -> void:
   _current_target = target_node
 
+
 func _on_scene_manager_load_complete(_incoming_scene) -> void:
-  #get_tree().create_timer(1).timeout.connect(func(): position_smoothing_enabled = true)
   position_smoothing_enabled = true

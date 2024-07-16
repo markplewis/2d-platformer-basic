@@ -11,26 +11,25 @@ signal _content_failed_to_load(content_path: String) ## Triggered when loading h
 var _loading_screen_scene: PackedScene = preload("res://scenes/ui/loading_screen.tscn") ## Reference to loading screen PackedScene
 var _loading_screen: LoadingScreen ## Reference to loading screen instance
 
-var _transition: String ## Transition being used for current load
+var _transition: String = "" ## Transition being used for current load
 var _load_progress_timer: Timer ## Timer used to check in on load progress
-var _load_scene_into: Node ## Node into which we're loading the new scene, defaults to [code]get_tree().root[/code] if left [code]null[/null]
-var _scene_to_unload: Node ## Node we're unloading. In almost all cases, SceneManager will be used to swap between two scenes - after all that it the primary focus. However, passing in [code]null[/code] for the scene to unload will skip the unloading process and simply add the new scene. This isn't recommended, as it can have some adverse affects depending on how it is used, but it does work. Use with caution :)
+var _load_scene_into: Node = null ## Node into which we're loading the new scene, defaults to [code]get_tree().root[/code] if left [code]null[/null]
+var _scene_to_unload: Node = null ## Node we're unloading. In almost all cases, SceneManager will be used to swap between two scenes - after all that it the primary focus. However, passing in [code]null[/code] for the scene to unload will skip the unloading process and simply add the new scene. This isn't recommended, as it can have some adverse affects depending on how it is used, but it does work. Use with caution :)
 var _loading_in_progress: bool = false ## Used to block SceneManager from attempting to load two things at the same time
 
-var _levels_node: Node
-var _ui_node: Node
-var _current_scene_node: Node
-var _current_scene_path: String ## Stores the path to the asset that SceneManager is trying to load
+var _level_container: Node = null
+var _ui_canvas: Node = null
+var _current_scene_node: Node = null
+var _current_scene_path: String = "" ## Stores the path to the asset that SceneManager is trying to load
 
 
 func _ready() -> void:
   var root: Node = get_tree().root
   var main: Node = root.get_child(root.get_child_count() - 1)
-  _levels_node = main.get_node("Levels")
-  _ui_node = main.get_node("UI")
-
-  _current_scene_node = _levels_node.get_child(0)
-  _current_scene_path = _current_scene_node.scene_file_path
+  _level_container = main.get_node("LevelContainer")
+  _ui_canvas = main.get_node("UICanvas")
+  #_current_scene_node = _level_container.get_child(0)
+  #_current_scene_path = _current_scene_node.scene_file_path
 
   _content_invalid.connect(_on_content_invalid)
   _content_failed_to_load.connect(_on_content_failed_to_load)
@@ -43,8 +42,9 @@ func swap_scenes(scene_to_load: String, transition_type: String = "fade_to_black
     return
 
   _loading_in_progress = true
-  _load_scene_into = _levels_node
+  _load_scene_into = _level_container # Never changes
   _scene_to_unload = _current_scene_node
+
   var reload_current_scene: bool = scene_to_load == ""
 
   if not reload_current_scene:
@@ -57,18 +57,17 @@ func swap_scenes(scene_to_load: String, transition_type: String = "fade_to_black
 func _add_loading_screen(transition_type: String = "fade_to_black"):
   _transition = "no_to_transition" if transition_type == "no_transition" else transition_type
   _loading_screen = _loading_screen_scene.instantiate() as LoadingScreen
-  _ui_node.add_child(_loading_screen)
+  _ui_canvas.add_child(_loading_screen)
+  _ui_canvas.move_child(_loading_screen, -1) # Position on top layer
   _loading_screen.start_transition(_transition)
 
   await _loading_screen.anim_player.animation_finished
   # Alternatively, could also use:
   # await _loading_screen.transition_in_complete
-  # print("transition_in: " + _loading_screen.anim_player.assigned_animation)
 
 
 func _load_content(content_path: String) -> void:
   load_start.emit(_loading_screen)
-  # print("load")
 
   var loader = ResourceLoader.load_threaded_request(content_path)
 
@@ -120,7 +119,6 @@ func _on_content_invalid(path: String) -> void:
 ## incoming scene removing the outgoing scene, halting the game until the out transition finishes,
 ## and also fires off the signals you can listen for to manage the SceneTree as things are added
 func _on_content_finished_loading(incoming_scene) -> void:
-  # print("finished")
   var outgoing_scene = _scene_to_unload
 
   if outgoing_scene != null:
@@ -140,7 +138,6 @@ func _on_content_finished_loading(incoming_scene) -> void:
   if _loading_screen != null:
     _loading_screen.finish_transition()
     await _loading_screen.anim_player.animation_finished
-    # print("transition_out: " + _loading_screen.anim_player.assigned_animation)
 
   if incoming_scene.has_method("start_scene"):
     incoming_scene.start_scene()
