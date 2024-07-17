@@ -23,6 +23,7 @@ signal health_changed(int)
 @onready var _input_handler: InputHandler = $InputHandler
 @onready var _movement_handler: MovementHandler = $MovementHandler
 @onready var _jump_handler: JumpHandler = $JumpHandler
+@onready var _damage_timer: Timer = $DamageTimer
 
 var _controls_disabled: bool = false
 
@@ -51,6 +52,7 @@ var _pause_button_just_pressed: bool = false
 var _on_floor: bool = true
 var _floor_normal: Vector2 = Vector2.UP
 var _floor_angle: float = 0.0
+var _is_damaged: bool = false
 var _is_dead: bool = false
 
 var _score_default: int = 0
@@ -164,6 +166,8 @@ func _flip_sprite() -> void:
 func _play_animation() -> void:
   if _is_dead:
     _animated_sprite.play("die")
+  elif _is_damaged:
+    _animated_sprite.play("damaged")
   else:
     if _on_floor:
       if _move_direction == 0.0:
@@ -219,7 +223,7 @@ func get_score() -> int:
   return _score
 
 
-func set_score(value: int = 0) -> void:
+func set_score(value: int) -> void:
   _score = value
   score_changed.emit(_score)
 
@@ -241,19 +245,38 @@ func get_health() -> int:
   return _health
 
 
-func set_health(value: int = 0) -> void:
+func set_health(value: int) -> void:
+  if value <= 0:
+    die()
+    return
+  if value < _health:
+    _damage()
   _health = value
   health_changed.emit(_health)
 
 
-func increase_health(value: int = 1) -> void:
+func increase_health(value: int = 10) -> void:
   _health += value
   health_changed.emit(_health)
 
 
-func decrease_health(value: int = 1) -> void:
+func decrease_health(value: int = 10) -> void:
   _health -= value
+  if _health <= 0:
+    die()
+    return
+  _damage()
   health_changed.emit(_health)
+
+
+func _damage() -> void:
+  _is_damaged = true
+  _damage_timer.stop()
+  _damage_timer.start(0.5)
+
+
+func _on_damage_timer_timeout() -> void:
+  _is_damaged = false
 
 
 # Jump handler

@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://cc8t8evbdsw27"]
+[gd_scene load_steps=34 format=3 uid="uid://cc8t8evbdsw27"]
 
 [ext_resource type="Texture2D" uid="uid://d0jnsndhx11n7" path="res://assets/sprites/knight.png" id="1_0cs1t"]
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_xlc0g"]
@@ -7,6 +7,10 @@
 [ext_resource type="PackedScene" uid="uid://d2amj630e1ofy" path="res://scenes/player/movement_handler.tscn" id="4_5h253"]
 [ext_resource type="PackedScene" uid="uid://b0d6las3wnd6b" path="res://scenes/player/jump_handler.tscn" id="5_qcfde"]
 [ext_resource type="PackedScene" uid="uid://byg3y5diuqwmc" path="res://scenes/player/trajectory_line.tscn" id="7_k1epr"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gc6yb"]
+atlas = ExtResource("1_0cs1t")
+region = Rect2(64, 192, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ayquk"]
 atlas = ExtResource("1_0cs1t")
@@ -102,6 +106,14 @@ region = Rect2(224, 96, 32, 32)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_kdq00"]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gc6yb")
+}],
+"loop": true,
+"name": &"damaged",
+"speed": 10.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ayquk")
@@ -210,7 +222,7 @@ script = ExtResource("1_xlc0g")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="SpriteContainer"]
 position = Vector2(0, -12)
 sprite_frames = SubResource("SpriteFrames_kdq00")
-animation = &"idle"
+animation = &"damaged"
 autoplay = "idle"
 
 [node name="CollisionShape" type="CollisionShape2D" parent="."]
@@ -242,8 +254,11 @@ max_length = 30
 [node name="GroundDetectionRaycast" type="RayCast2D" parent="."]
 target_position = Vector2(0, 3)
 
+[node name="DamageTimer" type="Timer" parent="."]
+
 [connection signal="jump_ended" from="." to="Node/TrajectoryLine" method="_on_player_jump_ended"]
 [connection signal="jump_started" from="." to="Node/TrajectoryLine" method="_on_player_jump_started"]
 [connection signal="resurrected" from="." to="Node/TrajectoryLine" method="_on_player_resurrected"]
 [connection signal="jump_ended" from="JumpHandler" to="." method="_on_jump_handler_jump_ended"]
 [connection signal="jump_started" from="JumpHandler" to="." method="_on_jump_handler_jump_started"]
+[connection signal="timeout" from="DamageTimer" to="." method="_on_damage_timer_timeout"]

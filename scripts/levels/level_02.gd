@@ -1,4 +1,4 @@
-class_name Level02 extends Level
+class_name Level02 extends Node
 
 @onready var _door: Door = $DoorInLevel2
 @onready var player_start_pos: Vector2 = _door.position

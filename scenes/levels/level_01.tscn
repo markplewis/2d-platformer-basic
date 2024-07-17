@@ -6,7 +6,7 @@
 [ext_resource type="FontFile" uid="uid://bxjubaf4wm1rg" path="res://assets/fonts/PixelOperator8.ttf" id="3_ssoj2"]
 [ext_resource type="PackedScene" uid="uid://b2vkvemxq8180" path="res://scenes/world/coin.tscn" id="4_w35h5"]
 [ext_resource type="PackedScene" uid="uid://c4s33xnl8p2xn" path="res://scenes/world/platform.tscn" id="5_anxk3"]
-[ext_resource type="PackedScene" uid="uid://c12237pkckka3" path="res://scenes/enemies/slime.tscn" id="6_ixqxs"]
+[ext_resource type="PackedScene" uid="uid://c12237pkckka3" path="res://scenes/enemies/green_slime.tscn" id="6_ixqxs"]
 [ext_resource type="PackedScene" uid="uid://dbssua4ob4uoo" path="res://scenes/world/kill_zone.tscn" id="7_002c6"]
 [ext_resource type="PackedScene" uid="uid://2njcjlgdflnx" path="res://scenes/world/door.tscn" id="8_q1afr"]
 
@@ -808,8 +808,9 @@ autoplay = "move"
 
 [node name="Enemies" type="Node" parent="."]
 
-[node name="Slime" parent="Enemies" instance=ExtResource("6_ixqxs")]
+[node name="GreenSlime" parent="Enemies" instance=ExtResource("6_ixqxs")]
 position = Vector2(512, 64)
+move_speed = 40.0
 
 [node name="DoorInLevel1" parent="." instance=ExtResource("8_q1afr")]
 position = Vector2(-120, 88)

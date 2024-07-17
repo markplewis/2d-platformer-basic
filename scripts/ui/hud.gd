@@ -2,6 +2,7 @@ class_name HUD extends Control
 
 @onready var _stats_label: Label = $ColorRect/StatsLabel
 
+var _health: int = 100
 var _score: int = 0
 
 var _jump_start_pos: Vector2 = Vector2.ZERO
@@ -19,6 +20,7 @@ func _ready() -> void:
 
 
 func _reset() -> void:
+  _health = 100
   _score = 0
   _jump_height = 0
   _jump_height_percent = 0
@@ -47,12 +49,18 @@ func _update_text() -> void:
     multiplier = 1
 
   var format_string: String = """
+    Health: %s
     Score: %s
     Jump height: %s (%s%%)
     Jump distance: %s (%s%%)
   """
   _stats_label.text = format_string.dedent().strip_edges() % [
-    _score, _jump_height, _jump_height_percent, _jump_distance * multiplier, _jump_distance_percent
+    _health,
+    _score,
+    _jump_height,
+    _jump_height_percent,
+    _jump_distance * multiplier,
+    _jump_distance_percent
   ]
 
 
@@ -85,6 +93,11 @@ func _on_player_dying() -> void:
 
 func _on_player_resurrected() -> void:
   _reset()
+  _update_text()
+
+
+func _on_player_health_changed(health: int) -> void:
+  _health = health
   _update_text()
 
 

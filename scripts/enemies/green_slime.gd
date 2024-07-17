@@ -1,4 +1,4 @@
-class_name Slime extends Node2D
+class_name GreenSlime extends Node2D
 
 @export var move_speed: float = 60.0
 
