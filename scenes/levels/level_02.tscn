@@ -459,7 +459,7 @@ position = Vector2(248, 37)
 
 [node name="PurpleSlime" parent="Enemies" instance=ExtResource("5_lowql")]
 position = Vector2(168, 80)
-attack_damage = 20
+collision_mask = 3
 
 [node name="DoorInLevel2" parent="." instance=ExtResource("5_wlts4")]
 position = Vector2(-24, 72)

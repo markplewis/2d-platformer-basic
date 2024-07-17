@@ -92,7 +92,10 @@ func _attack() -> void:
     entityCollider = _attack_ray_cast_right.get_collider()
 
   if entityCollider != null:
-    entity = entityCollider.owner
+    if entityCollider is CharacterBody2D:
+      entity = entityCollider
+    else:
+      entity = entityCollider.owner
 
   if entity != null and entity.has_method("decrease_health") and _interact_button_just_pressed:
     entity.decrease_health(15)
