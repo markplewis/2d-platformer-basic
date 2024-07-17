@@ -2,15 +2,15 @@ class_name LoadingScreen extends Control
 
 signal transition_in_complete
 
-@onready var progress_bar: ProgressBar = %ProgressBar
 @onready var anim_player: AnimationPlayer = %AnimationPlayer
-@onready var timer: Timer = $Timer
+@onready var _progress_bar: ProgressBar = %ProgressBar
+@onready var _timer: Timer = $Timer
 
 var _starting_animation_name: String
 
 
 func _ready() -> void:
-  progress_bar.visible = false
+  _progress_bar.visible = false
 
 
 ## Called from the SceneManager
@@ -22,13 +22,13 @@ func start_transition(animation_name: String) -> void:
   _starting_animation_name = animation_name
   anim_player.play(animation_name)
 
-  # If timer reaches the end before we finish loading, this will show the progress bar
-  timer.start()
+  # If _timer reaches the end before we finish loading, this will show the progress bar
+  _timer.start()
 
 
 ## Called from the SceneManager
 func finish_transition() -> void:
-  if timer: timer.stop()
+  if _timer: _timer.stop()
 
   # Construct second half of the transition's animation name
   var ending_animation_name: String = _starting_animation_name.replace("to", "from")
@@ -50,11 +50,11 @@ func report_midpoint() -> void:
   transition_in_complete.emit()
 
 
-## If loading takes long enough that this timer fires, the loading bar will become visible and
+## If loading takes long enough that this _timer fires, the loading bar will become visible and
 ## progress is displayed
 func _on_timer_timeout() -> void:
-  progress_bar.visible = true
+  _progress_bar.visible = true
 
 
 func update_bar(val: float) -> void:
-  progress_bar.value = val
+  _progress_bar.value = val

@@ -2,7 +2,7 @@ class_name MainMenu extends Control
 
 signal started_game()
 
-@onready var buttons_v_box: VBoxContainer = %ButtonsVBox
+@onready var _buttons_v_box: VBoxContainer = %ButtonsVBox
 
 
 func _ready() -> void:
@@ -23,7 +23,7 @@ func _on_visibility_changed() -> void:
 
 
 func _focus_button() -> void:
-  if buttons_v_box:
-    var button: Button = buttons_v_box.get_child(0)
+  if _buttons_v_box:
+    var button: Button = _buttons_v_box.get_child(0)
     if button is Button:
       button.grab_focus()
