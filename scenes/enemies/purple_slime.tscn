@@ -1,7 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://bs2wlm2ok2sox"]
+[gd_scene load_steps=10 format=3 uid="uid://bs2wlm2ok2sox"]
 
 [ext_resource type="Script" path="res://scripts/enemies/purple_slime.gd" id="1_j3akc"]
 [ext_resource type="Texture2D" uid="uid://diyffmpmeym6w" path="res://assets/sprites/slime_purple.png" id="2_m455c"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xlq4e"]
+atlas = ExtResource("2_m455c")
+region = Rect2(48, 48, 24, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_87das"]
 atlas = ExtResource("2_m455c")
@@ -21,6 +25,14 @@ region = Rect2(72, 24, 24, 24)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_pih16"]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xlq4e")
+}],
+"loop": true,
+"name": &"damaged",
+"speed": 5.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_87das")
@@ -48,11 +60,11 @@ script = ExtResource("1_j3akc")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -12)
 sprite_frames = SubResource("SpriteFrames_pih16")
+animation = &"damaged"
 autoplay = "default"
-frame = 2
-frame_progress = 0.0921357
 
 [node name="DamageZone" type="Area2D" parent="."]
+collision_layer = 4
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DamageZone"]
@@ -67,4 +79,7 @@ target_position = Vector2(-9, 0)
 position = Vector2(0, -6)
 target_position = Vector2(9, 0)
 
+[node name="DamageTimer" type="Timer" parent="."]
+
 [connection signal="body_entered" from="DamageZone" to="." method="_on_damage_zone_body_entered"]
+[connection signal="timeout" from="DamageTimer" to="." method="_on_damage_timer_timeout"]

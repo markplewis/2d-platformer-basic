@@ -31,8 +31,12 @@ var _controls_disabled: bool = false
 @onready var _sprite_container: Node2D = $SpriteContainer
 @onready var _animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite2D
 @onready var _collision_shape: CollisionShape2D = $CollisionShape
-@onready var _ground_cast: RayCast2D = $GroundDetectionRaycast
 @onready var _trail: Trail = $Trail
+
+# RayCasts
+@onready var _attack_ray_cast_left: RayCast2D = $AttackRayCastLeft
+@onready var _attack_ray_cast_right: RayCast2D = $AttackRayCastRight
+@onready var _ground_ray_cast: RayCast2D = $GroundDetectionRayCast
 
 # Debugging
 const _player_debug_lines_class: Resource = preload("res://scripts/player/player_debug_lines.gd")
@@ -77,6 +81,24 @@ func _process(_delta: float) -> void:
     _player_debug_lines.draw(_on_floor, _floor_normal, _floor_angle, velocity)
 
 
+func _attack() -> void:
+  var entityCollider: Object = null
+  var entity: Node2D = null
+
+  if _attack_ray_cast_left.is_colliding():
+    entityCollider = _attack_ray_cast_left.get_collider()
+
+  if _attack_ray_cast_right.is_colliding():
+    entityCollider = _attack_ray_cast_right.get_collider()
+
+  if entityCollider != null:
+    entity = entityCollider.owner
+
+  if entity != null and entity.has_method("decrease_health") and _interact_button_just_pressed:
+    entity.decrease_health(15)
+
+
+
 func _physics_process(delta: float) -> void:
   _move_direction = 0.0 if _controls_disabled else _input_handler.get_move_direction()
   _run_button_pressed = false if _controls_disabled else _input_handler.get_run_button_pressed()
@@ -91,6 +113,8 @@ func _physics_process(delta: float) -> void:
 
   if _interact_button_just_pressed:
     interacted.emit(self)
+
+  _attack()
 
   if _pause_button_just_pressed:
     paused_game.emit()
@@ -140,8 +164,8 @@ func _rotate_sprite() -> void:
   # rotation = 0.0
 
   # https://www.reddit.com/r/godot/comments/1agit6k/why_is_the_characterbody2d_property_max_floor/
-  if _on_floor and _ground_cast.is_colliding():
-    _floor_normal = _ground_cast.get_collision_normal()
+  if _on_floor and _ground_ray_cast.is_colliding():
+    _floor_normal = _ground_ray_cast.get_collision_normal()
     _floor_angle = Vector2.UP.angle_to(_floor_normal)
     # print("Angle: " + str(round(abs(rad_to_deg(_floor_angle)))))
     # print("Max: " + str(rad_to_deg(floor_max_angle)))

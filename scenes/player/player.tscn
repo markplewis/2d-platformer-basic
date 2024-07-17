@@ -222,7 +222,7 @@ script = ExtResource("1_xlc0g")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="SpriteContainer"]
 position = Vector2(0, -12)
 sprite_frames = SubResource("SpriteFrames_kdq00")
-animation = &"damaged"
+animation = &"idle"
 autoplay = "idle"
 
 [node name="CollisionShape" type="CollisionShape2D" parent="."]
@@ -251,7 +251,19 @@ position = Vector2(0, -5)
 target_node = NodePath("..")
 max_length = 30
 
-[node name="GroundDetectionRaycast" type="RayCast2D" parent="."]
+[node name="AttackRayCastLeft" type="RayCast2D" parent="."]
+position = Vector2(0, -5)
+target_position = Vector2(-30, 0)
+collision_mask = 4
+collide_with_areas = true
+
+[node name="AttackRayCastRight" type="RayCast2D" parent="."]
+position = Vector2(0, -5)
+target_position = Vector2(30, 0)
+collision_mask = 4
+collide_with_areas = true
+
+[node name="GroundDetectionRayCast" type="RayCast2D" parent="."]
 target_position = Vector2(0, 3)
 
 [node name="DamageTimer" type="Timer" parent="."]

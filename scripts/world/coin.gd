@@ -7,7 +7,7 @@ class_name Coin extends Area2D
 # and invoke methods on the entity instance (e.g. increase_score)
 
 
-func _on_body_entered(entity: Node2D) -> void:
-  if entity.has_method("acquire_item"):
-    entity.acquire_item(self)
+func _on_body_entered(body: Node2D) -> void:
+  if body.has_method("acquire_item"):
+    body.acquire_item(self)
     _animation_player.play("pickup")
