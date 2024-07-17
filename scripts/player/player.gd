@@ -61,9 +61,13 @@ var _is_dead: bool = false
 
 var _score_default: int = 0
 var _health_default: int = 100
+var _attack_strength_default: int = 15
+var _defence_strength_default: int = 5
 
 var _score: int = _score_default
 var _health: int = _health_default
+var _attack_strength: int = _attack_strength_default
+var _defence_strength: int = _defence_strength_default
 
 
 func _ready() -> void:
@@ -79,27 +83,6 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
   if Global.debug and not _is_dead:
     _player_debug_lines.draw(_on_floor, _floor_normal, _floor_angle, velocity)
-
-
-func _attack() -> void:
-  var entityCollider: Object = null
-  var entity: Node2D = null
-
-  if _attack_ray_cast_left.is_colliding():
-    entityCollider = _attack_ray_cast_left.get_collider()
-
-  if _attack_ray_cast_right.is_colliding():
-    entityCollider = _attack_ray_cast_right.get_collider()
-
-  if entityCollider != null:
-    if entityCollider is CharacterBody2D:
-      entity = entityCollider
-    else:
-      entity = entityCollider.owner
-
-  if entity != null and entity.has_method("decrease_health") and _interact_button_just_pressed:
-    entity.decrease_health(15)
-
 
 
 func _physics_process(delta: float) -> void:
@@ -236,6 +219,26 @@ func open_door(dict: Dictionary) -> void:
   opened_door.emit(dict)
 
 
+func _attack() -> void:
+  var entityCollider: Object = null
+  var entity: Node2D = null
+
+  if _attack_ray_cast_left.is_colliding():
+    entityCollider = _attack_ray_cast_left.get_collider()
+
+  if _attack_ray_cast_right.is_colliding():
+    entityCollider = _attack_ray_cast_right.get_collider()
+
+  if entityCollider != null:
+    if entityCollider is CharacterBody2D:
+      entity = entityCollider
+    else:
+      entity = entityCollider.owner
+
+  if entity != null and entity.has_method("take_damage") and _interact_button_just_pressed:
+    entity.take_damage(_attack_strength)
+
+
 # Items
 
 
@@ -294,6 +297,10 @@ func decrease_health(value: int = 10) -> void:
     return
   _damage()
   health_changed.emit(_health)
+
+
+func take_damage(value: int) -> void:
+  decrease_health(max(0, value - _defence_strength))
 
 
 func _damage() -> void:

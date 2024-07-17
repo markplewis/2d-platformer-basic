@@ -1,7 +1,8 @@
 class_name PurpleSlime extends CharacterBody2D
 
 @export var move_speed: float = 60.0
-@export var attack_damage: int = 20
+@export var attack_strength: int = 20
+@export var defence_strength: int = 5
 @export var health: int = 60
 
 @onready var _ray_cast_left: RayCast2D = $RayCastLeft
@@ -28,8 +29,10 @@ func _physics_process(_delta):
     _direction = -1
     _animated_sprite.flip_h = true;
 
-  if not _is_stunned:
-    # move_and_slide internally multiplies by delta, so no need to do it here
+  if _is_stunned:
+    velocity.x = 0
+  else:
+    # move_and_slide internally multiplies by delta, so no need to do that here
     velocity.x = _direction * move_speed
 
   move_and_slide()
@@ -37,30 +40,30 @@ func _physics_process(_delta):
   var colliding_with_player: bool = false
 
   for i in get_slide_collision_count():
-    var collision = get_slide_collision(i)
-    var collider = collision.get_collider()
-    #print("I collided with ", collision.get_collider().name)
+    var collision: KinematicCollision2D = get_slide_collision(i)
+    var collider: Object = collision.get_collider()
+    #print("Collided with ", collider.name)
 
-    if collider is Player and collider.has_method("decrease_health"):
+    if collider is Player and collider.has_method("take_damage"):
       colliding_with_player = true
 
     if colliding_with_player and not _is_attacking:
       _is_attacking = true
-      collider.decrease_health(attack_damage)
+      collider.take_damage(attack_strength)
 
   if not colliding_with_player:
     _is_attacking = false
 
 
-func decrease_health(value: int = 10) -> void:
-  _health -= value
+func take_damage(value: int) -> void:
+  _health -= max(0, value - defence_strength)
   if _health <= 0:
     _die()
-    return
-  _damage()
+  else:
+    _stun()
 
 
-func _damage() -> void:
+func _stun() -> void:
   _is_stunned = true
   _stun_timer.stop()
   _stun_timer.start(0.5)

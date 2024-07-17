@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://c12237pkckka3"]
+[gd_scene load_steps=11 format=3 uid="uid://c12237pkckka3"]
 
 [ext_resource type="Texture2D" uid="uid://b3qus4msbewf3" path="res://assets/sprites/slime_green.png" id="1_4qdpu"]
 [ext_resource type="Script" path="res://scripts/enemies/green_slime.gd" id="1_nx6cd"]
@@ -20,6 +20,10 @@ region = Rect2(48, 24, 24, 24)
 atlas = ExtResource("1_4qdpu")
 region = Rect2(72, 24, 24, 24)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_7qmsa"]
+atlas = ExtResource("1_4qdpu")
+region = Rect2(48, 48, 24, 24)
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_pih16"]
 animations = [{
 "frames": [{
@@ -38,6 +42,14 @@ animations = [{
 "loop": true,
 "name": &"default",
 "speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7qmsa")
+}],
+"loop": true,
+"name": &"stunned",
+"speed": 10.0
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sv41y"]
@@ -50,7 +62,6 @@ script = ExtResource("1_nx6cd")
 position = Vector2(0, -12)
 sprite_frames = SubResource("SpriteFrames_pih16")
 autoplay = "default"
-frame_progress = 0.781692
 
 [node name="Killzone" parent="." instance=ExtResource("2_yu07v")]
 collision_layer = 4
@@ -66,3 +77,7 @@ target_position = Vector2(-9, 0)
 [node name="RayCastRight" type="RayCast2D" parent="."]
 position = Vector2(0, -6)
 target_position = Vector2(9, 0)
+
+[node name="StunTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="StunTimer" to="." method="_on_stun_timer_timeout"]
