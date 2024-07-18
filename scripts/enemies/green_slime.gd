@@ -28,7 +28,7 @@ func _physics_process(delta):
     position.x += _direction * move_speed * delta
 
 
-func take_damage(value: int) -> void:
+func take_damage(_attacker: Object, value: int) -> void:
   _health -= max(0, value - defence_strength)
   if _health <= 0:
     _die()

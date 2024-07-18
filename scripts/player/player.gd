@@ -236,7 +236,7 @@ func _attack() -> void:
       entity = entityCollider.owner
 
   if entity != null and entity.has_method("take_damage") and _interact_button_just_pressed:
-    entity.take_damage(_attack_strength)
+    entity.take_damage(self, _attack_strength)
 
 
 # Items
@@ -299,7 +299,7 @@ func decrease_health(value: int = 10) -> void:
   health_changed.emit(_health)
 
 
-func take_damage(value: int) -> void:
+func take_damage(_attacker: Object, value: int) -> void:
   decrease_health(max(0, value - _defence_strength))
 
 

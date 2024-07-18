@@ -12,15 +12,18 @@ class_name PurpleSlime extends CharacterBody2D
 
 @onready var _health: int = health
 
+var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
+
 var _direction: int = 1
 var _is_stunned: bool = false
 var _is_attacking: bool = false
+var _knockback_direction: int = 0
 
 # https://docs.godotengine.org/en/stable/tutorials/physics/using_character_body_2d.html
 # https://www.reddit.com/r/godot/comments/13cgr2b/how_to_get_collision_detected_with/
 
 
-func _physics_process(_delta):
+func _physics_process(delta):
   if _ray_cast_left.is_colliding():
     _direction = 1
     _animated_sprite.flip_h = false;
@@ -29,11 +32,28 @@ func _physics_process(_delta):
     _direction = -1
     _animated_sprite.flip_h = true;
 
-  if _is_stunned:
-    velocity.x = 0
-  else:
-    # move_and_slide internally multiplies by delta, so no need to do that here
+  # move_and_slide multiplies velocity (i.e. direction * speed) by delta internally, so it's
+  # inappropriate to do that here. Time-based acceleration forces such as gravity, however, must be
+  # multiplied by delta when adding them to the velocity, in order to integrate them before passing
+  # the final velocity to move_and_slide (which then calculates a distance). When not using
+  # move_and_slide, both velocity and acceleration must be multiplied by delta.
+  # https://forum.godotengine.org/t/character-controller-why-only-use-delta-on-gravity-in-physicsprocess/50422/5
+  # https://forum.godotengine.org/t/when-using-move-and-slide-is-it-correct-to-use-delta-for-accelleration/12437/2
+  # https://forum.godotengine.org/t/acceleration-and-velocity-for-2d-character-controller/68881/2
+
+  if _knockback_direction != 0:
+    velocity.y -= 150
+    if _knockback_direction > 0:
+      velocity.x = 80
+    else:
+      velocity.x = -80
+    _knockback_direction = 0
+
+  if not _is_stunned:
     velocity.x = _direction * move_speed
+
+  if not is_on_floor():
+    velocity.y += _gravity * delta
 
   move_and_slide()
 
@@ -49,17 +69,23 @@ func _physics_process(_delta):
 
     if colliding_with_player and not _is_attacking:
       _is_attacking = true
-      collider.take_damage(attack_strength)
+      collider.take_damage(self, attack_strength)
 
   if not colliding_with_player:
     _is_attacking = false
 
 
-func take_damage(value: int) -> void:
+func take_damage(attacker: Object, value: int) -> void:
   _health -= max(0, value - defence_strength)
   if _health <= 0:
     _die()
   else:
+    if attacker.global_position.x > global_position.x:
+      _knockback_direction = -1
+    elif attacker.global_position.x < global_position.x:
+      _knockback_direction = 1
+    else:
+      _knockback_direction = 0
     _stun()
 
 
