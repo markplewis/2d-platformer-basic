@@ -8,11 +8,27 @@ class_name GreenSlime extends Node2D
 @onready var _ray_cast_right: RayCast2D = $RayCastRight
 @onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var _stun_timer: Timer = $StunTimer
+@onready var _progress_bar: ProgressBar = $ProgressBar
 
 @onready var _health: int = health
 
 var _direction: int = 1
 var _is_stunned: bool = false
+var _progress_bar_style_box: StyleBoxFlat;
+
+
+func _ready() -> void:
+  _progress_bar.max_value = _health
+  _progress_bar.value = _health
+
+  _progress_bar_style_box = StyleBoxFlat.new()
+  _progress_bar.add_theme_stylebox_override("fill", _progress_bar_style_box)
+  _progress_bar_style_box.bg_color = Color(Color.LIME_GREEN)
+  _progress_bar_style_box.border_width_left = 1
+  _progress_bar_style_box.border_width_top = 1
+  _progress_bar_style_box.border_width_right = 1
+  _progress_bar_style_box.border_width_bottom = 1
+  _progress_bar_style_box.border_color = Color(Color.BLACK)
 
 
 func _physics_process(delta):
@@ -30,6 +46,13 @@ func _physics_process(delta):
 
 func take_damage(_attacker: Object, value: int) -> void:
   _health -= max(0, value - defence_strength)
+  _progress_bar.value = _health
+
+  if _health < health / 1.5:
+    _progress_bar_style_box.bg_color = Color(Color.YELLOW)
+  if _health < health / 3.0:
+    _progress_bar_style_box.bg_color = Color(Color.RED)
+
   if _health <= 0:
     _die()
   else:

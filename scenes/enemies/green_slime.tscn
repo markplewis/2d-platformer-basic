@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://c12237pkckka3"]
+[gd_scene load_steps=13 format=3 uid="uid://c12237pkckka3"]
 
 [ext_resource type="Texture2D" uid="uid://b3qus4msbewf3" path="res://assets/sprites/slime_green.png" id="1_4qdpu"]
 [ext_resource type="Script" path="res://scripts/enemies/green_slime.gd" id="1_nx6cd"]
@@ -55,6 +55,17 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sv41y"]
 size = Vector2(10, 12)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e0644"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7cg4b"]
+bg_color = Color(0.460347, 0.460347, 0.460347, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0, 0, 1)
+
 [node name="GreenSlime" type="Node2D"]
 script = ExtResource("1_nx6cd")
 
@@ -79,5 +90,22 @@ position = Vector2(0, -6)
 target_position = Vector2(9, 0)
 
 [node name="StunTimer" type="Timer" parent="."]
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+custom_minimum_size = Vector2(20, 4)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -10.0
+offset_top = -21.0
+offset_right = 10.0
+offset_bottom = -17.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_e0644")
+theme_override_styles/fill = SubResource("StyleBoxFlat_7cg4b")
+show_percentage = false
 
 [connection signal="timeout" from="StunTimer" to="." method="_on_stun_timer_timeout"]
