@@ -11,7 +11,6 @@ signal _content_failed_to_load(content_path: String) ## Triggered when loading h
 var _loading_screen_scene: PackedScene = preload("res://scenes/ui/loading_screen.tscn") ## Reference to loading screen PackedScene
 var _loading_screen: LoadingScreen ## Reference to loading screen instance
 
-var _transition: String = "" ## Transition being used for current load
 var _load_progress_timer: Timer ## Timer used to check in on load progress
 var _load_scene_into: Node = null ## Node into which we're loading the new scene, defaults to [code]get_tree().root[/code] if left [code]null[/null]
 var _scene_to_unload: Node = null ## Node we're unloading. In almost all cases, SceneManager will be used to swap between two scenes - after all that it the primary focus. However, passing in [code]null[/code] for the scene to unload will skip the unloading process and simply add the new scene. This isn't recommended, as it can have some adverse affects depending on how it is used, but it does work. Use with caution :)
@@ -55,11 +54,10 @@ func swap_scenes(scene_to_load: String, transition_type: String = "fade_to_black
 
 
 func _add_loading_screen(transition_type: String = "fade_to_black"):
-  _transition = "no_to_transition" if transition_type == "no_transition" else transition_type
   _loading_screen = _loading_screen_scene.instantiate() as LoadingScreen
   _ui_canvas.add_child(_loading_screen)
   _ui_canvas.move_child(_loading_screen, -1) # Position on top layer
-  _loading_screen.start_transition(_transition)
+  _loading_screen.start_transition(transition_type)
 
   await _loading_screen.anim_player.animation_finished
   # Alternatively, could also use:

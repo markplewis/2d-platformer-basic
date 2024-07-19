@@ -59,13 +59,13 @@ var _floor_angle: float = 0.0
 var _is_damaged: bool = false
 var _is_dead: bool = false
 
-var _score_default: int = 0
-var _health_default: int = 100
-var _attack_strength_default: int = 15
-var _defence_strength_default: int = 5
+const _score_default: int = 0
+const _health_max: int = 100
+const _attack_strength_default: int = 15
+const _defence_strength_default: int = 5
 
 var _score: int = _score_default
-var _health: int = _health_default
+var _health: int = _health_max
 var _attack_strength: int = _attack_strength_default
 var _defence_strength: int = _defence_strength_default
 
@@ -100,7 +100,7 @@ func _physics_process(delta: float) -> void:
   if _interact_button_just_pressed:
     interacted.emit(self)
 
-  _attack()
+  _attack_collision_check()
 
   if _pause_button_just_pressed:
     paused_game.emit()
@@ -193,21 +193,31 @@ func _play_animation() -> void:
 
 # Death
 
+# Ater I die, then I immediately die on contact with purple slime the next time. WTF?!
+
 
 func die() -> void:
-  _is_dead = true;
-  _disable_movement()
-  _disable_collider()
-  velocity.y = -150.0
-  set_score(_score_default)
-  set_health(_health_default)
-  dying.emit()
-  get_tree().create_timer(0.6).timeout.connect(func(): dead.emit())
+  if not _is_dead:
+    _is_dead = true;
+    _disable_movement()
+    _disable_collider()
+    #print("Die")
+    set_health(0)
+    velocity.y = -150.0
+    dying.emit()
+
+    get_tree().create_timer(0.6).timeout.connect(func():
+      dead.emit()
+    )
 
 
 func _resurrect() -> void:
-  _is_dead = false;
-  resurrected.emit()
+  if _is_dead:
+    _is_dead = false;
+    set_score(_score_default)
+    #print("Resurrect")
+    set_health(_health_max)
+    resurrected.emit()
 
 
 # Interactions
@@ -219,7 +229,7 @@ func open_door(dict: Dictionary) -> void:
   opened_door.emit(dict)
 
 
-func _attack() -> void:
+func _attack_collision_check() -> void:
   var entityCollider: Object = null
   var entity: Node2D = null
 
@@ -249,8 +259,7 @@ func acquire_item(item: Node2D) -> void:
 # Score
 
 
-func get_score() -> int:
-  return _score
+#func get_score() -> int: return _score
 
 
 func set_score(value: int) -> void:
@@ -271,32 +280,32 @@ func decrease_score(value: int = 1) -> void:
 # Health
 
 
-func get_health() -> int:
-  return _health
+#func get_health() -> int: return _health
 
 
-func set_health(value: int) -> void:
-  if value <= 0:
-    die()
+func set_health(new_value: int) -> void:
+  if new_value == _health:
     return
-  if value < _health:
+  elif new_value == 0:
+    die()
+  elif new_value < _health:
     _damage()
-  _health = value
+
+  #print("Health set: ", new_value)
+  _health = new_value
   health_changed.emit(_health)
 
 
-func increase_health(value: int = 10) -> void:
-  _health += value
-  health_changed.emit(_health)
+func increase_health(value: int) -> void:
+  var new_value: int = clamp(_health + value, 0, _health_max)
+  #print("Health increased: ", new_value)
+  set_health(new_value)
 
 
-func decrease_health(value: int = 10) -> void:
-  _health -= value
-  if _health <= 0:
-    die()
-    return
-  _damage()
-  health_changed.emit(_health)
+func decrease_health(value: int) -> void:
+  var new_value: int = clamp(_health - value, 0, _health_max)
+  #print("Health decreased: ", new_value)
+  set_health(new_value)
 
 
 func take_damage(_attacker: Object, value: int) -> void:

@@ -1,8 +1,11 @@
 class_name HUD extends Control
 
-@onready var _stats_label: Label = $ColorRect/StatsLabel
+@onready var _stats_label: Label = %StatsLabel
+@onready var _progress_bar: ProgressBar = %ProgressBar
 
-var _health: int = 100
+var _progress_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
+var _health_initial: int = 100
+var _health: int = _health_initial
 var _score: int = 0
 
 var _jump_start_pos: Vector2 = Vector2.ZERO
@@ -16,11 +19,16 @@ var _jump_distance_percent: float = 0
 
 
 func _ready() -> void:
+  _progress_bar.max_value = _health_initial
+  _progress_bar.add_theme_stylebox_override("fill", _progress_bar_style_box)
+  _reset()
   _update_text()
 
 
 func _reset() -> void:
-  _health = 100
+  _health = _health_initial
+  _progress_bar.value = _health_initial
+  _progress_bar_style_box.bg_color = Color(Color.WEB_GREEN)
   _score = 0
   _jump_height = 0
   _jump_height_percent = 0
@@ -49,13 +57,11 @@ func _update_text() -> void:
     multiplier = 1
 
   var format_string: String = """
-    Health: %s
     Score: %s
     Jump height: %s (%s%%)
     Jump distance: %s (%s%%)
   """
   _stats_label.text = format_string.dedent().strip_edges() % [
-    _health,
     _score,
     _jump_height,
     _jump_height_percent,
@@ -86,11 +92,6 @@ func _on_player_jump_ended(dict: Dictionary) -> void:
   _update_text()
 
 
-func _on_player_dying() -> void:
-  _reset()
-  _update_text()
-
-
 func _on_player_resurrected() -> void:
   _reset()
   _update_text()
@@ -98,6 +99,13 @@ func _on_player_resurrected() -> void:
 
 func _on_player_health_changed(health: int) -> void:
   _health = health
+  _progress_bar.value = _health
+
+  if _health < _health_initial / 1.5:
+    _progress_bar_style_box.bg_color = Color(Color.GOLDENROD)
+  if _health < _health_initial / 3.0:
+    _progress_bar_style_box.bg_color = Color(Color.FIREBRICK)
+
   _update_text()
 
 

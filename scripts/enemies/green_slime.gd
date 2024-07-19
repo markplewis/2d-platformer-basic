@@ -14,14 +14,13 @@ class_name GreenSlime extends Node2D
 
 var _direction: int = 1
 var _is_stunned: bool = false
-var _progress_bar_style_box: StyleBoxFlat;
+var _progress_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
 
 
 func _ready() -> void:
   _progress_bar.max_value = _health
   _progress_bar.value = _health
 
-  _progress_bar_style_box = StyleBoxFlat.new()
   _progress_bar.add_theme_stylebox_override("fill", _progress_bar_style_box)
   _progress_bar_style_box.bg_color = Color(Color.LIME_GREEN)
   _progress_bar_style_box.border_width_left = 1

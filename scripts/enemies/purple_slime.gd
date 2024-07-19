@@ -19,7 +19,7 @@ var _direction: int = 1
 var _is_stunned: bool = false
 var _is_attacking: bool = false
 var _knockback_direction: int = 0
-var _progress_bar_style_box: StyleBoxFlat;
+var _progress_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
 
 # https://docs.godotengine.org/en/stable/tutorials/physics/using_character_body_2d.html
 # https://www.reddit.com/r/godot/comments/13cgr2b/how_to_get_collision_detected_with/
@@ -29,7 +29,6 @@ func _ready() -> void:
   _progress_bar.max_value = _health
   _progress_bar.value = _health
 
-  _progress_bar_style_box = StyleBoxFlat.new()
   _progress_bar.add_theme_stylebox_override("fill", _progress_bar_style_box)
   _progress_bar_style_box.bg_color = Color(Color.LIME_GREEN)
   _progress_bar_style_box.border_width_left = 1
