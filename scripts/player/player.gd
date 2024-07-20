@@ -192,8 +192,6 @@ func _play_animation() -> void:
 
 # Death
 
-# Ater I die, then I immediately die on contact with purple slime the next time. WTF?!
-
 
 func die() -> void:
   if not _is_dead:

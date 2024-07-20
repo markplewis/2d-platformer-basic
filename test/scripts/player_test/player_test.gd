@@ -1,11 +1,11 @@
 # GdUnit generated TestSuite
 class_name PlayerTest
 extends GdUnitTestSuite
-@warning_ignore('unused_parameter')
-@warning_ignore('return_value_discarded')
+@warning_ignore("unused_parameter")
+@warning_ignore("return_value_discarded")
 
 # TestSuite generated from
-const __source = 'res://scripts/player/player.gd'
+const __source = "res://scripts/player/player.gd"
 
 # https://mikeschulze.github.io/gdUnit4/first_steps/getting-started/
 
