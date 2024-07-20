@@ -1,6 +1,5 @@
 class_name Player extends CharacterBody2D
 
-signal acquired_item(dict: Dictionary)
 signal interacted(entity: Node2D)
 signal paused_game()
 signal opened_door(dict: Dictionary)
@@ -201,8 +200,7 @@ func die() -> void:
     _is_dead = true;
     _disable_movement()
     _disable_collider()
-    #print("Die")
-    set_health(0)
+    _set_health(0)
     velocity.y = -150.0
     dying.emit()
 
@@ -214,9 +212,8 @@ func die() -> void:
 func _resurrect() -> void:
   if _is_dead:
     _is_dead = false;
-    set_score(_score_default)
-    #print("Resurrect")
-    set_health(_health_max)
+    _set_score(_score_default)
+    _set_health(_health_max)
     resurrected.emit()
 
 
@@ -249,67 +246,55 @@ func _attack_collision_check() -> void:
     entity.take_damage(self, _attack_strength)
 
 
-# Items
-
-
-func acquire_item(item: Node2D) -> void:
-  acquired_item.emit({ "entity": self, "item": item })
-
-
 # Score
 
 
-#func get_score() -> int: return _score
-
-
-func set_score(value: int) -> void:
-  _score = value
+func _set_score(new_value: int) -> void:
+  if new_value == _score:
+    return
+  _score = new_value
   score_changed.emit(_score)
 
 
-func increase_score(value: int = 1) -> void:
-  _score += value
-  score_changed.emit(_score)
+func _increase_score(increase: int, current: int = _score) -> int:
+  return current + max(0, increase)
 
 
-func decrease_score(value: int = 1) -> void:
-  _score -= value
-  score_changed.emit(_score)
+func _decrease_score(decrease: int, current: int = _score) -> int:
+  return current - max(0, decrease)
+
+
+func acquire_item(item: Node2D) -> void:
+  if item is Coin:
+    _set_score(_increase_score(1))
 
 
 # Health
 
 
-#func get_health() -> int: return _health
-
-
-func set_health(new_value: int) -> void:
+func _set_health(new_value: int) -> void:
   if new_value == _health:
     return
-  elif new_value == 0:
+  elif new_value <= 0:
     die()
   elif new_value < _health:
     _damage()
 
-  #print("Health set: ", new_value)
   _health = new_value
   health_changed.emit(_health)
 
 
-func increase_health(value: int) -> void:
-  var new_value: int = clamp(_health + value, 0, _health_max)
-  #print("Health increased: ", new_value)
-  set_health(new_value)
+func _increase_health(increase: int, current: int = _health) -> int:
+  return clamp(current + max(0, increase), 0, _health_max)
 
 
-func decrease_health(value: int) -> void:
-  var new_value: int = clamp(_health - value, 0, _health_max)
-  #print("Health decreased: ", new_value)
-  set_health(new_value)
+func _decrease_health(decrease: int, current: int = _health) -> int:
+  return clamp(current - max(0, decrease), 0, _health_max)
 
 
-func take_damage(_attacker: Object, value: int) -> void:
-  decrease_health(max(0, value - _defence_strength))
+func take_damage(_attacker: Object, damage: int) -> void:
+  var health: int = _decrease_health(max(0, damage - _defence_strength))
+  _set_health(health)
 
 
 func _damage() -> void:

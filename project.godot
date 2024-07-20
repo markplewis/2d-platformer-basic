@@ -21,6 +21,10 @@ Music="*res://autoloads/music.tscn"
 Global="*res://autoloads/global.gd"
 SceneManager="*res://autoloads/scene_manager.gd"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
+
 [input]
 
 jump={

@@ -44,12 +44,6 @@ func _on_player_opened_door(dict: Dictionary) -> void:
   SceneManager.swap_scenes(dict.path_to_new_scene, dict.transition_type)
 
 
-func _on_player_acquired_item(dict: Dictionary) -> void:
-  if dict.item is Coin:
-    if dict.entity.has_method("increase_score"):
-      dict.entity.increase_score(1)
-
-
 # Toggle element visibility
 
 

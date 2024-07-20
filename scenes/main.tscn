@@ -37,7 +37,6 @@ visible = false
 [node name="MainMenu" parent="UICanvas" instance=ExtResource("4_rgr8o")]
 visible = false
 
-[connection signal="acquired_item" from="Player" to="." method="_on_player_acquired_item"]
 [connection signal="dead" from="Player" to="." method="_on_player_dead"]
 [connection signal="dying" from="Player" to="." method="_on_player_dying"]
 [connection signal="health_changed" from="Player" to="UICanvas/HUD" method="_on_player_health_changed"]
