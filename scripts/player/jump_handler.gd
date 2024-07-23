@@ -22,6 +22,7 @@ signal jump_ended
 @export var coyote_time: float = 0.1
 @export var jump_buffer_time: float = 0.1
 
+# Gravity is measured in pixels per second
 var _default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
 @onready var _coyote_timer: Timer = $CoyoteTimer
@@ -30,8 +31,8 @@ var _default_gravity: float = ProjectSettings.get_setting("physics/2d/default_gr
 const _jump_metrics_class: Resource = preload("res://scripts/player/jump_metrics.gd")
 @onready var _jump_metrics: JumpMetrics = _jump_metrics_class.new()
 
-# TODO: because we're using CharacterBody2D instead of RigidBody2D, the jump_height may vary
-# based on the game's frame rate. There doesn't seem to be any way around this, unfortunately.
+# Because we're using CharacterBody2D instead of RigidBody2D, the jump_height may vary based
+# on the game's frame rate. There doesn't seem to be any way around this, unfortunately.
 # - https://www.reddit.com/r/godot/comments/16fgryr/help_jumping_height_frame_dependent_even_though_i/
 # - https://www.gamedev.net/blogs/entry/2265460-fixing-your-timestep-and-evaluating-godot/
 
