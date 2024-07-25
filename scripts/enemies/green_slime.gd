@@ -30,7 +30,7 @@ func _ready() -> void:
   _progress_bar_style_box.border_color = Color(Color.BLACK)
 
 
-func _physics_process(delta):
+func _physics_process(delta) -> void:
   if _ray_cast_left.is_colliding():
     _direction = 1
     _animated_sprite.flip_h = false;

@@ -5,6 +5,12 @@ class_name Main extends Node2D
 @onready var _hud: HUD = $UICanvas/HUD
 
 
+# TODO: consider leaving the main scene completely empty and instantiating the UICanvas
+# programmatically in SceneManager. Then delete Player and MainCamera and create unique
+# instances of those within each level scene instead. It would be nice to be able to use
+# the "Run current scene" button without errors.
+
+
 func _ready() -> void:
   _show_main_menu()
   SceneManager.scene_added.connect(_on_scene_manager_scene_added)

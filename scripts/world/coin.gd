@@ -10,4 +10,4 @@ class_name Coin extends Area2D
 func _on_body_entered(body: Node2D) -> void:
   if body.has_method("acquire_item"):
     body.acquire_item(self)
-    _animation_player.play("pickup")
+    _animation_player.play("pickup") # Calls queue_free() when animation ends

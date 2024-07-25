@@ -14,7 +14,6 @@ script = ExtResource("1_wo22j")
 editor_description = "A container for the level scenes"
 
 [node name="Player" parent="." instance=ExtResource("6_4t4yh")]
-visible = false
 floor_snap_length = 5.0
 rotate_on_slopes = false
 

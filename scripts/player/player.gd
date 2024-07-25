@@ -200,6 +200,11 @@ func die() -> void:
     _disable_collider()
     _set_health(0)
     velocity.y = -150.0
+    # TODO: play dying animation
+    # TODO: consider destroying the player instance and creating a new one instead of resetting
+    # TODO: consider having a separate player instance within each level instead of a global one
+    # See chapter 14: Player Death and Respawn:
+    # https://www.udemy.com/course/create-a-complete-2d-platformer-in-the-godot-engine/
     dying.emit()
 
     get_tree().create_timer(0.6).timeout.connect(func():
@@ -228,10 +233,10 @@ func _attack_collision_check() -> void:
   var entityCollider: Object = null
   var entity: Node2D = null
 
-  if _attack_ray_cast_left.is_colliding():
+  if _attack_ray_cast_left.is_colliding() and _last_move_direction < 0:
     entityCollider = _attack_ray_cast_left.get_collider()
 
-  if _attack_ray_cast_right.is_colliding():
+  if _attack_ray_cast_right.is_colliding() and _last_move_direction > 0:
     entityCollider = _attack_ray_cast_right.get_collider()
 
   if entityCollider != null:

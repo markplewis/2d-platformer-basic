@@ -38,7 +38,12 @@ func _ready() -> void:
   _progress_bar_style_box.border_color = Color(Color.BLACK)
 
 
-func _physics_process(delta):
+func _physics_process(delta) -> void:
+  # TODO: consider replacing these ray casts with "EnemyGoal" Area2D scene instances
+  # func on_goal_entered(_area2d) -> void: _direction *= -1
+  # See chapter 15: Creating an Enemy:
+  # https://www.udemy.com/course/create-a-complete-2d-platformer-in-the-godot-engine/
+
   if _ray_cast_left.is_colliding():
     _direction = 1
     _animated_sprite.flip_h = false;
@@ -71,6 +76,10 @@ func _physics_process(delta):
     velocity.y += _gravity * delta
 
   move_and_slide()
+
+  # TODO: consider creating an Area2D that collides with the player instead of this CollisionShape2D.
+  # That way, the player and enemy could pass each other without getting stuck or pushing each other.
+  # The CollisionShape2D would still interact with the levels floors and walls though.
 
   var colliding_with_player: bool = false
 

@@ -19,7 +19,6 @@ signal jump_started
 signal jump_ended
 
 # Globals
-@export var coyote_time: float = 0.1
 @export var jump_buffer_time: float = 0.1
 
 # Gravity is measured in pixels per second
@@ -87,7 +86,7 @@ func handle_jump(
     if _can_jump:
       # Falling (did not jump)
       if _coyote_timer.is_stopped():
-        _coyote_timer.start(coyote_time)
+        _coyote_timer.start()
   else:
     if not _can_jump:
       # Landed on floor (after jumping or falling)
