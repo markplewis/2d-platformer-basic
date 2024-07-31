@@ -1,0 +1,18 @@
+[gd_scene load_steps=5 format=3 uid="uid://bu6wpj1105kj"]
+
+[ext_resource type="Script" path="res://scripts/ui/ui_canvas.gd" id="1_cuomk"]
+[ext_resource type="PackedScene" uid="uid://s2j02r8e6flk" path="res://scenes/ui/hud.tscn" id="2_rfm5d"]
+[ext_resource type="PackedScene" uid="uid://tupi4dy6fp8j" path="res://scenes/ui/pause_menu.tscn" id="3_tgrte"]
+[ext_resource type="PackedScene" uid="uid://dgmyfklcviqme" path="res://scenes/ui/main_menu.tscn" id="4_ioo3q"]
+
+[node name="UICanvas" type="CanvasLayer"]
+script = ExtResource("1_cuomk")
+
+[node name="HUD" parent="." instance=ExtResource("2_rfm5d")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("3_tgrte")]
+
+[node name="MainMenu" parent="." instance=ExtResource("4_ioo3q")]
+
+[connection signal="game_resumed" from="PauseMenu" to="." method="_on_pause_menu_game_resumed"]
+[connection signal="game_started" from="MainMenu" to="." method="_on_main_menu_game_started"]

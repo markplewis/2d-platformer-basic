@@ -1,49 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://bhbo7e00k16xj"]
+[gd_scene load_steps=2 format=3 uid="uid://bhbo7e00k16xj"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_wo22j"]
-[ext_resource type="PackedScene" uid="uid://dgmyfklcviqme" path="res://scenes/ui/main_menu.tscn" id="4_rgr8o"]
-[ext_resource type="PackedScene" uid="uid://s2j02r8e6flk" path="res://scenes/ui/hud.tscn" id="4_w46jh"]
-[ext_resource type="PackedScene" uid="uid://cc8t8evbdsw27" path="res://scenes/player/player.tscn" id="6_4t4yh"]
-[ext_resource type="PackedScene" uid="uid://tupi4dy6fp8j" path="res://scenes/ui/pause_menu.tscn" id="7_il87t"]
-[ext_resource type="Script" path="res://scripts/main_camera.gd" id="7_lq44e"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_wo22j")
-
-[node name="LevelContainer" type="Node" parent="."]
-editor_description = "A container for the level scenes"
-
-[node name="Player" parent="." instance=ExtResource("6_4t4yh")]
-floor_snap_length = 5.0
-rotate_on_slopes = false
-
-[node name="MainCamera" type="Camera2D" parent="." node_paths=PackedStringArray("target_node")]
-zoom = Vector2(4, 4)
-limit_bottom = 120
-limit_smoothed = true
-position_smoothing_enabled = true
-script = ExtResource("7_lq44e")
-target_node = NodePath("../Player")
-
-[node name="UICanvas" type="CanvasLayer" parent="."]
-
-[node name="HUD" parent="UICanvas" instance=ExtResource("4_w46jh")]
-visible = false
-
-[node name="PauseMenu" parent="UICanvas" instance=ExtResource("7_il87t")]
-visible = false
-
-[node name="MainMenu" parent="UICanvas" instance=ExtResource("4_rgr8o")]
-visible = false
-
-[connection signal="dead" from="Player" to="." method="_on_player_dead"]
-[connection signal="dying" from="Player" to="." method="_on_player_dying"]
-[connection signal="health_changed" from="Player" to="UICanvas/HUD" method="_on_player_health_changed"]
-[connection signal="jump_ended" from="Player" to="UICanvas/HUD" method="_on_player_jump_ended"]
-[connection signal="jump_started" from="Player" to="UICanvas/HUD" method="_on_player_jump_started"]
-[connection signal="opened_door" from="Player" to="." method="_on_player_opened_door"]
-[connection signal="paused_game" from="Player" to="." method="_on_player_paused_game"]
-[connection signal="resurrected" from="Player" to="UICanvas/HUD" method="_on_player_resurrected"]
-[connection signal="score_changed" from="Player" to="UICanvas/HUD" method="_on_player_score_changed"]
-[connection signal="resumed_game" from="UICanvas/PauseMenu" to="." method="_on_pause_menu_resumed_game"]
-[connection signal="started_game" from="UICanvas/MainMenu" to="." method="_on_main_menu_started_game"]

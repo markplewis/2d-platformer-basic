@@ -4,32 +4,42 @@ class_name HUD extends Control
 @onready var _progress_bar: ProgressBar = %ProgressBar
 
 var _progress_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
-var _health_initial: int = 100
-var _health: int = _health_initial
-var _score: int = 0
 
-var _jump_start_pos: Vector2 = Vector2.ZERO
-var _jump_start_dir: float = 0
-var _jump_end_pos: Vector2 = Vector2.ZERO
+var _health_initial: int
+var _health: int
+var _score: int
 
-var _jump_height: float = 0
-var _jump_height_percent: float = 0
-var _jump_distance: float = 0
-var _jump_distance_percent: float = 0
+var _jump_start_dir: float
+var _jump_start_pos: Vector2
+var _jump_end_pos: Vector2
+
+var _jump_height: float
+var _jump_height_percent: float
+var _jump_distance: float
+var _jump_distance_percent: float
 
 
 func _ready() -> void:
+  _health_initial = GameManager.get_max_health()
   _progress_bar.max_value = _health_initial
   _progress_bar.add_theme_stylebox_override("fill", _progress_bar_style_box)
-  _reset()
+  _on_player_health_changed(_health_initial)
+
+  _reset_jump_stats()
   _update_text()
 
+  GameManager.player_jump_started.connect(_on_player_jump_started)
+  GameManager.player_jump_ended.connect(_on_player_jump_ended)
+  GameManager.player_health_changed.connect(_on_player_health_changed)
+  GameManager.player_score_changed.connect(_on_player_score_changed)
+  GameManager.player_dying.connect(_on_player_dying)
 
-func _reset() -> void:
-  _health = _health_initial
-  _progress_bar.value = _health_initial
-  _progress_bar_style_box.bg_color = Color(Color.WEB_GREEN)
-  _score = 0
+
+func _reset_jump_stats() -> void:
+  _jump_start_dir = 0
+  _jump_start_pos = Vector2.ZERO
+  _jump_end_pos = Vector2.ZERO
+
   _jump_height = 0
   _jump_height_percent = 0
   _jump_distance = 0
@@ -71,13 +81,7 @@ func _update_text() -> void:
 
 
 func _on_player_jump_started(_dict: Dictionary) -> void:
-  _jump_start_dir = 0
-  _jump_start_pos = Vector2.ZERO
-  _jump_end_pos = Vector2.ZERO
-  _jump_height = 0
-  _jump_height_percent = 0
-  _jump_distance = 0
-  _jump_distance_percent = 0
+  _reset_jump_stats()
   _update_text()
 
 
@@ -92,23 +96,25 @@ func _on_player_jump_ended(dict: Dictionary) -> void:
   _update_text()
 
 
-func _on_player_resurrected() -> void:
-  _reset()
-  _update_text()
-
-
 func _on_player_health_changed(health: int) -> void:
   _health = health
   _progress_bar.value = _health
 
-  if _health < _health_initial / 1.5:
-    _progress_bar_style_box.bg_color = Color(Color.GOLDENROD)
   if _health < _health_initial / 3.0:
     _progress_bar_style_box.bg_color = Color(Color.FIREBRICK)
+  elif _health < _health_initial / 1.5:
+    _progress_bar_style_box.bg_color = Color(Color.GOLDENROD)
+  else:
+    _progress_bar_style_box.bg_color = Color(Color.WEB_GREEN)
 
   _update_text()
 
 
 func _on_player_score_changed(score: int) -> void:
   _score = score
+  _update_text()
+
+
+func _on_player_dying() -> void:
+  _reset_jump_stats()
   _update_text()

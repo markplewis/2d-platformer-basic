@@ -1,10 +1,10 @@
-class_name LoadingScreen extends Control
+class_name LoadingScreen extends CanvasLayer
 
 signal transition_in_complete
 
 @onready var anim_player: AnimationPlayer = %AnimationPlayer
 @onready var _progress_bar: ProgressBar = %ProgressBar
-@onready var _timer: Timer = $Timer
+@onready var _timer: Timer = %Timer
 
 var _starting_animation_name: String
 

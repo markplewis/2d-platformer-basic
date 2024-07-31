@@ -1,15 +1,7 @@
 class_name Player extends CharacterBody2D
 
-signal interacted(entity: Node2D)
-signal paused_game()
-signal opened_door(dict: Dictionary)
-signal jump_started(dict: Dictionary)
-signal jump_ended(dict: Dictionary)
-signal dying()
-signal dead()
-signal resurrected()
-signal score_changed(int)
-signal health_changed(int)
+signal interacted(entity: Node2D) # Needed for door.gd
+signal dead() # Needed for base_level.gd (probably)
 
 @export var rotate_on_slopes: bool = true
 
@@ -58,29 +50,20 @@ var _floor_angle: float = 0.0
 var _is_damaged: bool = false
 var _is_dead: bool = false
 
-const _score_default: int = 0
-const _health_max: int = 100
 const _attack_strength_default: int = 15
 const _defence_strength_default: int = 5
 
-var _score: int = _score_default
-var _health: int = _health_max
 var _attack_strength: int = _attack_strength_default
 var _defence_strength: int = _defence_strength_default
 
 
 func _ready() -> void:
-  _disable()
-  SceneManager.load_start.connect(_on_scene_manager_load_start)
-  SceneManager.scene_added.connect(_on_scene_manager_scene_added)
-  SceneManager.load_complete.connect(_on_scene_manager_load_complete)
-
-  if Global.debug and not _is_dead:
+  if GameManager.debug and not _is_dead:
     _player_debug_lines.init(self, _collision_shape.position)
 
 
 func _process(_delta: float) -> void:
-  if Global.debug and not _is_dead:
+  if GameManager.debug and not _is_dead:
     _player_debug_lines.draw(_on_floor, _floor_normal, _floor_angle, velocity)
 
 
@@ -102,7 +85,7 @@ func _physics_process(delta: float) -> void:
   _attack_collision_check()
 
   if _pause_button_just_pressed:
-    paused_game.emit()
+    GameManager.pause_game()
 
   var collision_shape_pos: Vector2 = Vector2.ZERO if _is_dead else _collision_shape.global_position
 
@@ -198,26 +181,14 @@ func die() -> void:
     _is_dead = true;
     _disable_movement()
     _disable_collider()
-    _set_health(0)
     velocity.y = -150.0
     # TODO: play dying animation
-    # TODO: consider destroying the player instance and creating a new one instead of resetting
-    # TODO: consider having a separate player instance within each level instead of a global one
-    # See chapter 14: Player Death and Respawn:
-    # https://www.udemy.com/course/create-a-complete-2d-platformer-in-the-godot-engine/
-    dying.emit()
+    GameManager.on_player_dying()
 
     get_tree().create_timer(0.6).timeout.connect(func():
       dead.emit()
+      GameManager.on_player_dead()
     )
-
-
-func _resurrect() -> void:
-  if _is_dead:
-    _is_dead = false;
-    _set_score(_score_default)
-    _set_health(_health_max)
-    resurrected.emit()
 
 
 # Interactions
@@ -226,7 +197,7 @@ func _resurrect() -> void:
 func open_door(dict: Dictionary) -> void:
   _disable_movement()
   dict.merge({ "entity": self })
-  opened_door.emit(dict)
+  GameManager.on_player_opened_door(dict)
 
 
 func _attack_collision_check() -> void:
@@ -252,52 +223,23 @@ func _attack_collision_check() -> void:
 # Score
 
 
-func _set_score(new_value: int) -> void:
-  if new_value == _score:
-    return
-  _score = new_value
-  score_changed.emit(_score)
-
-
-func _increase_score(increase: int, current: int = _score) -> int:
-  return current + max(0, increase)
-
-
-func _decrease_score(decrease: int, current: int = _score) -> int:
-  return current - max(0, decrease)
-
-
 func acquire_item(item: Node2D) -> void:
   if item is Coin:
-    _set_score(_increase_score(1))
+    GameManager.set_score(GameManager.increase_score(1))
 
 
 # Health
 
 
-func _set_health(new_value: int) -> void:
-  if new_value == _health:
-    return
-  elif new_value <= 0:
-    die()
-  elif new_value < _health:
-    _damage()
-
-  _health = new_value
-  health_changed.emit(_health)
-
-
-func _increase_health(increase: int, current: int = _health) -> int:
-  return clamp(current + max(0, increase), 0, _health_max)
-
-
-func _decrease_health(decrease: int, current: int = _health) -> int:
-  return clamp(current - max(0, decrease), 0, _health_max)
-
-
 func take_damage(_attacker: Object, damage: int) -> void:
-  var health: int = _decrease_health(max(0, damage - _defence_strength))
-  _set_health(health)
+  var new_value: int = GameManager.decrease_health(max(0, damage - _defence_strength))
+  var previous_value: int = GameManager.get_health()
+
+  if new_value <= 0:
+    die() # Health gets set to zero within this method
+  elif new_value < previous_value:
+    _damage()
+    GameManager.set_health(new_value)
 
 
 func _damage() -> void:
@@ -310,24 +252,7 @@ func _on_damage_timer_timeout() -> void:
   _is_damaged = false
 
 
-# Jump handler
-
-
-func _on_jump_handler_jump_started(dict: Dictionary) -> void:
-  jump_started.emit(dict)
-
-
-func _on_jump_handler_jump_ended(dict: Dictionary) -> void:
-  jump_ended.emit(dict)
-
-
 # Disable/enable stuff
-
-
-func _disable() -> void:
-  hide()
-  _disable_movement()
-  _disable_collider()
 
 
 func _disable_movement() -> void:
@@ -336,6 +261,7 @@ func _disable_movement() -> void:
   _trail.disable()
 
 
+## Unused
 func _enable_movement() -> void:
   _controls_disabled = false
   _trail.enable()
@@ -345,6 +271,7 @@ func _disable_collider() -> void:
   _collision_shape.set_deferred("disabled", true)
 
 
+## Unused
 func _enable_collider() -> void:
   # Due to the following bug, we must wait exactly 2 physics frames before re-enabling the
   # player's collision shape. Otherwise, if the player died by falling into a "Killzone"
@@ -359,24 +286,3 @@ func _enable_collider() -> void:
   await get_tree().physics_frame
   await get_tree().physics_frame
   _collision_shape.set_deferred("disabled", false)
-
-
-# Scene manager
-
-
-func _on_scene_manager_load_start(_loading_screen) -> void:
-  _disable_movement()
-
-
-func _on_scene_manager_scene_added(incoming_scene, _loading_screen) -> void:
-  position = incoming_scene.player_start_pos
-  _trail.clear()
-  _enable_collider()
-  show() # In case this is the first level and player hasn't appeared yet
-
-  if _is_dead:
-    _resurrect()
-
-
-func _on_scene_manager_load_complete(_incoming_scene) -> void:
-  _enable_movement()

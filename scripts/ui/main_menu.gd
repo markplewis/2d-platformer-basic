@@ -1,6 +1,6 @@
 class_name MainMenu extends Control
 
-signal started_game()
+signal game_started()
 
 @onready var _buttons_v_box: VBoxContainer = %ButtonsVBox
 
@@ -10,7 +10,7 @@ func _ready() -> void:
 
 
 func _on_start_button_pressed() -> void:
-  started_game.emit()
+  game_started.emit()
 
 
 func _on_quit_button_pressed() -> void:

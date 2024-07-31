@@ -15,9 +15,6 @@ class_name JumpHandler extends Node
 # - https://www.reddit.com/r/godot/comments/17ate0w/adding_variable_jump_height/
 # - https://www.youtube.com/watch?v=5D0XXRM5gMQ
 
-signal jump_started
-signal jump_ended
-
 # Globals
 @export var jump_buffer_time: float = 0.1
 
@@ -90,7 +87,8 @@ func handle_jump(
   else:
     if not _can_jump:
       # Landed on floor (after jumping or falling)
-      jump_ended.emit(_jump_metrics.on_jump_end(position_vector, move_direction))
+      var jump_ended_metrics: Dictionary = _jump_metrics.on_jump_end(position_vector, move_direction)
+      GameManager.on_player_jump_ended(jump_ended_metrics)
 
     _coyote_timer.stop()
     _jump_timer.stop()
@@ -128,7 +126,7 @@ func handle_jump(
     _can_jump = false
     _jump_timer.start()
 
-    jump_started.emit(_jump_metrics.on_jump_start(
+    var jump_started_metrics: Dictionary = _jump_metrics.on_jump_start(
       collision_shape_position,
       position_vector,
       move_direction,
@@ -139,7 +137,8 @@ func handle_jump(
       _jump_rise_gravity,
       _jump_fall_gravity,
       delta
-    ))
+    )
+    GameManager.on_player_jump_started(jump_started_metrics)
 
   # Keep checking input while timer is running
   if jump_button_pressed and not _jump_timer.is_stopped():

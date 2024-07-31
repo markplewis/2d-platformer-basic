@@ -245,7 +245,6 @@ begin_cap_mode = 2
 end_cap_mode = 2
 
 [node name="Trail" parent="." node_paths=PackedStringArray("target_node") instance=ExtResource("3_rmtyy")]
-visible = false
 top_level = true
 position = Vector2(0, -5)
 target_node = NodePath("..")
@@ -268,9 +267,4 @@ target_position = Vector2(0, 3)
 
 [node name="DamageTimer" type="Timer" parent="."]
 
-[connection signal="jump_ended" from="." to="Node/TrajectoryLine" method="_on_player_jump_ended"]
-[connection signal="jump_started" from="." to="Node/TrajectoryLine" method="_on_player_jump_started"]
-[connection signal="resurrected" from="." to="Node/TrajectoryLine" method="_on_player_resurrected"]
-[connection signal="jump_ended" from="JumpHandler" to="." method="_on_jump_handler_jump_ended"]
-[connection signal="jump_started" from="JumpHandler" to="." method="_on_jump_handler_jump_started"]
 [connection signal="timeout" from="DamageTimer" to="." method="_on_damage_timer_timeout"]

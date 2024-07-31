@@ -10,7 +10,7 @@ var _disabled: bool = false
 
 
 func _process(_delta: float) -> void:
-  if target_node and not _disabled:
+  if target_node != null and not _disabled:
     var pos: Vector2 = target_node.position
     _queue.push_front(pos)
 

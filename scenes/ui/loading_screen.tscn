@@ -26,7 +26,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("LoadingScreen/Panel:self_modulate")
+tracks/0/path = NodePath("Panel:self_modulate")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -42,7 +42,7 @@ length = 0.4
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("LoadingScreen/Panel:self_modulate")
+tracks/0/path = NodePath("Panel:self_modulate")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -58,7 +58,7 @@ length = 0.4
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("LoadingScreen/Panel:self_modulate")
+tracks/0/path = NodePath("Panel:self_modulate")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -70,7 +70,7 @@ tracks/0/keys = {
 tracks/1/type = "method"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("LoadingScreen")
+tracks/1/path = NodePath(".")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -89,17 +89,18 @@ _data = {
 "fade_to_black": SubResource("Animation_rwcl6")
 }
 
-[node name="LoadingScreen" type="Control"]
+[node name="LoadingScreen" type="CanvasLayer"]
+script = ExtResource("1_b6p7o")
+
+[node name="Control" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_b6p7o")
-metadata/_edit_use_anchors_ = true
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Panel" type="Panel" parent="Control"]
 self_modulate = Color(0, 0, 0, 0)
 layout_mode = 1
 anchors_preset = 15
@@ -109,7 +110,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_3d0kk")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="Control"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -118,11 +119,11 @@ grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/HBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="ProgressBar" type="ProgressBar" parent="HBoxContainer/VBoxContainer"]
+[node name="ProgressBar" type="ProgressBar" parent="Control/HBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 8)
 layout_mode = 2
@@ -130,15 +131,15 @@ theme_override_styles/background = SubResource("StyleBoxFlat_mpl8s")
 theme_override_styles/fill = SubResource("StyleBoxFlat_im4a7")
 show_percentage = false
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Control"]
 unique_name_in_owner = true
-root_node = NodePath("../..")
 libraries = {
 "": SubResource("AnimationLibrary_dbbxn")
 }
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="Control"]
+unique_name_in_owner = true
 wait_time = 3.0
 one_shot = true
 
-[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="timeout" from="Control/Timer" to="." method="_on_timer_timeout"]

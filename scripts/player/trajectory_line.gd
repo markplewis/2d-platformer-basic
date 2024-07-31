@@ -15,8 +15,14 @@ var _fps: int = ProjectSettings.get_setting("physics/common/physics_ticks_per_se
 # func _ready() -> void: set_as_top_level(true)
 
 
+func _ready() -> void:
+  GameManager.player_jump_started.connect(_on_player_jump_started)
+  GameManager.player_jump_ended.connect(_on_player_jump_ended)
+  GameManager.level_loaded.connect(_on_level_loaded)
+
+
 func _on_player_jump_started(dict: Dictionary) -> void:
-  if Global.debug:
+  if GameManager.debug:
     var start_dir: float = dict.start_dir
     var start_pos_offset: Vector2 = dict.start_pos_offset
     var duration: float = dict.duration
@@ -45,17 +51,16 @@ func _on_player_jump_started(dict: Dictionary) -> void:
 
 
 func _on_player_jump_ended(_dict: Dictionary) -> void:
-  if Global.debug:
+  if GameManager.debug:
     _clear_points_timer.stop()
     _clear_points_timer.start(2)
 
 
-func _on_player_resurrected() -> void:
-  if Global.debug:
-    _clear_points_timer.stop()
+func _on_level_loaded(_incoming_scene: Node, _loading_screen: LoadingScreen) -> void:
+  if GameManager.debug:
     clear_points()
 
 
 func _on_clear_points_timer_timeout() -> void:
-  if Global.debug:
+  if GameManager.debug:
     clear_points()

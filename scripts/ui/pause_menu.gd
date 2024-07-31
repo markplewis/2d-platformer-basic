@@ -1,6 +1,6 @@
 class_name PauseMenu extends Control
 
-signal resumed_game()
+signal game_resumed()
 
 @onready var buttons_v_box: VBoxContainer = %ButtonsVBox
 
@@ -10,7 +10,7 @@ func _ready() -> void:
 
 
 func _on_resume_button_pressed() -> void:
-  resumed_game.emit()
+  game_resumed.emit()
 
 
 func _on_quit_button_pressed() -> void:
