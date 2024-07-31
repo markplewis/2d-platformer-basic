@@ -1,7 +1,7 @@
 class_name Door extends Area2D
 
 @export_enum("fade_to_black", "wipe_to_right", "no_transition") var transition_type: String
-@export var path_to_new_scene: String # Scene we want to load when entering this door
+@export var level_index: int # Level we want to load when entering this door
 @export var entry_door_name: String # Name of door we're entering through in the next room
 
 
@@ -19,6 +19,6 @@ func _on_body_interacted(body: Node2D) -> void:
   if body.has_method("open_door"):
     body.open_door({
       "door": self,
-      "path_to_new_scene": path_to_new_scene,
+      "level_index": level_index,
       "transition_type": transition_type
     })

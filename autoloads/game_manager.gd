@@ -14,6 +14,8 @@ signal player_score_changed(int)
 signal player_dying()
 signal player_dead()
 
+@export var _levels: Array[PackedScene] = []
+
 var debug_mode: bool = true # Change this to false before building the game
 var debug: bool = OS.is_debug_build() and debug_mode
 
@@ -30,7 +32,7 @@ var _score: int = 0
 
 func _ready() -> void:
   _level_manager = _level_manager_class.new()
-  _level_manager.init(get_tree().root)
+  _level_manager.init(_levels, get_tree().root)
 
   _level_manager.load_started.connect(_on_level_manager_load_started)
   _level_manager.scene_added.connect(_on_level_manager_scene_added)
@@ -73,7 +75,7 @@ func pause_game() -> void:
 
 
 func _start_game() -> void:
-  _level_manager.swap_scenes("res://scenes/levels/level_01.tscn", "fade_to_black")
+  _level_manager.change_level(0)
 
 
 func _resume_game() -> void:
@@ -133,7 +135,7 @@ func decrease_health(decrease: int, current: int = _health) -> int:
 
 
 func on_player_opened_door(dict: Dictionary) -> void:
-  _level_manager.swap_scenes(dict.path_to_new_scene, dict.transition_type)
+  _level_manager.change_level(dict.level_index, dict.transition_type)
 
 
 func on_player_jump_started(dict: Dictionary) -> void:
@@ -153,7 +155,7 @@ func on_player_dying() -> void:
 
 func on_player_dead() -> void:
   Engine.time_scale = 1
-  _level_manager.swap_scenes("", "fade_to_black") # Reload current scene
+  _level_manager.change_level(-1) # Reload current scene
   set_health(_health_max)
   set_score(0)
   player_dead.emit()

@@ -371,7 +371,7 @@ position = Vector2(773, -40)
 position = Vector2(-120, 88)
 collision_mask = 2
 transition_type = "fade_to_black"
-path_to_new_scene = "res://scenes/levels/level_02.tscn"
+level_index = 1
 entry_door_name = "DoorInLevel2"
 
 [node name="Door" type="Sprite2D" parent="DoorInLevel1" index="0"]
