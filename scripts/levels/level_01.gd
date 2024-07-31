@@ -1,7 +1,9 @@
-class_name Level01 extends Node
+class_name Level01 extends BaseLevel
 
-@onready var _door: Door = $DoorInLevel1
-@onready var player_start_pos: Vector2 = _door.position
+
+func _ready() -> void:
+  super()
+  #print("Level01")
 
 
 func pass_data() -> String:
