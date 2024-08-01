@@ -3,7 +3,7 @@ class_name Level02 extends BaseLevel
 
 func _ready() -> void:
   super()
-  #print("Level02")
+  #print("Level 2 ready")
 
 
 func pass_data() -> String:
@@ -11,15 +11,15 @@ func pass_data() -> String:
 
 
 func receive_data(_data: String) -> void:
-  #print(data)
+  #print("Level 2 received: '%s'" % [data])
   pass
 
 
 func init_scene() -> void:
-  #print("Init level 2")
+  #print("Level 2 init")
   pass
 
 
 func start_scene() -> void:
-  #print("Start level 2")
+  #print("Level 2 start")
   pass

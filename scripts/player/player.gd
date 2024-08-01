@@ -1,7 +1,6 @@
 class_name Player extends CharacterBody2D
 
 signal interacted(entity: Node2D) # Needed for door.gd
-signal dead() # Needed for base_level.gd (probably)
 
 @export var rotate_on_slopes: bool = true
 
@@ -186,7 +185,6 @@ func die() -> void:
     GameManager.on_player_dying()
 
     get_tree().create_timer(0.6).timeout.connect(func():
-      dead.emit()
       GameManager.on_player_dead()
     )
 

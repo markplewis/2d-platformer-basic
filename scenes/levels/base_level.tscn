@@ -452,6 +452,7 @@ shape = SubResource("WorldBoundaryShape2D_m0t1l")
 [node name="Collectables" type="Node2D" parent="."]
 
 [node name="GameCamera" parent="." instance=ExtResource("4_jb30u")]
+position_smoothing_enabled = false
 
 [node name="Player" parent="." instance=ExtResource("3_8d4p7")]
 unique_name_in_owner = true
