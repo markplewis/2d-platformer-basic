@@ -32,7 +32,7 @@ var _score: int = 0
 
 func _ready() -> void:
   _level_manager = _level_manager_class.new()
-  _level_manager.init(_levels, get_tree().root)
+  _level_manager.init(_levels, get_tree())
 
   _level_manager.load_started.connect(_on_level_manager_load_started)
   _level_manager.scene_added.connect(_on_level_manager_scene_added)
@@ -54,7 +54,7 @@ func _on_level_manager_load_started(loading_screen: LoadingScreen) -> void:
 
 
 func _on_level_manager_scene_added(loaded_scene: Node, loading_screen: LoadingScreen) -> void:
-  _ui_canvas.show_hud()
+  _ui_canvas.show_hud() # TODO: move HUD into base_level scene
   level_loaded.emit(loaded_scene, loading_screen)
 
 
@@ -155,7 +155,7 @@ func on_player_dying() -> void:
 
 func on_player_dead() -> void:
   Engine.time_scale = 1
-  _level_manager.change_level(-1) # Reload current scene
   set_health(_health_max)
   set_score(0)
   player_dead.emit()
+  _level_manager.change_level(-1) # Reload current scene

@@ -1,7 +1,8 @@
 class_name Door extends Area2D
 
+# Level we want to load when entering this door (see GameManager's _levels array)
+@export var level_index: int
 @export_enum("fade_to_black", "wipe_to_right", "no_transition") var transition_type: String
-@export var level_index: int # Level we want to load when entering this door
 
 
 func _on_body_entered(body: Node2D) -> void:

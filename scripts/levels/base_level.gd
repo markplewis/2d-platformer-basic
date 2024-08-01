@@ -4,7 +4,10 @@ class_name BaseLevel extends Node
 
 
 func _ready() -> void:
-  GameManager.player_dead.connect(func(): _player.queue_free())
+  GameManager.player_dead.connect(func():
+    if _player != null:
+      _player.queue_free()
+  )
 
 
 ## Because we load a new level (or reload the current level) whenever the player

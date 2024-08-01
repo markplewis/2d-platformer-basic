@@ -31,25 +31,25 @@ position = Vector2(264, 37)
 [node name="Coin3" parent="Collectables/Coins" index="2" instance=ExtResource("4_jhcoy")]
 position = Vector2(248, 37)
 
-[node name="DoorInLevel2" parent="." index="5" instance=ExtResource("5_wlts4")]
+[node name="Door" parent="." index="5" instance=ExtResource("5_wlts4")]
 position = Vector2(-24, 72)
 collision_mask = 2
 transition_type = "fade_to_black"
 
-[node name="Door" type="Sprite2D" parent="DoorInLevel2" index="0"]
+[node name="DoorSprite" type="Sprite2D" parent="Door" index="0"]
 texture = ExtResource("1_vjf46")
 hframes = 16
 vframes = 16
 frame = 55
 
-[node name="Decoration" type="Sprite2D" parent="DoorInLevel2" index="1"]
+[node name="Decoration" type="Sprite2D" parent="Door" index="1"]
 position = Vector2(0, -16)
 texture = ExtResource("1_vjf46")
 hframes = 16
 vframes = 16
 frame = 56
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DoorInLevel2" index="2"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Door" index="2"]
 shape = SubResource("RectangleShape2D_lqsii")
 
 [node name="Player" parent="." index="7"]

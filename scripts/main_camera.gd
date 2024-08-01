@@ -1,6 +1,6 @@
 class_name GameCamera extends Camera2D
 
-@onready var _player: Player = %Player
+@export var target_node: Node2D = null
 
 
 func _ready() -> void:
@@ -9,8 +9,8 @@ func _ready() -> void:
 
 
 func _process(_delta) -> void:
-  if _player != null:
-    set_position(_player.get_position())
+  if target_node != null:
+    set_position(target_node.get_position())
 
 
 func _on_game_manager_level_loading(_loading_screen: LoadingScreen) -> void:
@@ -19,3 +19,4 @@ func _on_game_manager_level_loading(_loading_screen: LoadingScreen) -> void:
 
 func _on_game_manager_level_ready(_incoming_scene: Node) -> void:
   position_smoothing_enabled = true
+  position_smoothing_speed = 5.0 # Default value

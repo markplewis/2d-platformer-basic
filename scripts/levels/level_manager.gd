@@ -20,12 +20,14 @@ var _current_level_node: Node = null
 var _new_level_index: int = 0
 var _new_level_path: String = ""
 
+var _tree: SceneTree = null
 var _root: Node = null
 
 
-func init(levels: Array[PackedScene], root_node: Node) -> void:
+func init(levels: Array[PackedScene], tree: SceneTree) -> void:
   _levels = levels
-  _root = root_node # get_tree().root
+  _tree = tree
+  _root = tree.root
 
   _content_invalid.connect(_on_content_invalid)
   _content_failed_to_load.connect(_on_content_failed_to_load)
@@ -113,6 +115,11 @@ func _on_content_finished_loading(incoming_level: Node) -> void:
   _root.move_child(incoming_level, 0) # Position on bottom layer (first child)
 
   scene_added.emit(incoming_level, _loading_screen)
+
+  # Remove whichever scene existed when the game was initially run. This will differ
+  # depending on whether the "Run Project" or "Run Current Scene" button was clicked.
+  if _tree != null:
+    _tree.unload_current_scene()
 
   if _current_level_node != null and _current_level_node != _root:
     _current_level_node.queue_free()
