@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://dhqo0s3acb2n5"]
+[gd_scene load_steps=12 format=3 uid="uid://dhqo0s3acb2n5"]
 
 [ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_dbl82"]
 [ext_resource type="Texture2D" uid="uid://co4837rvrwkys" path="res://assets/sprites/world_tileset.png" id="1_dkwee"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://cc8t8evbdsw27" path="res://scenes/player/player.tscn" id="3_8d4p7"]
 [ext_resource type="PackedScene" uid="uid://dbssua4ob4uoo" path="res://scenes/world/hazard_area.tscn" id="4_0hngq"]
 [ext_resource type="PackedScene" uid="uid://d14ffqogglcib" path="res://scenes/game_camera.tscn" id="4_jb30u"]
+[ext_resource type="PackedScene" uid="uid://s2j02r8e6flk" path="res://scenes/ui/hud.tscn" id="7_4crl7"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ne1kq"]
 texture = ExtResource("1_dkwee")
@@ -439,11 +440,11 @@ layer_0/name = "Background"
 layer_1/name = "Midground"
 layer_1/tile_data = PackedInt32Array(65535, 0, 0, 0, 0, 0, 1, 0, 0, 65534, 0, 0)
 
-[node name="Killzone" parent="." instance=ExtResource("4_0hngq")]
+[node name="KillZone" parent="." instance=ExtResource("4_0hngq")]
 position = Vector2(0, 128)
 instant_death = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Killzone"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone"]
 shape = SubResource("WorldBoundaryShape2D_m0t1l")
 
 [node name="Platforms" type="Node2D" parent="."]
@@ -459,3 +460,8 @@ target_node = NodePath("../Player")
 unique_name_in_owner = true
 floor_snap_length = 5.0
 rotate_on_slopes = false
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 0
+
+[node name="HUD" parent="CanvasLayer" instance=ExtResource("7_4crl7")]

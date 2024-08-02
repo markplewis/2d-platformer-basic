@@ -5,31 +5,21 @@ signal game_resumed()
 
 @onready var _main_menu: MainMenu = $MainMenu
 @onready var _pause_menu: PauseMenu = $PauseMenu
-@onready var _hud: HUD = $HUD
 
 
 func hide_all() -> void:
   _main_menu.hide()
   _pause_menu.hide()
-  _hud.hide()
 
 
 func show_main_menu() -> void:
   _main_menu.show()
   _pause_menu.hide()
-  _hud.hide()
 
 
 func show_pause_menu() -> void:
   _main_menu.hide()
   _pause_menu.show()
-  _hud.hide()
-
-
-func show_hud() -> void:
-  _main_menu.hide()
-  _pause_menu.hide()
-  _hud.show()
 
 
 func _on_main_menu_game_started() -> void:

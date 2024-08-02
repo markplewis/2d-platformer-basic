@@ -8,7 +8,7 @@ content_margin_left = 16.0
 content_margin_top = 16.0
 content_margin_right = 16.0
 content_margin_bottom = 16.0
-bg_color = Color(0.0132662, 0.18906, 0.273725, 1)
+bg_color = Color(0.012, 0.188, 0.275, 0.9)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s63ok"]
 bg_color = Color(0.00343967, 0.0903336, 0.141868, 1)

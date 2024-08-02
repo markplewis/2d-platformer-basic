@@ -19,6 +19,9 @@ signal player_dead()
 var debug_mode: bool = true # Change this to false before building the game
 var debug: bool = OS.is_debug_build() and debug_mode
 
+# True when the "Run Current Scene" button was pressed in the editor instead of "Run Project"
+var running_individual_scene: bool = true
+
 const _level_manager_class: Resource = preload("res://scripts/levels/level_manager.gd")
 var _level_manager: LevelManager = null
 
@@ -54,7 +57,7 @@ func _on_level_manager_load_started(loading_screen: LoadingScreen) -> void:
 
 
 func _on_level_manager_scene_added(loaded_scene: Node, loading_screen: LoadingScreen) -> void:
-  _ui_canvas.show_hud() # TODO: move HUD into base_level scene
+  _ui_canvas.hide_all()
   level_loaded.emit(loaded_scene, loading_screen)
 
 
@@ -80,7 +83,7 @@ func _start_game() -> void:
 
 func _resume_game() -> void:
   Engine.time_scale = 1
-  _ui_canvas.show_hud()
+  _ui_canvas.hide_all()
 
 
 # Score
