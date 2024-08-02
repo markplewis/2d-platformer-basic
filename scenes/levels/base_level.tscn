@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://co4837rvrwkys" path="res://assets/sprites/world_tileset.png" id="1_dkwee"]
 [ext_resource type="Texture2D" uid="uid://b3mvaeqkskaqi" path="res://assets/sprites/slopes.png" id="2_fwuma"]
 [ext_resource type="PackedScene" uid="uid://cc8t8evbdsw27" path="res://scenes/player/player.tscn" id="3_8d4p7"]
-[ext_resource type="PackedScene" uid="uid://dbssua4ob4uoo" path="res://scenes/world/kill_zone.tscn" id="4_fc2e0"]
+[ext_resource type="PackedScene" uid="uid://dbssua4ob4uoo" path="res://scenes/world/hazard_area.tscn" id="4_0hngq"]
 [ext_resource type="PackedScene" uid="uid://d14ffqogglcib" path="res://scenes/game_camera.tscn" id="4_jb30u"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ne1kq"]
@@ -439,8 +439,9 @@ layer_0/name = "Background"
 layer_1/name = "Midground"
 layer_1/tile_data = PackedInt32Array(65535, 0, 0, 0, 0, 0, 1, 0, 0, 65534, 0, 0)
 
-[node name="Killzone" parent="." instance=ExtResource("4_fc2e0")]
+[node name="Killzone" parent="." instance=ExtResource("4_0hngq")]
 position = Vector2(0, 128)
+instant_death = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Killzone"]
 shape = SubResource("WorldBoundaryShape2D_m0t1l")

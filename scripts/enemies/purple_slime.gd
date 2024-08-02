@@ -81,22 +81,37 @@ func _physics_process(delta) -> void:
   # That way, the player and enemy could pass each other without getting stuck or pushing each other.
   # The CollisionShape2D would still interact with the levels floors and walls though.
 
-  var colliding_with_player: bool = false
+  #var colliding_with_player: bool = false
 
-  for i in get_slide_collision_count():
-    var collision: KinematicCollision2D = get_slide_collision(i)
-    var collider: Object = collision.get_collider()
-    #print("Collided with ", collider.name)
+  #for i in get_slide_collision_count():
+    #var collision: KinematicCollision2D = get_slide_collision(i)
+    #var collider: Object = collision.get_collider()
+    ##print("Collided with ", collider.name)
 
-    if collider is Player and collider.has_method("take_damage"):
-      colliding_with_player = true
+    #if collider is Player and collider.has_method("take_damage"):
+      #colliding_with_player = true
 
-    if colliding_with_player and not _is_attacking:
+    #if colliding_with_player and not _is_attacking:
+      #_is_attacking = true
+      #collider.take_damage(self, attack_strength)
+
+  #if not colliding_with_player:
+    #_is_attacking = false
+
+
+func _on_hazard_area_area_entered(area: Area2D) -> void:
+  if not _is_attacking:
+    var entity: Node = area.owner
+
+    if entity != null and entity.has_method("take_damage"):
+      # TODO: keep attacking on a time interval, so long as player is within Area2D
+      # TODO: maybe stop moving while attacking?
       _is_attacking = true
-      collider.take_damage(self, attack_strength)
+      entity.take_damage(self, attack_strength)
 
-  if not colliding_with_player:
-    _is_attacking = false
+
+func _on_hazard_area_area_exited(_area: Area2D) -> void:
+  _is_attacking = false
 
 
 func take_damage(attacker: Object, value: int) -> void:

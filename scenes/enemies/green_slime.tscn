@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://b3qus4msbewf3" path="res://assets/sprites/slime_green.png" id="1_4qdpu"]
 [ext_resource type="Script" path="res://scripts/enemies/green_slime.gd" id="1_nx6cd"]
-[ext_resource type="PackedScene" uid="uid://dbssua4ob4uoo" path="res://scenes/world/kill_zone.tscn" id="2_yu07v"]
+[ext_resource type="PackedScene" uid="uid://dbssua4ob4uoo" path="res://scenes/world/hazard_area.tscn" id="3_0gfjy"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jjhe8"]
 atlas = ExtResource("1_4qdpu")
@@ -74,10 +74,11 @@ position = Vector2(0, -12)
 sprite_frames = SubResource("SpriteFrames_pih16")
 autoplay = "default"
 
-[node name="Killzone" parent="." instance=ExtResource("2_yu07v")]
-collision_layer = 4
+[node name="HazardArea" parent="." instance=ExtResource("3_0gfjy")]
+collision_layer = 12
+instant_death = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Killzone"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HazardArea"]
 position = Vector2(0, -6)
 shape = SubResource("RectangleShape2D_sv41y")
 

@@ -175,7 +175,7 @@ func _play_animation() -> void:
 # Death
 
 
-func die() -> void:
+func _die() -> void:
   if not _is_dead:
     _is_dead = true;
     _disable_movement()
@@ -187,6 +187,13 @@ func die() -> void:
     get_tree().create_timer(0.6).timeout.connect(func():
       GameManager.on_player_dead()
     )
+
+
+func _on_hazard_area_area_entered(area: HazardArea) -> void:
+  if area.instant_death:
+    _die()
+  #else:
+    #print("Hazard damage!")
 
 
 # Interactions
@@ -234,7 +241,7 @@ func take_damage(_attacker: Object, damage: int) -> void:
   var previous_value: int = GameManager.get_health()
 
   if new_value <= 0:
-    die() # Health gets set to zero within this method
+    _die() # Health gets set to zero within this method
   elif new_value < previous_value:
     _damage()
     GameManager.set_health(new_value)
