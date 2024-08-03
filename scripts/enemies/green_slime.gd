@@ -16,6 +16,8 @@ var _direction: int = 1
 var _is_stunned: bool = false
 var _progress_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
 
+# This enemy extends Node2D instead of CharacterBody2D
+
 
 func _ready() -> void:
   _progress_bar.max_value = _health

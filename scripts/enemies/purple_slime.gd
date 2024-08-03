@@ -21,8 +21,12 @@ var _is_attacking: bool = false
 var _knockback_direction: int = 0
 var _progress_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
 
+# This enemy extends CharacterBody2D, which is a kinematic style character controller:
+# https://docs.godotengine.org/en/stable/tutorials/physics/kinematic_character_2d.html
 # https://docs.godotengine.org/en/stable/tutorials/physics/using_character_body_2d.html
-# https://www.reddit.com/r/godot/comments/13cgr2b/how_to_get_collision_detected_with/
+# Demos:
+# - Kinematic Character 2D Demo: https://godotengine.org/asset-library/asset/2719
+# - RigidBody Character 3D Demo: https://godotengine.org/asset-library/asset/2750
 
 
 func _ready() -> void:
@@ -52,11 +56,17 @@ func _physics_process(delta) -> void:
     _direction = -1
     _animated_sprite.flip_h = true;
 
-  # move_and_slide multiplies velocity (i.e. direction * speed) by delta internally, so it's
-  # inappropriate to do that here. Time-based acceleration forces such as gravity, however, must be
-  # multiplied by delta when adding them to the velocity, in order to integrate them before passing
-  # the final velocity to move_and_slide (which then calculates a distance). When not using
-  # move_and_slide, both velocity and acceleration must be multiplied by delta.
+  # Velocity is defined as direction * speed and represents movement measured in pixels per frame
+  # (physics frames, in this case, since we're defining it within _physics_process). Acceleration
+  # forces such as gravity, however, are time-based and are measured in pixels per second.
+  #
+  # Unlike move_and_collide, move_and_slide multiplies velocity by delta internally, so it's
+  # inappropriate to do that here. Acceleration forces such as gravity, however, must be multiplied
+  # by delta and added to the velocity before passing the final velocity to move_and_slide (which
+  # then calculates a distance). When not using move_and_slide, both velocity and acceleration must
+  # be multiplied by delta.
+  #
+  # https://docs.godotengine.org/en/stable/tutorials/physics/kinematic_character_2d.html
   # https://forum.godotengine.org/t/character-controller-why-only-use-delta-on-gravity-in-physicsprocess/50422/5
   # https://forum.godotengine.org/t/when-using-move-and-slide-is-it-correct-to-use-delta-for-accelleration/12437/2
   # https://forum.godotengine.org/t/acceleration-and-velocity-for-2d-character-controller/68881/2
@@ -77,16 +87,20 @@ func _physics_process(delta) -> void:
 
   move_and_slide()
 
-  # TODO: consider creating an Area2D that collides with the player instead of this CollisionShape2D.
-  # That way, the player and enemy could pass each other without getting stuck or pushing each other.
-  # The CollisionShape2D would still interact with the levels floors and walls though.
+  # How to detect collisions between CollisionShape2D nodes:
+  # https://www.reddit.com/r/godot/comments/13cgr2b/how_to_get_collision_detected_with/
+  # Instead of relying on CollisionShape2D nodes for enemy-to-player collision detection,
+  # I'm now using Area2D nodes (see PurpleSlime's HazardArea and Player's HazardDetectionArea).
+  # This facilitates better separation of concerns and makes it easier to understand which
+  # collision layers and masks each node should be assigned to. I've kept my previous code
+  # commented out below, for future reference:
 
   #var colliding_with_player: bool = false
 
   #for i in get_slide_collision_count():
     #var collision: KinematicCollision2D = get_slide_collision(i)
     #var collider: Object = collision.get_collider()
-    ##print("Collided with ", collider.name)
+    #print("Collided with ", collider.name)
 
     #if collider is Player and collider.has_method("take_damage"):
       #colliding_with_player = true

@@ -189,7 +189,7 @@ func _die() -> void:
     )
 
 
-func _on_hazard_area_area_entered(area: HazardArea) -> void:
+func _on_hazard_detection_area_entered(area: HazardArea) -> void:
   if area.instant_death:
     _die()
   #else:
