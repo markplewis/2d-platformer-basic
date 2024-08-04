@@ -1,9 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://beehbfw5vb2nq"]
+[gd_scene load_steps=10 format=3 uid="uid://beehbfw5vb2nq"]
 
 [ext_resource type="PackedScene" uid="uid://dhqo0s3acb2n5" path="res://scenes/levels/base_level.tscn" id="1_u3ogu"]
 [ext_resource type="Texture2D" uid="uid://co4837rvrwkys" path="res://assets/sprites/world_tileset.png" id="1_vjf46"]
 [ext_resource type="Script" path="res://scripts/levels/level_02.gd" id="2_d8ggt"]
 [ext_resource type="PackedScene" uid="uid://b2vkvemxq8180" path="res://scenes/world/coin.tscn" id="4_jhcoy"]
+[ext_resource type="PackedScene" uid="uid://ccit7bdk1l0ox" path="res://scenes/enemies/enemy_waypoint.tscn" id="4_uhwnp"]
+[ext_resource type="Texture2D" uid="uid://ckftxfiianhpy" path="res://assets/sprites/fruit.png" id="5_gtr7l"]
 [ext_resource type="PackedScene" uid="uid://bs2wlm2ok2sox" path="res://scenes/enemies/purple_slime.tscn" id="5_lowql"]
 [ext_resource type="PackedScene" uid="uid://2njcjlgdflnx" path="res://scenes/world/door.tscn" id="5_wlts4"]
 
@@ -19,6 +21,26 @@ layer_1/tile_data = PackedInt32Array(196600, 458752, 0, 262136, 393216, 2, 32767
 
 [node name="PurpleSlime" parent="Enemies" index="0" instance=ExtResource("5_lowql")]
 position = Vector2(168, 80)
+
+[node name="PurpleSlimeWaypoint1" parent="Enemies" index="1" instance=ExtResource("4_uhwnp")]
+position = Vector2(72, 76)
+entry_direction = "right"
+
+[node name="Sprite2D" type="Sprite2D" parent="Enemies/PurpleSlimeWaypoint1" index="1"]
+position = Vector2(0, -3)
+texture = ExtResource("5_gtr7l")
+hframes = 4
+vframes = 4
+
+[node name="PurpleSlimeWaypoint2" parent="Enemies" index="2" instance=ExtResource("4_uhwnp")]
+position = Vector2(200, 76)
+entry_direction = "left"
+
+[node name="Sprite2D" type="Sprite2D" parent="Enemies/PurpleSlimeWaypoint2" index="1"]
+position = Vector2(0, -3)
+texture = ExtResource("5_gtr7l")
+hframes = 4
+vframes = 4
 
 [node name="Coins" type="Node2D" parent="Collectables" index="0"]
 
@@ -54,3 +76,6 @@ shape = SubResource("RectangleShape2D_lqsii")
 
 [node name="Player" parent="." index="7"]
 position = Vector2(25, 64)
+
+[node name="CanvasLayer" parent="." index="8"]
+visible = false

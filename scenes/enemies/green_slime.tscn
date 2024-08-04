@@ -78,7 +78,7 @@ autoplay = "default"
 collision_layer = 12
 instant_death = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HazardArea"]
+[node name="HazardCollisionShape" type="CollisionShape2D" parent="HazardArea"]
 position = Vector2(0, -6)
 shape = SubResource("RectangleShape2D_sv41y")
 

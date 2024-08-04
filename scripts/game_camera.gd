@@ -28,7 +28,6 @@ func _on_game_manager_level_loaded(_loaded_scene: Node, _loading_screen: Loading
 
 
 func _on_game_manager_level_ready(_incoming_scene: Node) -> void:
-  print("level_ready")
   position_smoothing_enabled = true
 
 

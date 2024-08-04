@@ -43,18 +43,12 @@ func _ready() -> void:
 
 
 func _physics_process(delta) -> void:
-  # TODO: consider replacing these ray casts with "EnemyGoal" Area2D scene instances
-  # func on_goal_entered(_area2d) -> void: _direction *= -1
-  # See chapter 15: Creating an Enemy:
-  # https://www.udemy.com/course/create-a-complete-2d-platformer-in-the-godot-engine/
+  # This enemy moves between waypoints but I also kept the raycasts because it's possible
+  # for the player to knock the enemy outside of the waypoint containment area
+  if _ray_cast_left.is_colliding(): _direction = 1
+  if _ray_cast_right.is_colliding(): _direction = -1
 
-  if _ray_cast_left.is_colliding():
-    _direction = 1
-    _animated_sprite.flip_h = false;
-
-  if _ray_cast_right.is_colliding():
-    _direction = -1
-    _animated_sprite.flip_h = true;
+  _animated_sprite.flip_h = _direction < 0
 
   # Velocity is defined as direction * speed and represents movement measured in pixels per frame
   # (physics frames, in this case, since we're defining it within _physics_process). Acceleration
@@ -111,6 +105,23 @@ func _physics_process(delta) -> void:
 
   #if not colliding_with_player:
     #_is_attacking = false
+
+
+func _on_waypoint_detector_area_entered(area: EnemyWaypoint) -> void:
+  var change_direction: bool = false
+
+  match area.entry_direction:
+    "all":
+      change_direction = true
+    "left":
+      if _direction > 0:
+        change_direction = true
+    "right":
+      if _direction < 0:
+        change_direction = true
+
+  if change_direction:
+    _direction *= -1
 
 
 func _on_hazard_area_area_entered(area: Area2D) -> void:

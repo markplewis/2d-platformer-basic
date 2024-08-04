@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://bs2wlm2ok2sox"]
+[gd_scene load_steps=15 format=3 uid="uid://bs2wlm2ok2sox"]
 
 [ext_resource type="Script" path="res://scripts/enemies/purple_slime.gd" id="1_j3akc"]
 [ext_resource type="Texture2D" uid="uid://diyffmpmeym6w" path="res://assets/sprites/slime_purple.png" id="2_m455c"]
@@ -58,6 +58,9 @@ size = Vector2(10, 12)
 [sub_resource type="CircleShape2D" id="CircleShape2D_u0a3i"]
 radius = 5.0
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8x2rl"]
+size = Vector2(10, 12)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sule7"]
 bg_color = Color(0, 0, 0, 1)
 
@@ -78,15 +81,23 @@ position = Vector2(0, -12)
 sprite_frames = SubResource("SpriteFrames_pih16")
 autoplay = "default"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="PhysicsCollisionShape" type="CollisionShape2D" parent="."]
 position = Vector2(0, -6)
 shape = SubResource("RectangleShape2D_sv41y")
 
 [node name="HazardArea" parent="." instance=ExtResource("3_04xjq")]
 position = Vector2(0, -5)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HazardArea"]
+[node name="HazardCollisionShape" type="CollisionShape2D" parent="HazardArea"]
 shape = SubResource("CircleShape2D_u0a3i")
+
+[node name="WaypointDetector" type="Area2D" parent="."]
+position = Vector2(0, -6)
+collision_layer = 16
+collision_mask = 16
+
+[node name="WaypointCollisionShape" type="CollisionShape2D" parent="WaypointDetector"]
+shape = SubResource("RectangleShape2D_8x2rl")
 
 [node name="RayCastLeft" type="RayCast2D" parent="."]
 position = Vector2(0, -6)
@@ -117,4 +128,5 @@ show_percentage = false
 
 [connection signal="area_entered" from="HazardArea" to="." method="_on_hazard_area_area_entered"]
 [connection signal="area_exited" from="HazardArea" to="." method="_on_hazard_area_area_exited"]
+[connection signal="area_entered" from="WaypointDetector" to="." method="_on_waypoint_detector_area_entered"]
 [connection signal="timeout" from="StunTimer" to="." method="_on_stun_timer_timeout"]
