@@ -9,7 +9,8 @@ class_name PurpleSlime extends CharacterBody2D
 @onready var _ray_cast_right: RayCast2D = $RayCastRight
 @onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var _stun_timer: Timer = $StunTimer
-@onready var _progress_bar: ProgressBar = $ProgressBar
+@onready var _attack_timer: Timer = $AttackTimer
+@onready var _health_bar: ProgressBar = $HealthBar
 
 @onready var _health: int = health
 
@@ -17,9 +18,9 @@ var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
 var _direction: int = 1
 var _is_stunned: bool = false
-var _is_attacking: bool = false
+var _attack_target: Node = null
 var _knockback_direction: int = 0
-var _progress_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
+var _health_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
 
 # This enemy extends CharacterBody2D, which is a kinematic style character controller:
 # https://docs.godotengine.org/en/stable/tutorials/physics/kinematic_character_2d.html
@@ -30,25 +31,27 @@ var _progress_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
 
 
 func _ready() -> void:
-  _progress_bar.max_value = _health
-  _progress_bar.value = _health
+  _health_bar.max_value = _health
+  _health_bar.value = _health
 
-  _progress_bar.add_theme_stylebox_override("fill", _progress_bar_style_box)
-  _progress_bar_style_box.bg_color = Color(Color.LIME_GREEN)
-  _progress_bar_style_box.border_width_left = 1
-  _progress_bar_style_box.border_width_top = 1
-  _progress_bar_style_box.border_width_right = 1
-  _progress_bar_style_box.border_width_bottom = 1
-  _progress_bar_style_box.border_color = Color(Color.BLACK)
+  _health_bar.add_theme_stylebox_override("fill", _health_bar_style_box)
+  _health_bar_style_box.bg_color = Color(Color.LIME_GREEN)
+  _health_bar_style_box.border_width_left = 1
+  _health_bar_style_box.border_width_top = 1
+  _health_bar_style_box.border_width_right = 1
+  _health_bar_style_box.border_width_bottom = 1
+  _health_bar_style_box.border_color = Color(Color.BLACK)
 
 
 func _physics_process(delta) -> void:
-  # This enemy moves between waypoints but I also kept the raycasts because it's possible
-  # for the player to knock the enemy outside of the waypoint containment area
-  if _ray_cast_left.is_colliding(): _direction = 1
-  if _ray_cast_right.is_colliding(): _direction = -1
-
-  _animated_sprite.flip_h = _direction < 0
+  if _attack_target != null:
+    _animated_sprite.flip_h = _attack_target.global_position.x < global_position.x
+  else:
+    # This enemy moves between waypoints but I also kept the raycasts because it's possible
+    # for the player to knock the enemy outside of the waypoint containment area
+    if _ray_cast_left.is_colliding(): _direction = 1
+    if _ray_cast_right.is_colliding(): _direction = -1
+    _animated_sprite.flip_h = _direction < 0
 
   # Velocity is defined as direction * speed and represents movement measured in pixels per frame
   # (physics frames, in this case, since we're defining it within _physics_process). Acceleration
@@ -74,7 +77,7 @@ func _physics_process(delta) -> void:
     _knockback_direction = 0
 
   if not _is_stunned:
-    velocity.x = _direction * move_speed
+    velocity.x = (_direction * move_speed) if _attack_target == null else 0.0
 
   if not is_on_floor():
     velocity.y += _gravity * delta
@@ -110,43 +113,57 @@ func _physics_process(delta) -> void:
 func _on_waypoint_detector_area_entered(area: EnemyWaypoint) -> void:
   var change_direction: bool = false
 
-  match area.entry_direction:
-    "all":
-      change_direction = true
-    "left":
-      if _direction > 0:
+  if _attack_target == null:
+    match area.entry_direction:
+      "all":
         change_direction = true
-    "right":
-      if _direction < 0:
-        change_direction = true
+      "left":
+        if _direction > 0:
+          change_direction = true
+      "right":
+        if _direction < 0:
+          change_direction = true
 
   if change_direction:
     _direction *= -1
 
 
-func _on_hazard_area_area_entered(area: Area2D) -> void:
-  if not _is_attacking:
+func _on_hazard_area_entered(area: Area2D) -> void:
+  if _attack_target == null:
     var entity: Node = area.owner
 
     if entity != null and entity.has_method("take_damage"):
-      # TODO: keep attacking on a time interval, so long as player is within Area2D
-      # TODO: maybe stop moving while attacking?
-      _is_attacking = true
-      entity.take_damage(self, attack_strength)
+      _attack_target = entity
+      _attack_timer.stop()
+      _attack_timer.start()
+      _attack(_attack_target)
 
 
-func _on_hazard_area_area_exited(_area: Area2D) -> void:
-  _is_attacking = false
+func _on_hazard_area_exited(_area: Area2D) -> void:
+  _attack_target = null
+  _attack_timer.stop()
+
+
+func _on_attack_timer_timeout() -> void:
+  if _attack_target == null:
+    _attack_timer.stop()
+  else:
+    _attack(_attack_target) # If still in attack range, attack again
+
+
+func _attack(entity: Node) -> void:
+  if entity.has_method("take_damage"):
+    entity.take_damage(self, attack_strength)
 
 
 func take_damage(attacker: Object, value: int) -> void:
   _health -= max(0, value - defence_strength)
-  _progress_bar.value = _health
+  _health_bar.value = _health
 
   if _health < health / 1.5:
-    _progress_bar_style_box.bg_color = Color(Color.YELLOW)
+    _health_bar_style_box.bg_color = Color(Color.YELLOW)
   if _health < health / 3.0:
-    _progress_bar_style_box.bg_color = Color(Color.RED)
+    _health_bar_style_box.bg_color = Color(Color.RED)
 
   if _health <= 0:
     _die()
@@ -160,17 +177,17 @@ func take_damage(attacker: Object, value: int) -> void:
     _stun()
 
 
+func _die() -> void:
+  queue_free()
+
+
 func _stun() -> void:
   _is_stunned = true
   _stun_timer.stop()
-  _stun_timer.start(0.5)
+  _stun_timer.start()
   _animated_sprite.play("stunned")
 
 
 func _on_stun_timer_timeout() -> void:
   _is_stunned = false
   _animated_sprite.play("default")
-
-
-func _die() -> void:
-  queue_free()

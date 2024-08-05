@@ -76,6 +76,3 @@ shape = SubResource("RectangleShape2D_lqsii")
 
 [node name="Player" parent="." index="7"]
 position = Vector2(25, 64)
-
-[node name="CanvasLayer" parent="." index="8"]
-visible = false
