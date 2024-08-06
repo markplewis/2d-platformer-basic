@@ -223,22 +223,22 @@ rotate_on_slopes = false
 
 [node name="SpriteContainer" type="Node2D" parent="."]
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="SpriteContainer"]
+[node name="AnimatedSprite" type="AnimatedSprite2D" parent="SpriteContainer"]
 position = Vector2(0, -12)
 sprite_frames = SubResource("SpriteFrames_kdq00")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="PhysicsCollisionShape" type="CollisionShape2D" parent="."]
+[node name="PhysicsCollider" type="CollisionShape2D" parent="."]
 position = Vector2(0, -5)
 shape = SubResource("CircleShape2D_0krl3")
 
-[node name="HazardDetector" type="Area2D" parent="."]
+[node name="HazardSensor" type="Area2D" parent="."]
 position = Vector2(0, -5)
 collision_layer = 8
 collision_mask = 8
 
-[node name="HazardCollisionShape" type="CollisionShape2D" parent="HazardDetector"]
+[node name="HazardSensorCollider" type="CollisionShape2D" parent="HazardSensor"]
 shape = SubResource("CircleShape2D_uaau3")
 
 [node name="InputHandler" parent="." instance=ExtResource("3_qhlyp")]
@@ -262,22 +262,22 @@ position = Vector2(0, -5)
 target_node = NodePath("..")
 max_length = 30
 
-[node name="AttackRayCastLeft" type="RayCast2D" parent="."]
+[node name="AttackRangeSensorLeft" type="RayCast2D" parent="."]
 position = Vector2(0, -5)
 target_position = Vector2(-30, 0)
 collision_mask = 4
 collide_with_areas = true
 
-[node name="AttackRayCastRight" type="RayCast2D" parent="."]
+[node name="AttackRangeSensorRight" type="RayCast2D" parent="."]
 position = Vector2(0, -5)
 target_position = Vector2(30, 0)
 collision_mask = 4
 collide_with_areas = true
 
-[node name="GroundDetectionRayCast" type="RayCast2D" parent="."]
+[node name="GroundSensor" type="RayCast2D" parent="."]
 target_position = Vector2(0, 3)
 
 [node name="DamageTimer" type="Timer" parent="."]
 
-[connection signal="area_entered" from="HazardDetector" to="." method="_on_hazard_detector_area_entered"]
+[connection signal="area_entered" from="HazardSensor" to="." method="_on_hazard_sensor_area_entered"]
 [connection signal="timeout" from="DamageTimer" to="." method="_on_damage_timer_timeout"]

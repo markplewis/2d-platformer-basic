@@ -5,12 +5,13 @@ class_name PurpleSlime extends CharacterBody2D
 @export var defence_strength: int = 5
 @export var health: int = 60
 
-@onready var _ray_cast_left: RayCast2D = $RayCastLeft
-@onready var _ray_cast_right: RayCast2D = $RayCastRight
-@onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var _wall_sensor_left: RayCast2D = $WallSensorLeft
+@onready var _wall_sensor_right: RayCast2D = $WallSensorRight
+@onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite
 @onready var _stun_timer: Timer = $StunTimer
 @onready var _attack_timer: Timer = $AttackTimer
 @onready var _health_bar: ProgressBar = $HealthBar
+@onready var _attack_area_collider: CollisionShape2D = $AttackArea/AttackAreaCollider
 
 @onready var _health: int = health
 
@@ -45,13 +46,13 @@ func _ready() -> void:
 
 func _physics_process(delta) -> void:
   if _attack_target != null:
-    _animated_sprite.flip_h = _attack_target.global_position.x < global_position.x
+    _flip(_attack_target.global_position.x < global_position.x) # Flip to face target
   else:
-    # This enemy moves between waypoints but I also kept the raycasts because it's possible
-    # for the player to knock the enemy outside of the waypoint containment area
-    if _ray_cast_left.is_colliding(): _direction = 1
-    if _ray_cast_right.is_colliding(): _direction = -1
-    _animated_sprite.flip_h = _direction < 0
+    # This enemy moves between waypoints but raycasts are still necessary for when it chases
+    # the player outside of the waypoint containment area or gets knocked outside of it
+    if _wall_sensor_left.is_colliding(): _direction = 1
+    if _wall_sensor_right.is_colliding(): _direction = -1
+    _flip(_direction < 0)
 
   # Velocity is defined as direction * speed and represents movement measured in pixels per frame
   # (physics frames, in this case, since we're defining it within _physics_process). Acceleration
@@ -68,6 +69,7 @@ func _physics_process(delta) -> void:
   # https://forum.godotengine.org/t/when-using-move-and-slide-is-it-correct-to-use-delta-for-accelleration/12437/2
   # https://forum.godotengine.org/t/acceleration-and-velocity-for-2d-character-controller/68881/2
 
+  # Apply a one-time knock-back force this physics frame
   if _knockback_direction != 0:
     velocity.y -= 150
     if _knockback_direction > 0:
@@ -76,6 +78,8 @@ func _physics_process(delta) -> void:
       velocity.x = -80
     _knockback_direction = 0
 
+  # If stunned, then this enemy is probably still being knocked back. Otherwise,
+  # continue to partol until a target is in sight, in which case stop moving.
   if not _is_stunned:
     velocity.x = (_direction * move_speed) if _attack_target == null else 0.0
 
@@ -87,7 +91,7 @@ func _physics_process(delta) -> void:
   # How to detect collisions between CollisionShape2D nodes:
   # https://www.reddit.com/r/godot/comments/13cgr2b/how_to_get_collision_detected_with/
   # Instead of relying on CollisionShape2D nodes for enemy-to-player collision detection,
-  # I'm now using Area2D nodes (see PurpleSlime's HazardArea and Player's HazardDetectionArea).
+  # I'm now using Area2D nodes (see PurpleSlime's AttackArea and Player's HazardSensor).
   # This facilitates better separation of concerns and makes it easier to understand which
   # collision layers and masks each node should be assigned to. I've kept my previous code
   # commented out below, for future reference:
@@ -110,9 +114,10 @@ func _physics_process(delta) -> void:
     #_is_attacking = false
 
 
-func _on_waypoint_detector_area_entered(area: EnemyWaypoint) -> void:
+func _on_waypoint_sensor_area_entered(area: EnemyWaypoint) -> void:
   var change_direction: bool = false
 
+  # Ignore the waypoint if a target is in sight (continue moving past it, if necessary)
   if _attack_target == null:
     match area.entry_direction:
       "all":
@@ -128,27 +133,29 @@ func _on_waypoint_detector_area_entered(area: EnemyWaypoint) -> void:
     _direction *= -1
 
 
-func _on_hazard_area_entered(area: Area2D) -> void:
+func _on_attack_area_entered(area: Area2D) -> void:
   if _attack_target == null:
     var entity: Node = area.owner
 
     if entity != null and entity.has_method("take_damage"):
       _attack_target = entity
-      _attack_timer.stop()
-      _attack_timer.start()
-      _attack(_attack_target)
+      # Immediately restarting the timer would cause this enemy to apply immediate damage
+      # whenever the player moves out of range then back into range again. This felt too difficult.
+      if _attack_timer.is_stopped():
+        _attack_timer.start()
+        _attack(_attack_target)
 
 
-func _on_hazard_area_exited(_area: Area2D) -> void:
+func _on_attack_area_exited(_area: Area2D) -> void:
   _attack_target = null
-  _attack_timer.stop()
+  # Allow _attack_timer to elapse naturally instead of calling stop() here
 
 
 func _on_attack_timer_timeout() -> void:
   if _attack_target == null:
     _attack_timer.stop()
   else:
-    _attack(_attack_target) # If still in attack range, attack again
+    _attack(_attack_target) # If still in range, attack again
 
 
 func _attack(entity: Node) -> void:
@@ -191,3 +198,10 @@ func _stun() -> void:
 func _on_stun_timer_timeout() -> void:
   _is_stunned = false
   _animated_sprite.play("default")
+
+
+func _flip(flip: bool) -> void:
+  _animated_sprite.flip_h = flip
+  # Collision shape always extends in front of this enemy, not behind
+  _attack_area_collider.position.x = -16 if flip else 16
+

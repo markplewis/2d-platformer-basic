@@ -19,14 +19,14 @@ var _controls_disabled: bool = false
 
 # Physics and visuals
 @onready var _sprite_container: Node2D = $SpriteContainer
-@onready var _animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite2D
-@onready var _collision_shape: CollisionShape2D = $PhysicsCollisionShape
+@onready var _animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite
+@onready var _collision_shape: CollisionShape2D = $PhysicsCollider
 @onready var _trail: Trail = $Trail
 
-# RayCasts
-@onready var _attack_ray_cast_left: RayCast2D = $AttackRayCastLeft
-@onready var _attack_ray_cast_right: RayCast2D = $AttackRayCastRight
-@onready var _ground_ray_cast: RayCast2D = $GroundDetectionRayCast
+# Sensors
+@onready var _attack_range_sensor_left: RayCast2D = $AttackRangeSensorLeft
+@onready var _attack_range_sensor_right: RayCast2D = $AttackRangeSensorRight
+@onready var _ground_sensor: RayCast2D = $GroundSensor
 
 # Debugging
 const _player_debug_lines_class: Resource = preload("res://scripts/player/player_debug_lines.gd")
@@ -131,8 +131,8 @@ func _rotate_sprite() -> void:
   # rotation = 0.0
 
   # https://www.reddit.com/r/godot/comments/1agit6k/why_is_the_characterbody2d_property_max_floor/
-  if _on_floor and _ground_ray_cast.is_colliding():
-    _floor_normal = _ground_ray_cast.get_collision_normal()
+  if _on_floor and _ground_sensor.is_colliding():
+    _floor_normal = _ground_sensor.get_collision_normal()
     _floor_angle = Vector2.UP.angle_to(_floor_normal)
     # print("Angle: " + str(round(abs(rad_to_deg(_floor_angle)))))
     # print("Max: " + str(rad_to_deg(floor_max_angle)))
@@ -190,7 +190,7 @@ func _die() -> void:
     )
 
 
-func _on_hazard_detector_area_entered(area: HazardArea) -> void:
+func _on_hazard_sensor_area_entered(area: HazardArea) -> void:
   if area.instant_death:
     _die()
   #else:
@@ -210,11 +210,11 @@ func _attack_collision_check() -> void:
   var entityCollider: Object = null
   var entity: Node2D = null
 
-  if _attack_ray_cast_left.is_colliding() and _last_move_direction < 0:
-    entityCollider = _attack_ray_cast_left.get_collider()
+  if _attack_range_sensor_left.is_colliding() and _last_move_direction < 0:
+    entityCollider = _attack_range_sensor_left.get_collider()
 
-  if _attack_ray_cast_right.is_colliding() and _last_move_direction > 0:
-    entityCollider = _attack_ray_cast_right.get_collider()
+  if _attack_range_sensor_right.is_colliding() and _last_move_direction > 0:
+    entityCollider = _attack_range_sensor_right.get_collider()
 
   if entityCollider != null:
     if entityCollider is CharacterBody2D:
@@ -242,7 +242,7 @@ func take_damage(_attacker: Object, damage: int) -> void:
   var previous_value: int = GameManager.get_health()
 
   if new_value <= 0:
-    _die() # Health gets set to zero within this method
+    _die() # Health gets set to zero within _die() method
   elif new_value < previous_value:
     _damage()
     GameManager.set_health(new_value)
@@ -278,7 +278,7 @@ func _disable_collider() -> void:
 
 ## Unused
 # Due to the following bug, we must wait exactly 2 physics frames before re-enabling the
-# player's collision shape. Otherwise, if the player died by falling into a "Killzone"
+# player's collision shape. Otherwise, if the player died by falling into a "KillZone"
 # (an Area2D node with a WorldBoundary collision shape), then the Area2D's body_entered signal
 # will fire twice (once when the player touches it and again when the level/scene re-loads,
 # even if the player's position has changed by that point and they're no longer touching it).

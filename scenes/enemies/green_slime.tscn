@@ -69,24 +69,24 @@ border_color = Color(0, 0, 0, 1)
 [node name="GreenSlime" type="Node2D"]
 script = ExtResource("1_nx6cd")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -12)
 sprite_frames = SubResource("SpriteFrames_pih16")
 autoplay = "default"
 
-[node name="HazardArea" parent="." instance=ExtResource("3_0gfjy")]
+[node name="AttackArea" parent="." instance=ExtResource("3_0gfjy")]
 collision_layer = 12
 instant_death = true
 
-[node name="HazardCollisionShape" type="CollisionShape2D" parent="HazardArea"]
+[node name="AttackAreaCollider" type="CollisionShape2D" parent="AttackArea"]
 position = Vector2(0, -6)
 shape = SubResource("RectangleShape2D_sv41y")
 
-[node name="RayCastLeft" type="RayCast2D" parent="."]
+[node name="WallSensorLeft" type="RayCast2D" parent="."]
 position = Vector2(0, -6)
 target_position = Vector2(-9, 0)
 
-[node name="RayCastRight" type="RayCast2D" parent="."]
+[node name="WallSensorRight" type="RayCast2D" parent="."]
 position = Vector2(0, -6)
 target_position = Vector2(9, 0)
 

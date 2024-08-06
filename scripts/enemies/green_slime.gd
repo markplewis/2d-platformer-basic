@@ -4,9 +4,9 @@ class_name GreenSlime extends Node2D
 @export var defence_strength: int = 5
 @export var health: int = 60
 
-@onready var _ray_cast_left: RayCast2D = $RayCastLeft
-@onready var _ray_cast_right: RayCast2D = $RayCastRight
-@onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var _wall_sensor_left: RayCast2D = $WallSensorLeft
+@onready var _wall_sensor_right: RayCast2D = $WallSensorRight
+@onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite
 @onready var _stun_timer: Timer = $StunTimer
 @onready var _progress_bar: ProgressBar = $ProgressBar
 
@@ -33,11 +33,11 @@ func _ready() -> void:
 
 
 func _physics_process(delta) -> void:
-  if _ray_cast_left.is_colliding():
+  if _wall_sensor_left.is_colliding():
     _direction = 1
     _animated_sprite.flip_h = false;
 
-  if _ray_cast_right.is_colliding():
+  if _wall_sensor_right.is_colliding():
     _direction = -1
     _animated_sprite.flip_h = true;
 
@@ -60,6 +60,10 @@ func take_damage(_attacker: Object, value: int) -> void:
     _stun()
 
 
+func _die() -> void:
+  queue_free()
+
+
 func _stun() -> void:
   _is_stunned = true
   _stun_timer.stop()
@@ -70,7 +74,3 @@ func _stun() -> void:
 func _on_stun_timer_timeout() -> void:
   _is_stunned = false
   _animated_sprite.play("default")
-
-
-func _die() -> void:
-  queue_free()
