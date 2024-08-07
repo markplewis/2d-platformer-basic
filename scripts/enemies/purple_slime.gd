@@ -5,14 +5,21 @@ class_name PurpleSlime extends CharacterBody2D
 @export var defence_strength: int = 5
 @export var health: int = 60
 
+# Sensors and physics
 @onready var _wall_sensor_left: RayCast2D = $WallSensorLeft
 @onready var _wall_sensor_right: RayCast2D = $WallSensorRight
-@onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite
-@onready var _stun_timer: Timer = $StunTimer
-@onready var _attack_timer: Timer = $AttackTimer
-@onready var _health_bar: ProgressBar = $HealthBar
 @onready var _attack_area_collider: CollisionShape2D = $AttackArea/AttackAreaCollider
 
+# Sprites
+@onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite
+@onready var _alerted_sprite: Sprite2D = $AlertedSprite
+
+# Timers
+@onready var _stun_timer: Timer = $StunTimer
+@onready var _attack_timer: Timer = $AttackTimer
+
+# Health
+@onready var _health_bar: ProgressBar = $HealthBar
 @onready var _health: int = health
 
 var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
@@ -32,6 +39,8 @@ var _health_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
 
 
 func _ready() -> void:
+  _alerted_sprite.visible = false
+
   _health_bar.max_value = _health
   _health_bar.value = _health
 
@@ -53,6 +62,8 @@ func _physics_process(delta) -> void:
     if _wall_sensor_left.is_colliding(): _direction = 1
     if _wall_sensor_right.is_colliding(): _direction = -1
     _flip(_direction < 0)
+
+  _alerted_sprite.visible = false if _attack_target == null else true
 
   # Velocity is defined as direction * speed and represents movement measured in pixels per frame
   # (physics frames, in this case, since we're defining it within _physics_process). Acceleration
@@ -186,6 +197,7 @@ func take_damage(attacker: Object, value: int) -> void:
 
 func _die() -> void:
   queue_free()
+  GameManager.apply_camera_shake(1)
 
 
 func _stun() -> void:
@@ -193,6 +205,7 @@ func _stun() -> void:
   _stun_timer.stop()
   _stun_timer.start()
   _animated_sprite.play("stunned")
+  GameManager.apply_camera_shake(0.7)
 
 
 func _on_stun_timer_timeout() -> void:

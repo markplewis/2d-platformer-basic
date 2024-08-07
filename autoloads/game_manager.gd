@@ -162,3 +162,11 @@ func on_player_dead() -> void:
   set_score(0)
   player_dead.emit()
   _level_manager.change_level(-1) # Reload current scene
+
+
+# Camera shake
+
+func apply_camera_shake(percentage: float) -> void:
+  var cameras: Array = get_tree().get_nodes_in_group("camera")
+  if (cameras.size() > 0):
+    cameras[0].apply_shake(percentage)

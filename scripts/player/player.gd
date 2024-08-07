@@ -182,6 +182,7 @@ func _die() -> void:
     _disable_collider()
     velocity.y = -150.0
     # TODO: play dying animation
+    GameManager.apply_camera_shake(1)
     GameManager.on_player_dying()
 
     get_tree().create_timer(0.6).timeout.connect(func():
@@ -252,6 +253,7 @@ func _damage() -> void:
   _is_damaged = true
   _damage_timer.stop()
   _damage_timer.start(0.5)
+  GameManager.apply_camera_shake(0.7)
 
 
 func _on_damage_timer_timeout() -> void:

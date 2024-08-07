@@ -1,9 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://d14ffqogglcib"]
+[gd_scene load_steps=3 format=3 uid="uid://d14ffqogglcib"]
 
 [ext_resource type="Script" path="res://scripts/game_camera.gd" id="1_0nw3u"]
 
-[node name="GameCamera" type="Camera2D"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_fk4wd"]
+seed = 2048
+
+[node name="GameCamera" type="Camera2D" groups=["camera"]]
 zoom = Vector2(4, 4)
 limit_bottom = 120
 limit_smoothed = true
 script = ExtResource("1_0nw3u")
+shake_noise = SubResource("FastNoiseLite_fk4wd")

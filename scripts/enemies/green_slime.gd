@@ -62,6 +62,7 @@ func take_damage(_attacker: Object, value: int) -> void:
 
 func _die() -> void:
   queue_free()
+  GameManager.apply_camera_shake(1)
 
 
 func _stun() -> void:
@@ -69,6 +70,7 @@ func _stun() -> void:
   _stun_timer.stop()
   _stun_timer.start(0.5)
   _animated_sprite.play("stunned")
+  GameManager.apply_camera_shake(0.7)
 
 
 func _on_stun_timer_timeout() -> void:
