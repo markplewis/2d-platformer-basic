@@ -6,9 +6,9 @@ class_name PurpleSlime extends CharacterBody2D
 @export var health: int = 60
 
 # Sensors and physics
+@onready var _enemy_sensor: RayCast2D = $EnemySensor
 @onready var _wall_sensor_left: RayCast2D = $WallSensorLeft
 @onready var _wall_sensor_right: RayCast2D = $WallSensorRight
-@onready var _attack_area_collider: CollisionShape2D = $AttackArea/AttackAreaCollider
 
 # Sprites
 @onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite
@@ -29,6 +29,7 @@ var _is_stunned: bool = false
 var _attack_target: Node = null
 var _knockback_direction: int = 0
 var _health_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
+var _enemy_sensor_initial_pos: float = 0
 
 # This enemy extends CharacterBody2D, which is a kinematic style character controller:
 # https://docs.godotengine.org/en/stable/tutorials/physics/kinematic_character_2d.html
@@ -40,6 +41,7 @@ var _health_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
 
 func _ready() -> void:
   _alerted_sprite.visible = false
+  _enemy_sensor_initial_pos = _enemy_sensor.target_position.x
 
   _health_bar.max_value = _health
   _health_bar.value = _health
@@ -54,6 +56,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta) -> void:
+  _sense_enemy()
+
   if _attack_target != null:
     _flip(_attack_target.global_position.x < global_position.x) # Flip to face target
   else:
@@ -144,9 +148,20 @@ func _on_waypoint_sensor_area_entered(area: EnemyWaypoint) -> void:
     _direction *= -1
 
 
-func _on_attack_area_entered(area: Area2D) -> void:
-  if _attack_target == null:
-    var entity: Node = area.owner
+func _sense_enemy() -> void:
+  if _attack_target != null and not _enemy_sensor.is_colliding():
+    # Allow _attack_timer to elapse naturally instead of calling stop() here
+    _attack_target = null
+
+  elif _attack_target == null and _enemy_sensor.is_colliding():
+    var entityCollider: Object = _enemy_sensor.get_collider()
+    var entity: Node2D = null
+
+    if entityCollider != null:
+      if entityCollider is CharacterBody2D:
+        entity = entityCollider
+      else:
+        entity = entityCollider.owner
 
     if entity != null and entity.has_method("take_damage"):
       _attack_target = entity
@@ -157,11 +172,6 @@ func _on_attack_area_entered(area: Area2D) -> void:
         _attack(_attack_target)
 
 
-func _on_attack_area_exited(_area: Area2D) -> void:
-  _attack_target = null
-  # Allow _attack_timer to elapse naturally instead of calling stop() here
-
-
 func _on_attack_timer_timeout() -> void:
   if _attack_target == null:
     _attack_timer.stop()
@@ -170,6 +180,7 @@ func _on_attack_timer_timeout() -> void:
 
 
 func _attack(entity: Node) -> void:
+  # TODO: fire a projectile instead of applying direct damage to the enemy
   if entity.has_method("take_damage"):
     entity.take_damage(self, attack_strength)
 
@@ -215,6 +226,6 @@ func _on_stun_timer_timeout() -> void:
 
 func _flip(flip: bool) -> void:
   _animated_sprite.flip_h = flip
-  # Collision shape always extends in front of this enemy, not behind
-  _attack_area_collider.position.x = -16 if flip else 16
+  # Player sensor raycast should always extend in front of this enemy, not behind
+  _enemy_sensor.target_position.x = -_enemy_sensor_initial_pos if flip else _enemy_sensor_initial_pos
 

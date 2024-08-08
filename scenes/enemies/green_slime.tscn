@@ -78,7 +78,7 @@ autoplay = "default"
 collision_layer = 12
 instant_death = true
 
-[node name="AttackAreaCollider" type="CollisionShape2D" parent="AttackArea"]
+[node name="AttackCollider" type="CollisionShape2D" parent="AttackArea"]
 position = Vector2(0, -6)
 shape = SubResource("RectangleShape2D_sv41y")
 

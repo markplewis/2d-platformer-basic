@@ -215,7 +215,7 @@ radius = 5.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_uaau3"]
 radius = 4.0
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" groups=["player"]]
 z_index = 5
 collision_layer = 2
 script = ExtResource("1_xlc0g")
@@ -238,7 +238,7 @@ position = Vector2(0, -5)
 collision_layer = 8
 collision_mask = 8
 
-[node name="HazardSensorCollider" type="CollisionShape2D" parent="HazardSensor"]
+[node name="HazardCollider" type="CollisionShape2D" parent="HazardSensor"]
 shape = SubResource("CircleShape2D_uaau3")
 
 [node name="InputHandler" parent="." instance=ExtResource("3_qhlyp")]

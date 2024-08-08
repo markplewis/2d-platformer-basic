@@ -1,12 +1,8 @@
-[gd_scene load_steps=16 format=3 uid="uid://bs2wlm2ok2sox"]
+[gd_scene load_steps=14 format=3 uid="uid://bs2wlm2ok2sox"]
 
 [ext_resource type="Script" path="res://scripts/enemies/purple_slime.gd" id="1_j3akc"]
 [ext_resource type="Texture2D" uid="uid://diyffmpmeym6w" path="res://assets/sprites/slime_purple.png" id="2_m455c"]
-[ext_resource type="PackedScene" uid="uid://dbssua4ob4uoo" path="res://scenes/world/hazard_area.tscn" id="3_04xjq"]
 [ext_resource type="Texture2D" uid="uid://ckftxfiianhpy" path="res://assets/sprites/fruit.png" id="3_t470r"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_wpu77"]
-size = Vector2(48, 12)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_87das"]
 atlas = ExtResource("2_m455c")
@@ -77,13 +73,6 @@ border_color = Color(0, 0, 0, 1)
 collision_layer = 4
 script = ExtResource("1_j3akc")
 
-[node name="AttackArea" parent="." instance=ExtResource("3_04xjq")]
-position = Vector2(0, -5)
-
-[node name="AttackAreaCollider" type="CollisionShape2D" parent="AttackArea"]
-position = Vector2(16, -1)
-shape = SubResource("RectangleShape2D_wpu77")
-
 [node name="AlertedSprite" type="Sprite2D" parent="."]
 position = Vector2(0, -30)
 texture = ExtResource("3_t470r")
@@ -105,8 +94,13 @@ position = Vector2(0, -6)
 collision_layer = 16
 collision_mask = 16
 
-[node name="WaypointSensorCollider" type="CollisionShape2D" parent="WaypointSensor"]
+[node name="WaypointCollider" type="CollisionShape2D" parent="WaypointSensor"]
 shape = SubResource("RectangleShape2D_8x2rl")
+
+[node name="EnemySensor" type="RayCast2D" parent="."]
+position = Vector2(0, -6)
+target_position = Vector2(40, 0)
+collision_mask = 2
 
 [node name="WallSensorLeft" type="RayCast2D" parent="."]
 position = Vector2(0, -6)
@@ -141,8 +135,6 @@ theme_override_styles/background = SubResource("StyleBoxFlat_sule7")
 theme_override_styles/fill = SubResource("StyleBoxFlat_34e2d")
 show_percentage = false
 
-[connection signal="area_entered" from="AttackArea" to="." method="_on_attack_area_entered"]
-[connection signal="area_exited" from="AttackArea" to="." method="_on_attack_area_exited"]
 [connection signal="area_entered" from="WaypointSensor" to="." method="_on_waypoint_sensor_area_entered"]
 [connection signal="timeout" from="StunTimer" to="." method="_on_stun_timer_timeout"]
 [connection signal="timeout" from="AttackTimer" to="." method="_on_attack_timer_timeout"]
