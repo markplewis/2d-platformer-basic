@@ -191,8 +191,8 @@ func _die() -> void:
     )
 
 
-func _on_hazard_sensor_area_entered(area: HazardArea) -> void:
-  if area.instant_death:
+func _on_hazard_sensor_area_entered(area: Area2D) -> void:
+  if area is HazardArea and area.instant_death:
     _die()
   #else:
     #print("Hazard damage!")
@@ -253,7 +253,7 @@ func _damage() -> void:
   _is_damaged = true
   _damage_timer.stop()
   _damage_timer.start(0.5)
-  GameManager.apply_camera_shake(0.7)
+  GameManager.apply_camera_shake(0.6)
 
 
 func _on_damage_timer_timeout() -> void:

@@ -1,0 +1,50 @@
+[gd_scene load_steps=7 format=3 uid="uid://ddblunqweg2sx"]
+
+[ext_resource type="Script" path="res://scripts/enemies/projectile.gd" id="1_jxh0a"]
+[ext_resource type="Texture2D" uid="uid://ckftxfiianhpy" path="res://assets/sprites/fruit.png" id="1_n0q45"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_2pejh"]
+radius = 3.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_35ldj"]
+atlas = ExtResource("1_n0q45")
+region = Rect2(6, 56, 4, 4)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tn0s4"]
+atlas = ExtResource("1_n0q45")
+region = Rect2(22, 56, 4, 4)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_4s7gn"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_35ldj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tn0s4")
+}],
+"loop": true,
+"name": &"default",
+"speed": 10.0
+}]
+
+[node name="Projectile" type="Area2D"]
+collision_layer = 8
+collision_mask = 8
+script = ExtResource("1_jxh0a")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_2pejh")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_4s7gn")
+autoplay = "default"
+frame_progress = 0.826978
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+autostart = true
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

@@ -6,9 +6,11 @@ class_name PurpleSlime extends CharacterBody2D
 @export var health: int = 60
 
 # Sensors and physics
+@onready var _physics_collider: CollisionShape2D = $PhysicsCollider
 @onready var _enemy_sensor: RayCast2D = $EnemySensor
 @onready var _wall_sensor_left: RayCast2D = $WallSensorLeft
 @onready var _wall_sensor_right: RayCast2D = $WallSensorRight
+
 
 # Sprites
 @onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite
@@ -22,6 +24,9 @@ class_name PurpleSlime extends CharacterBody2D
 @onready var _health_bar: ProgressBar = $HealthBar
 @onready var _health: int = health
 
+const _projectile_scene: PackedScene = preload("res://scenes/enemies/projectile.tscn")
+var _projectile: Projectile = null
+
 var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
 var _direction: int = 1
@@ -30,6 +35,8 @@ var _attack_target: Node = null
 var _knockback_direction: int = 0
 var _health_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
 var _enemy_sensor_initial_pos: float = 0
+
+var _flipped: bool = false
 
 # This enemy extends CharacterBody2D, which is a kinematic style character controller:
 # https://docs.godotengine.org/en/stable/tutorials/physics/kinematic_character_2d.html
@@ -179,10 +186,16 @@ func _on_attack_timer_timeout() -> void:
     _attack(_attack_target) # If still in range, attack again
 
 
-func _attack(entity: Node) -> void:
-  # TODO: fire a projectile instead of applying direct damage to the enemy
-  if entity.has_method("take_damage"):
-    entity.take_damage(self, attack_strength)
+func _attack(_entity: Node) -> void:
+  _projectile = _projectile_scene.instantiate() as Projectile
+  _projectile.damage = attack_strength
+  _projectile.direction = Vector2(-1, 0) if _flipped else Vector2(1, 0)
+  _projectile.global_position = _physics_collider.global_position
+  add_child(_projectile)
+
+  # Deal immediate damage:
+  #if entity.has_method("take_damage"):
+    #entity.take_damage(self, attack_strength)
 
 
 func take_damage(attacker: Object, value: int) -> void:
@@ -216,7 +229,7 @@ func _stun() -> void:
   _stun_timer.stop()
   _stun_timer.start()
   _animated_sprite.play("stunned")
-  GameManager.apply_camera_shake(0.7)
+  GameManager.apply_camera_shake(0.6)
 
 
 func _on_stun_timer_timeout() -> void:
@@ -225,6 +238,7 @@ func _on_stun_timer_timeout() -> void:
 
 
 func _flip(flip: bool) -> void:
+  _flipped = flip
   _animated_sprite.flip_h = flip
   # Player sensor raycast should always extend in front of this enemy, not behind
   _enemy_sensor.target_position.x = -_enemy_sensor_initial_pos if flip else _enemy_sensor_initial_pos

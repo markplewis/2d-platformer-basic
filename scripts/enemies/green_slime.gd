@@ -70,7 +70,7 @@ func _stun() -> void:
   _stun_timer.stop()
   _stun_timer.start(0.5)
   _animated_sprite.play("stunned")
-  GameManager.apply_camera_shake(0.7)
+  GameManager.apply_camera_shake(0.6)
 
 
 func _on_stun_timer_timeout() -> void:
