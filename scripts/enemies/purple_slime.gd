@@ -7,10 +7,11 @@ class_name PurpleSlime extends CharacterBody2D
 
 # Sensors and physics
 @onready var _physics_collider: CollisionShape2D = $PhysicsCollider
-@onready var _enemy_sensor: RayCast2D = $EnemySensor
+#@onready var _enemy_sensor: RayCast2D = $EnemySensor
 @onready var _wall_sensor_left: RayCast2D = $WallSensorLeft
 @onready var _wall_sensor_right: RayCast2D = $WallSensorRight
-
+@onready var _enemy_sensor_collider: CollisionShape2D = $EnemySensor/CollisionShape2D
+@onready var _enemy_tracker_collider: CollisionShape2D = $EnemyTracker/CollisionShape2D
 
 # Sprites
 @onready var _animated_sprite: AnimatedSprite2D = $AnimatedSprite
@@ -19,6 +20,7 @@ class_name PurpleSlime extends CharacterBody2D
 # Timers
 @onready var _stun_timer: Timer = $StunTimer
 @onready var _attack_timer: Timer = $AttackTimer
+@onready var _enemy_tracker_timer: Timer = $EnemyTrackerTimer
 
 # Health
 @onready var _health_bar: ProgressBar = $HealthBar
@@ -31,10 +33,12 @@ var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
 var _direction: int = 1
 var _is_stunned: bool = false
-var _attack_target: Node = null
+var _enemy: Node = null
+var _enemy_in_range: bool = false
 var _knockback_direction: int = 0
 var _health_bar_style_box: StyleBoxFlat = StyleBoxFlat.new()
-var _enemy_sensor_initial_pos: float = 0
+#var _enemy_sensor_initial_pos: float = 0.0
+var _enemy_sensor_collider_initial_pos: float = 0.0
 
 var _flipped: bool = false
 
@@ -48,7 +52,9 @@ var _flipped: bool = false
 
 func _ready() -> void:
   _alerted_sprite.visible = false
-  _enemy_sensor_initial_pos = _enemy_sensor.target_position.x
+  #_enemy_sensor_initial_pos = _enemy_sensor.target_position.x
+  _enemy_sensor_collider_initial_pos = _enemy_sensor_collider.position.x
+  _enemy_tracker_collider.disabled = true
 
   _health_bar.max_value = _health
   _health_bar.value = _health
@@ -63,10 +69,11 @@ func _ready() -> void:
 
 
 func _physics_process(delta) -> void:
-  _sense_enemy()
+  #_sense_enemy()
+  var enemy_visible: bool = _enemy != null and _enemy_in_range
 
-  if _attack_target != null:
-    _flip(_attack_target.global_position.x < global_position.x) # Flip to face target
+  if enemy_visible:
+    _flip(_enemy.global_position.x < global_position.x) # Flip to face target
   else:
     # This enemy moves between waypoints but raycasts are still necessary for when it chases
     # the player outside of the waypoint containment area or gets knocked outside of it
@@ -74,7 +81,7 @@ func _physics_process(delta) -> void:
     if _wall_sensor_right.is_colliding(): _direction = -1
     _flip(_direction < 0)
 
-  _alerted_sprite.visible = false if _attack_target == null else true
+  _alerted_sprite.visible = enemy_visible
 
   # Velocity is defined as direction * speed and represents movement measured in pixels per frame
   # (physics frames, in this case, since we're defining it within _physics_process). Acceleration
@@ -103,7 +110,8 @@ func _physics_process(delta) -> void:
   # If stunned, then this enemy is probably still being knocked back. Otherwise,
   # continue to partol until a target is in sight, in which case stop moving.
   if not _is_stunned:
-    velocity.x = (_direction * move_speed) if _attack_target == null else 0.0
+    # TODO: make slime chase player if no longer in range but tracker timer has not elapsed
+    velocity.x = 0.0 if enemy_visible else (_direction * move_speed)
 
   if not is_on_floor():
     velocity.y += _gravity * delta
@@ -140,7 +148,7 @@ func _on_waypoint_sensor_area_entered(area: EnemyWaypoint) -> void:
   var change_direction: bool = false
 
   # Ignore the waypoint if a target is in sight (continue moving past it, if necessary)
-  if _attack_target == null:
+  if _enemy == null or not _enemy_in_range:
     match area.entry_direction:
       "all":
         change_direction = true
@@ -153,49 +161,6 @@ func _on_waypoint_sensor_area_entered(area: EnemyWaypoint) -> void:
 
   if change_direction:
     _direction *= -1
-
-
-func _sense_enemy() -> void:
-  if _attack_target != null and not _enemy_sensor.is_colliding():
-    # Allow _attack_timer to elapse naturally instead of calling stop() here
-    _attack_target = null
-
-  elif _attack_target == null and _enemy_sensor.is_colliding():
-    var entityCollider: Object = _enemy_sensor.get_collider()
-    var entity: Node2D = null
-
-    if entityCollider != null:
-      if entityCollider is CharacterBody2D:
-        entity = entityCollider
-      else:
-        entity = entityCollider.owner
-
-    if entity != null and entity.has_method("take_damage"):
-      _attack_target = entity
-      # Immediately restarting the timer would cause this enemy to apply immediate damage
-      # whenever the player moves out of range then back into range again. This felt too difficult.
-      if _attack_timer.is_stopped():
-        _attack_timer.start()
-        _attack(_attack_target)
-
-
-func _on_attack_timer_timeout() -> void:
-  if _attack_target == null:
-    _attack_timer.stop()
-  else:
-    _attack(_attack_target) # If still in range, attack again
-
-
-func _attack(_entity: Node) -> void:
-  _projectile = _projectile_scene.instantiate() as Projectile
-  _projectile.damage = attack_strength
-  _projectile.direction = Vector2(-1, 0) if _flipped else Vector2(1, 0)
-  _projectile.global_position = _physics_collider.global_position
-  add_child(_projectile)
-
-  # Deal immediate damage:
-  #if entity.has_method("take_damage"):
-    #entity.take_damage(self, attack_strength)
 
 
 func take_damage(attacker: Object, value: int) -> void:
@@ -241,5 +206,77 @@ func _flip(flip: bool) -> void:
   _flipped = flip
   _animated_sprite.flip_h = flip
   # Player sensor raycast should always extend in front of this enemy, not behind
-  _enemy_sensor.target_position.x = -_enemy_sensor_initial_pos if flip else _enemy_sensor_initial_pos
+  #_enemy_sensor.target_position.x = -_enemy_sensor_initial_pos if flip else _enemy_sensor_initial_pos
+  _enemy_sensor_collider.position.x = -_enemy_sensor_collider_initial_pos if flip else _enemy_sensor_collider_initial_pos
 
+
+#func _sense_enemy() -> void:
+  #if _enemy != null and not _enemy_sensor.is_colliding():
+    ## Allow _attack_timer to elapse naturally instead of calling stop() here
+    #_enemy = null
+
+  #elif _enemy == null and _enemy_sensor.is_colliding():
+    #var entityCollider: Object = _enemy_sensor.get_collider()
+    #var entity: Node2D = null
+
+    #if entityCollider != null:
+      #if entityCollider is CharacterBody2D:
+        #entity = entityCollider
+      #else:
+        #entity = entityCollider.owner
+
+    #if entity != null and entity.has_method("take_damage"):
+      #_enemy = entity
+      ## Immediately restarting the timer would cause this enemy to apply immediate damage
+      ## whenever the player moves out of range then back into range again. This felt too difficult.
+      #if _attack_timer.is_stopped():
+        #_attack_timer.start()
+        #_attack(_enemy)
+
+
+func _on_enemy_sensor_area_entered(area: Area2D) -> void:
+  if area.owner.has_method("take_damage"):
+    _enemy = area.owner
+    _enemy_in_range = true
+    _enemy_tracker_collider.set_deferred("disabled", false)
+
+    # Immediately restarting the timer would cause this enemy to apply immediate damage
+    # whenever the player moves out of range then back into range again, which felt too difficult
+    if _attack_timer.is_stopped():
+      _attack_timer.start()
+      _attack(_enemy)
+
+
+func _on_attack_timer_timeout() -> void:
+  if _enemy == null or not _enemy_in_range:
+    _attack_timer.stop()
+  else:
+    _attack(_enemy) # If still in range, attack again
+
+
+func _attack(_entity: Node) -> void:
+  _projectile = _projectile_scene.instantiate() as Projectile
+  _projectile.damage = attack_strength
+  _projectile.direction = Vector2(-1, 0) if _flipped else Vector2(1, 0)
+  _projectile.global_position = _physics_collider.global_position
+  call_deferred("add_child", _projectile)
+
+  # Deal immediate damage:
+  #if entity.has_method("take_damage"):
+    #entity.take_damage(self, attack_strength)
+
+
+func _on_enemy_tracker_area_entered(area: Area2D) -> void:
+   if _enemy != null and _enemy == area.owner:
+    _enemy_in_range = true
+
+
+func _on_enemy_tracker_area_exited(area: Area2D) -> void:
+  if _enemy != null and _enemy == area.owner and _enemy_tracker_timer.is_stopped():
+    _enemy_tracker_timer.start()
+
+
+func _on_enemy_tracker_timer_timeout() -> void:
+  _enemy = null
+  _enemy_in_range = false
+  _enemy_tracker_collider.set_deferred("disabled", true)

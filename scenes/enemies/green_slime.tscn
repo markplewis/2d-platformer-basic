@@ -76,6 +76,7 @@ autoplay = "default"
 
 [node name="AttackArea" parent="." instance=ExtResource("3_0gfjy")]
 collision_layer = 12
+collision_mask = 2
 instant_death = true
 
 [node name="AttackCollider" type="CollisionShape2D" parent="AttackArea"]
