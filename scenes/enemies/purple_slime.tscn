@@ -103,12 +103,12 @@ collision_mask = 2
 position = Vector2(0, -6)
 shape = SubResource("CircleShape2D_bq7jv")
 
-[node name="EngagementSensor" type="Area2D" parent="."]
+[node name="EnemySensor" type="Area2D" parent="."]
 position = Vector2(0, -6)
 collision_layer = 0
 collision_mask = 2
 
-[node name="Collider" type="CollisionShape2D" parent="EngagementSensor"]
+[node name="Collider" type="CollisionShape2D" parent="EnemySensor"]
 position = Vector2(24, -6)
 shape = SubResource("RectangleShape2D_7uvcm")
 
@@ -159,7 +159,7 @@ show_percentage = false
 
 [connection signal="area_entered" from="PursuitSensor" to="." method="_on_pursuit_sensor_area_entered"]
 [connection signal="area_exited" from="PursuitSensor" to="." method="_on_pursuit_sensor_area_exited"]
-[connection signal="area_entered" from="EngagementSensor" to="." method="_on_engagement_sensor_area_entered"]
+[connection signal="area_entered" from="EnemySensor" to="." method="_on_enemy_sensor_area_entered"]
 [connection signal="area_entered" from="WaypointSensor" to="." method="_on_waypoint_sensor_area_entered"]
 [connection signal="timeout" from="StunTimer" to="." method="_on_stun_timer_timeout"]
 [connection signal="timeout" from="PursuitTimer" to="." method="_on_pursuit_timer_timeout"]

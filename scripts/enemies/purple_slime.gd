@@ -11,8 +11,8 @@ class_name PurpleSlime extends CharacterBody2D
 
 ## Sensors and physics
 @onready var _collider: CollisionShape2D = $Collider
-@onready var _pursuit_collider: CollisionShape2D = $PursuitSensor/Collider
-@onready var _engagement_collider: CollisionShape2D = $EngagementSensor/Collider
+@onready var _pursuit_sensor_collider: CollisionShape2D = $PursuitSensor/Collider
+@onready var _enemy_sensor_collider: CollisionShape2D = $EnemySensor/Collider
 @onready var _wall_sensor_left: RayCast2D = $WallSensorLeft
 @onready var _wall_sensor_right: RayCast2D = $WallSensorRight
 #@onready var _enemy_sensor_raycast: RayCast2D = $EnemySensorRayCast
@@ -40,10 +40,10 @@ var _is_flipped: bool = false
 
 var _enemy_node: Node = null
 var _enemy_in_range: bool = false
-var _engagement_collider_initial_pos: float = 0.0
-#var _enemy_raycast_initial_pos: float = 0.0
+var _enemy_sensor_collider_initial_x: float = 0.0
+#var _enemy_raycast_initial_x: float = 0.0
 
-## This enemy extends CharacterBody2D, which is a kinematic style character controller:
+## PurpleSlime extends CharacterBody2D, which is a kinematic style character controller:
 ## - https://docs.godotengine.org/en/stable/tutorials/physics/kinematic_character_2d.html
 ## - https://docs.godotengine.org/en/stable/tutorials/physics/using_character_body_2d.html
 ## Demos:
@@ -54,12 +54,12 @@ var _engagement_collider_initial_pos: float = 0.0
 func _ready() -> void:
   _alerted_sprite.visible = false
 
-  ## Save engagement collider start position so that it can be flipped back and forth
-  _engagement_collider_initial_pos = _engagement_collider.position.x
-  #_enemy_raycast_initial_pos = _enemy_sensor_raycast.target_position.x
+  ## Save enemy sensor collider start position so that it can be flipped back and forth
+  _enemy_sensor_collider_initial_x = _enemy_sensor_collider.position.x
+  #_enemy_raycast_initial_x = _enemy_sensor_raycast.target_position.x
 
-  ## Disabled until engagement sensor encounters enemy
-  _pursuit_collider.disabled = true
+  ## Disabled until enemy sensor encounters enemy
+  _pursuit_sensor_collider.disabled = true
 
   _health_bar.max_value = _health
   _health_bar.value = _health
@@ -131,7 +131,7 @@ func _physics_process(delta) -> void:
   ## https://www.reddit.com/r/godot/comments/13cgr2b/how_to_get_collision_detected_with/
   ##
   ## Instead of relying on CollisionShape2D nodes for enemy-to-player collision detection,
-  ## I'm now using Area2D nodes (see PurpleSlime's EngagementSensor and Player's HazardSensor).
+  ## I'm now using Area2D nodes (see PurpleSlime's EnemySensor and Player's HazardSensor).
   ## This facilitates better separation of concerns and makes it easier to understand which
   ## collision layers and masks each node should be assigned to. I've kept my previous code
   ## commented out below, for future reference:
@@ -215,9 +215,9 @@ func _on_stun_timer_timeout() -> void:
 func _flip(flip: bool) -> void:
   _is_flipped = flip
   _animated_sprite.flip_h = flip
-  ## Engagement sensor collider should always extend in front of PurpleSlime, not behind
-  _engagement_collider.position.x = -_engagement_collider_initial_pos if flip else _engagement_collider_initial_pos
-  #_enemy_sensor_raycast.target_position.x = -_enemy_raycast_initial_pos if flip else _enemy_raycast_initial_pos
+  ## Enemy sensor collider should always extend in front of PurpleSlime, not behind
+  _enemy_sensor_collider.position.x = -_enemy_sensor_collider_initial_x if flip else _enemy_sensor_collider_initial_x
+  #_enemy_sensor_raycast.target_position.x = -_enemy_raycast_initial_x if flip else _enemy_raycast_initial_x
 
 
 func _attack(_entity: Node) -> void:
@@ -229,11 +229,11 @@ func _attack(_entity: Node) -> void:
 
 
 ## Lock on to the enemy, enable the pursuit collider and start attacking
-func _on_engagement_sensor_area_entered(area: Area2D) -> void:
+func _on_enemy_sensor_area_entered(area: Area2D) -> void:
   if area.owner.has_method("take_damage"):
     _enemy_node = area.owner
     _enemy_in_range = true
-    _pursuit_collider.set_deferred("disabled", false)
+    _pursuit_sensor_collider.set_deferred("disabled", false)
 
     ## Immediately restarting the timer would cause this enemy to apply immediate damage
     ## whenever the player moves out of range then back into range again, which seems too difficult
@@ -250,7 +250,7 @@ func _on_attack_timer_timeout() -> void:
     _attack(_enemy_node)
 
 
-## Pursuit sensor (disabled until engagement sensor encounters enemy)
+## Pursuit sensor (disabled until enemy sensor encounters enemy)
 
 
 func _on_pursuit_sensor_area_entered(area: Area2D) -> void:
@@ -271,7 +271,7 @@ func _on_pursuit_sensor_area_exited(area: Area2D) -> void:
 func _on_pursuit_timer_timeout() -> void:
   _enemy_node = null
   _enemy_in_range = false ## Should already be false by this point but let's make certain
-  _pursuit_collider.set_deferred("disabled", true)
+  _pursuit_sensor_collider.set_deferred("disabled", true)
 
 
 ## Alternate RayCast-based enemy sensor technique, which I'm no longer using

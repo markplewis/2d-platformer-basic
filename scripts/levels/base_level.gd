@@ -1,6 +1,6 @@
 class_name BaseLevel extends Node
 
-@onready var _player: Player = %Player
+@onready var _player: Player = $Player
 
 
 func _ready() -> void:
@@ -36,6 +36,6 @@ func _ready() -> void:
   #_register_player(player_instance)
 
 #func _on_player_dead() -> void:
-  ## Because queue_free doesn't happen immediately, the add_sibling call in _create_player still works
+  ### Because queue_free doesn't happen immediately, the add_sibling call in _create_player still works
   #_current_player_node.queue_free()
   #_create_player()

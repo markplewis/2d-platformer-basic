@@ -457,7 +457,6 @@ shape = SubResource("WorldBoundaryShape2D_m0t1l")
 target_node = NodePath("../Player")
 
 [node name="Player" parent="." instance=ExtResource("3_8d4p7")]
-unique_name_in_owner = true
 floor_snap_length = 5.0
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]

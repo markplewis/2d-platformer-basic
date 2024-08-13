@@ -6,6 +6,3 @@
 collision_layer = 8
 collision_mask = 8
 script = ExtResource("1_scnl1")
-
-[connection signal="area_entered" from="." to="." method="_on_area_entered"]
-[connection signal="body_entered" from="." to="." method="_on_body_entered"]

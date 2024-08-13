@@ -1,15 +1,15 @@
 class_name Player extends CharacterBody2D
 
-signal interacted(entity: Node2D) # Needed for door.gd
+signal interacted(entity: Node2D) ## Needed for door.gd
 
 @export var rotate_on_slopes: bool = true
 
-# Ways to access the scene's root node:
-# @onready var _root_node: Node = $"/root/Main"
-# @onready var _root_node: Node = get_node(^"/root/Main")
-# @onready var _root_node: Node = self.owner
+## Ways to access the scene's root node:
+#@onready var _root_node: Node = $"/root/Main"
+#@onready var _root_node: Node = get_node(^"/root/Main")
+#@onready var _root_node: Node = self.owner
 
-# Input
+## Input
 @onready var _input_handler: InputHandler = $InputHandler
 @onready var _movement_handler: MovementHandler = $MovementHandler
 @onready var _jump_handler: JumpHandler = $JumpHandler
@@ -17,22 +17,22 @@ signal interacted(entity: Node2D) # Needed for door.gd
 
 var _controls_disabled: bool = false
 
-# Physics and visuals
+## Physics and visuals
 @onready var _sprite_container: Node2D = $SpriteContainer
 @onready var _animated_sprite: AnimatedSprite2D = $SpriteContainer/AnimatedSprite
-@onready var _collision_shape: CollisionShape2D = $PhysicsCollider
+@onready var _collider: CollisionShape2D = $Collider
 @onready var _trail: Trail = $Trail
 
-# Sensors
+## Sensors
 @onready var _attack_range_sensor_left: RayCast2D = $AttackRangeSensorLeft
 @onready var _attack_range_sensor_right: RayCast2D = $AttackRangeSensorRight
 @onready var _ground_sensor: RayCast2D = $GroundSensor
 
-# Debugging
+## Debugging
 const _player_debug_lines_class: Resource = preload("res://scripts/player/player_debug_lines.gd")
 @onready var _player_debug_lines: PlayerDebugLines = _player_debug_lines_class.new()
 
-# State
+## State
 var _move_direction: float = 0.0
 var _last_move_direction: float = 1.0
 var _run_button_pressed: bool = false
@@ -58,7 +58,7 @@ var _defence_strength: int = _defence_strength_default
 
 func _ready() -> void:
   if GameManager.debug and not _is_dead:
-    _player_debug_lines.init(self, _collision_shape.position)
+    _player_debug_lines.init(self, _collider.position)
 
 
 func _process(_delta: float) -> void:
@@ -86,15 +86,15 @@ func _physics_process(delta: float) -> void:
   if _pause_button_just_pressed:
     GameManager.pause_game()
 
-  var collision_shape_pos: Vector2 = Vector2.ZERO if _is_dead else _collision_shape.global_position
+  var collision_shape_pos: Vector2 = Vector2.ZERO if _is_dead else _collider.global_position
 
-  # Vertical velocity
+  ## Vertical velocity
   var jump_values: Dictionary = _jump_handler.handle_jump(
     self,
     collision_shape_pos,
     _jump_button_pressed,
     _jump_button_just_pressed,
-    # _jump_button_released,
+    #_jump_button_released,
     _jump_button_just_released,
     _move_direction,
     _run_button_pressed,
@@ -103,7 +103,7 @@ func _physics_process(delta: float) -> void:
   var new_velocity_y: float = jump_values.velocity_y
   var move_speed: float = jump_values.move_speed
 
-  # Horizontal velocity
+  ## Horizontal velocity
   var new_velocity_x: float = _movement_handler.handle_movement(
     self,
     _move_direction,
@@ -127,22 +127,22 @@ func _physics_process(delta: float) -> void:
 
 func _rotate_sprite() -> void:
   _sprite_container.rotation = 0.0
-  # up_direction = Vector2.UP
-  # rotation = 0.0
+  #up_direction = Vector2.UP
+  #rotation = 0.0
 
-  # https://www.reddit.com/r/godot/comments/1agit6k/why_is_the_characterbody2d_property_max_floor/
+  ## https://www.reddit.com/r/godot/comments/1agit6k/why_is_the_characterbody2d_property_max_floor/
   if _on_floor and _ground_sensor.is_colliding():
     _floor_normal = _ground_sensor.get_collision_normal()
     _floor_angle = Vector2.UP.angle_to(_floor_normal)
-    # print("Angle: " + str(round(abs(rad_to_deg(_floor_angle)))))
-    # print("Max: " + str(rad_to_deg(floor_max_angle)))
+    #print("Angle: " + str(round(abs(rad_to_deg(_floor_angle)))))
+    #print("Max: " + str(rad_to_deg(floor_max_angle)))
 
     if _floor_angle <= floor_max_angle and rotate_on_slopes:
       _sprite_container.rotation = _floor_angle
-      # up_direction = _floor_normal
-      # rotation = _floor_angle
-      # rotation = lerp_angle(rotation, _floor_angle, delta * 20.0)
-      # velocity = raw_velocity.rotated(_floor_angle)
+      #up_direction = _floor_normal
+      #rotation = _floor_angle
+      #rotation = lerp_angle(rotation, _floor_angle, delta * 20.0)
+      #velocity = raw_velocity.rotated(_floor_angle)
 
 
 func _flip_sprite() -> void:
@@ -172,7 +172,7 @@ func _play_animation() -> void:
         _animated_sprite.play("fall")
 
 
-# Death
+## Death
 
 
 func _die() -> void:
@@ -181,7 +181,7 @@ func _die() -> void:
     _disable_movement()
     _disable_collider()
     velocity.y = -150.0
-    # TODO: play dying animation
+    ## TODO: play dying animation
     GameManager.apply_camera_shake(1)
     GameManager.on_player_dying()
 
@@ -198,7 +198,7 @@ func _on_hazard_sensor_area_entered(area: Area2D) -> void:
     #print("Hazard damage!")
 
 
-# Interactions
+## Interactions
 
 
 func open_door(dict: Dictionary) -> void:
@@ -208,26 +208,26 @@ func open_door(dict: Dictionary) -> void:
 
 
 func _attack_collision_check() -> void:
-  var entityCollider: Object = null
+  var _entity_collider: Object = null
   var entity: Node2D = null
 
   if _attack_range_sensor_left.is_colliding() and _last_move_direction < 0:
-    entityCollider = _attack_range_sensor_left.get_collider()
+    _entity_collider = _attack_range_sensor_left.get_collider()
 
   if _attack_range_sensor_right.is_colliding() and _last_move_direction > 0:
-    entityCollider = _attack_range_sensor_right.get_collider()
+    _entity_collider = _attack_range_sensor_right.get_collider()
 
-  if entityCollider != null:
-    if entityCollider is CharacterBody2D:
-      entity = entityCollider
+  if _entity_collider != null:
+    if _entity_collider is CharacterBody2D:
+      entity = _entity_collider
     else:
-      entity = entityCollider.owner
+      entity = _entity_collider.owner
 
   if entity != null and entity.has_method("take_damage") and _interact_button_just_pressed:
     entity.take_damage(self, _attack_strength)
 
 
-# Score
+## Score
 
 
 func acquire_item(item: Node2D) -> void:
@@ -235,7 +235,7 @@ func acquire_item(item: Node2D) -> void:
     GameManager.set_score(GameManager.increase_score(1))
 
 
-# Health
+## Health
 
 
 func take_damage(_attacker: Object, damage: int) -> void:
@@ -243,7 +243,7 @@ func take_damage(_attacker: Object, damage: int) -> void:
   var previous_value: int = GameManager.get_health()
 
   if new_value <= 0:
-    _die() # Health gets set to zero within _die() method
+    _die() ## Health gets set to zero within _die() method
   elif new_value < previous_value:
     _damage()
     GameManager.set_health(new_value)
@@ -260,7 +260,7 @@ func _on_damage_timer_timeout() -> void:
   _is_damaged = false
 
 
-# Disable/enable stuff
+## Disable/enable stuff
 
 
 func _disable_movement() -> void:
@@ -275,21 +275,21 @@ func _disable_movement() -> void:
 
 
 func _disable_collider() -> void:
-  _collision_shape.set_deferred("disabled", true)
+  _collider.set_deferred("disabled", true)
 
 
 ## Unused
-# Due to the following bug, we must wait exactly 2 physics frames before re-enabling the
-# player's collision shape. Otherwise, if the player died by falling into a "KillZone"
-# (an Area2D node with a WorldBoundary collision shape), then the Area2D's body_entered signal
-# will fire twice (once when the player touches it and again when the level/scene re-loads,
-# even if the player's position has changed by that point and they're no longer touching it).
-# https://github.com/godotengine/godot/issues/88592#issuecomment-1958670810
-# https://github.com/godotengine/godot/issues/61584
-# https://github.com/godotengine/godot/issues/14578
-# https://github.com/godotengine/godot/issues/18748
-# https://www.reddit.com/r/godot/comments/1d285xl/player_is_dying_twice/
+## Due to the following bug, we must wait exactly 2 physics frames before re-enabling the
+## player's collision shape. Otherwise, if the player died by falling into a "KillZone"
+## (an Area2D node with a WorldBoundary collision shape), then the Area2D's body_entered signal
+## will fire twice (once when the player touches it and again when the level/scene re-loads,
+## even if the player's position has changed by that point and they're no longer touching it).
+## https://github.com/godotengine/godot/issues/88592#issuecomment-1958670810
+## https://github.com/godotengine/godot/issues/61584
+## https://github.com/godotengine/godot/issues/14578
+## https://github.com/godotengine/godot/issues/18748
+## https://www.reddit.com/r/godot/comments/1d285xl/player_is_dying_twice/
 #func _enable_collider() -> void:
   #await get_tree().physics_frame
   #await get_tree().physics_frame
-  #_collision_shape.set_deferred("disabled", false)
+  #_collider.set_deferred("disabled", false)
