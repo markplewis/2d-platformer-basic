@@ -54,11 +54,11 @@ var _enemy_sensor_collider_initial_x: float = 0.0
 func _ready() -> void:
   _alerted_sprite.visible = false
 
-  ## Save enemy sensor collider start position so that it can be flipped back and forth
+  ## Save EnemySensor collider start position so that it can be flipped horizontally
   _enemy_sensor_collider_initial_x = _enemy_sensor_collider.position.x
   #_enemy_raycast_initial_x = _enemy_sensor_raycast.target_position.x
 
-  ## Disabled until enemy sensor encounters enemy
+  ## Disabled until EnemySensor encounters enemy
   _pursuit_sensor_collider.disabled = true
 
   _health_bar.max_value = _health
@@ -215,7 +215,7 @@ func _on_stun_timer_timeout() -> void:
 func _flip(flip: bool) -> void:
   _is_flipped = flip
   _animated_sprite.flip_h = flip
-  ## Enemy sensor collider should always extend in front of PurpleSlime, not behind
+  ## EnemySensor collider should always extend in front of PurpleSlime, not behind
   _enemy_sensor_collider.position.x = -_enemy_sensor_collider_initial_x if flip else _enemy_sensor_collider_initial_x
   #_enemy_sensor_raycast.target_position.x = -_enemy_raycast_initial_x if flip else _enemy_raycast_initial_x
 
@@ -238,8 +238,12 @@ func _on_enemy_sensor_area_entered(area: Area2D) -> void:
     ## Immediately restarting the timer would cause this enemy to apply immediate damage
     ## whenever the player moves out of range then back into range again, which seems too difficult
     if _attack_timer.is_stopped():
-      _attack_timer.start()
-      _attack(_enemy_node)
+      ## https://docs.godotengine.org/en/stable/classes/class_scenetreetimer.html
+      ## https://docs.godotengine.org/en/stable/classes/class_scenetree.html#class-scenetree-method-create-timer
+      get_tree().create_timer(1).timeout.connect(func():
+        _attack(_enemy_node)
+        _attack_timer.start()
+      )
 
 
 ## Continue attacking if still locked on to the enemy
@@ -250,7 +254,7 @@ func _on_attack_timer_timeout() -> void:
     _attack(_enemy_node)
 
 
-## Pursuit sensor (disabled until enemy sensor encounters enemy)
+## Pursuit sensor (disabled until EnemySensor encounters enemy)
 
 
 func _on_pursuit_sensor_area_entered(area: Area2D) -> void:
@@ -264,7 +268,9 @@ func _on_pursuit_sensor_area_exited(area: Area2D) -> void:
     _enemy_in_range = false
 
     if _pursuit_timer.is_stopped():
-      _pursuit_timer.start()
+      ## Calling _pursuit_timer.start() here results in a "Timer was not added to the SceneTree"
+      ## error at the moment that the PurpleSlime dies, so we must defer execution
+      _pursuit_timer.call_deferred("start")
 
 
 ## Give up (i.e. stop pursuing the enemy) and return to partolling

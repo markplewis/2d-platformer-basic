@@ -334,6 +334,28 @@ libraries = {
 }
 autoplay = "move"
 
+[node name="Door" parent="." index="4" instance=ExtResource("8_q1afr")]
+position = Vector2(-120, 88)
+collision_mask = 2
+level_index = 1
+transition_type = "fade_to_black"
+
+[node name="DoorSprite" type="Sprite2D" parent="Door" index="0"]
+texture = ExtResource("1_iepya")
+hframes = 16
+vframes = 16
+frame = 55
+
+[node name="Decoration" type="Sprite2D" parent="Door" index="1"]
+position = Vector2(0, -16)
+texture = ExtResource("1_iepya")
+hframes = 16
+vframes = 16
+frame = 56
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Door" index="2"]
+shape = SubResource("RectangleShape2D_sw8ig")
+
 [node name="GreenSlime" parent="Enemies" index="0" instance=ExtResource("6_ixqxs")]
 position = Vector2(512, 64)
 move_speed = 40.0
@@ -366,28 +388,6 @@ position = Vector2(759, -40)
 
 [node name="Coin9" parent="Collectables/Coins" index="8" instance=ExtResource("4_w35h5")]
 position = Vector2(773, -40)
-
-[node name="Door" parent="." index="6" instance=ExtResource("8_q1afr")]
-position = Vector2(-120, 88)
-collision_mask = 2
-level_index = 1
-transition_type = "fade_to_black"
-
-[node name="DoorSprite" type="Sprite2D" parent="Door" index="0"]
-texture = ExtResource("1_iepya")
-hframes = 16
-vframes = 16
-frame = 55
-
-[node name="Decoration" type="Sprite2D" parent="Door" index="1"]
-position = Vector2(0, -16)
-texture = ExtResource("1_iepya")
-hframes = 16
-vframes = 16
-frame = 56
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Door" index="2"]
-shape = SubResource("RectangleShape2D_sw8ig")
 
 [node name="Player" parent="." index="8"]
 position = Vector2(0, 32)
