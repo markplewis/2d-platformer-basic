@@ -40,10 +40,7 @@ frame = 56
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Door" index="2"]
 shape = SubResource("RectangleShape2D_lqsii")
 
-[node name="PurpleSlime" parent="Enemies" index="0" instance=ExtResource("5_lowql")]
-position = Vector2(168, 80)
-
-[node name="PurpleSlimeWaypoint1" parent="Enemies" index="1" instance=ExtResource("4_uhwnp")]
+[node name="PurpleSlimeWaypoint1" parent="Enemies" index="0" instance=ExtResource("4_uhwnp")]
 position = Vector2(72, 76)
 entry_direction = "right"
 
@@ -53,7 +50,7 @@ texture = ExtResource("5_gtr7l")
 hframes = 4
 vframes = 4
 
-[node name="PurpleSlimeWaypoint2" parent="Enemies" index="2" instance=ExtResource("4_uhwnp")]
+[node name="PurpleSlimeWaypoint2" parent="Enemies" index="1" instance=ExtResource("4_uhwnp")]
 position = Vector2(200, 76)
 entry_direction = "left"
 
@@ -62,6 +59,9 @@ position = Vector2(0, -3)
 texture = ExtResource("5_gtr7l")
 hframes = 4
 vframes = 4
+
+[node name="PurpleSlime" parent="Enemies" index="2" instance=ExtResource("5_lowql")]
+position = Vector2(168, 80)
 
 [node name="Coins" type="Node2D" parent="Collectables" index="0"]
 

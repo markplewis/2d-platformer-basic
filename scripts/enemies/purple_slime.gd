@@ -21,6 +21,8 @@ class_name PurpleSlime extends CharacterBody2D
 @onready var _stun_timer: Timer = $StunTimer
 @onready var _pursuit_timer: Timer = $PursuitTimer
 @onready var _attack_timer: Timer = $AttackTimer
+@onready var _attack_timer_initial: Timer = $AttackTimerInitial
+#const _initial_attack_delay: float = 1.0
 
 ## Health
 @onready var _health_bar: ProgressBar = $HealthBar
@@ -173,6 +175,14 @@ func _on_waypoint_sensor_area_entered(area: EnemyWaypoint) -> void:
     _move_direction *= -1
 
 
+func _flip(flip: bool) -> void:
+  _is_flipped = flip
+  _animated_sprite.flip_h = flip
+  ## EnemySensor collider should always extend in front of PurpleSlime, not behind
+  _enemy_sensor_collider.position.x = -_enemy_sensor_collider_initial_x if flip else _enemy_sensor_collider_initial_x
+  #_enemy_sensor_raycast.target_position.x = -_enemy_raycast_initial_x if flip else _enemy_raycast_initial_x
+
+
 func take_damage(attacker: Object, value: int) -> void:
   _health -= max(0, value - defence_strength)
   _health_bar.value = _health
@@ -201,6 +211,7 @@ func _die() -> void:
 
 func _stun() -> void:
   _is_stunned = true
+  _attack_timer.stop()
   _stun_timer.stop()
   _stun_timer.start()
   _animated_sprite.play("stunned")
@@ -210,22 +221,7 @@ func _stun() -> void:
 func _on_stun_timer_timeout() -> void:
   _is_stunned = false
   _animated_sprite.play("default")
-
-
-func _flip(flip: bool) -> void:
-  _is_flipped = flip
-  _animated_sprite.flip_h = flip
-  ## EnemySensor collider should always extend in front of PurpleSlime, not behind
-  _enemy_sensor_collider.position.x = -_enemy_sensor_collider_initial_x if flip else _enemy_sensor_collider_initial_x
-  #_enemy_sensor_raycast.target_position.x = -_enemy_raycast_initial_x if flip else _enemy_raycast_initial_x
-
-
-func _attack(_entity: Node) -> void:
-  _projectile = _projectile_scene.instantiate() as Projectile
-  _projectile.damage = attack_strength
-  _projectile.direction = Vector2(-1, 0) if _is_flipped else Vector2(1, 0)
-  _projectile.global_position = _collider.global_position
-  call_deferred("add_child", _projectile)
+  _attack_loop_reset()
 
 
 ## Lock on to the enemy, enable the pursuit collider and start attacking
@@ -234,16 +230,28 @@ func _on_enemy_sensor_area_entered(area: Area2D) -> void:
     _enemy_node = area.owner
     _enemy_in_range = true
     _pursuit_sensor_collider.set_deferred("disabled", false)
+    _attack_loop_reset()
 
-    ## Immediately restarting the timer would cause this enemy to apply immediate damage
-    ## whenever the player moves out of range then back into range again, which seems too difficult
-    if _attack_timer.is_stopped():
-      ## https://docs.godotengine.org/en/stable/classes/class_scenetreetimer.html
-      ## https://docs.godotengine.org/en/stable/classes/class_scenetree.html#class-scenetree-method-create-timer
-      get_tree().create_timer(1).timeout.connect(func():
-        _attack(_enemy_node)
-        _attack_timer.start()
-      )
+
+func _attack_loop_reset() -> void:
+  ## Only reset the attack loop if the timer is no longer running
+  if _attack_timer.is_stopped() and _enemy_node != null:
+    _attack_timer_initial.start()
+
+    ## For some reason, this was problematic. After PurpleSlime was stunned,
+    ## it would fire two projectiles in quick succession, as if _attack_timer
+    ## had never been stopped. Using an actual Timer node fixed the problem.
+    ## https://docs.godotengine.org/en/stable/classes/class_scenetreetimer.html
+    ## https://docs.godotengine.org/en/stable/classes/class_scenetree.html#class-scenetree-method-create-timer
+    #get_tree().create_timer(_initial_attack_delay).timeout.connect(func():
+      #_attack_timer.start()
+      #_attack()
+    #)
+
+
+func _on_attack_timer_initial_timeout() -> void:
+  _attack_timer.start()
+  _attack()
 
 
 ## Continue attacking if still locked on to the enemy
@@ -251,7 +259,16 @@ func _on_attack_timer_timeout() -> void:
   if _enemy_node == null:
     _attack_timer.stop()
   else:
-    _attack(_enemy_node)
+    _attack_timer.start()
+    _attack()
+
+
+func _attack() -> void:
+  _projectile = _projectile_scene.instantiate() as Projectile
+  _projectile.damage = attack_strength
+  _projectile.direction = Vector2(-1, 0) if _is_flipped else Vector2(1, 0)
+  _projectile.global_position = _collider.global_position
+  call_deferred("add_child", _projectile)
 
 
 ## Pursuit sensor (disabled until EnemySensor encounters enemy)
