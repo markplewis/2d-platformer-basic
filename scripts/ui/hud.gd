@@ -23,7 +23,9 @@ func _ready() -> void:
   _health_initial = GameManager.get_max_health()
   _progress_bar.max_value = _health_initial
   _progress_bar.add_theme_stylebox_override("fill", _progress_bar_style_box)
-  _on_player_health_changed(_health_initial)
+
+  _on_player_health_changed(GameManager.get_health())
+  _on_player_score_changed(GameManager.get_score())
 
   _reset_jump_stats()
   _update_text()

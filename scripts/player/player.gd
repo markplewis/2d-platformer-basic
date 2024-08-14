@@ -48,6 +48,8 @@ var _floor_normal: Vector2 = Vector2.UP
 var _floor_angle: float = 0.0
 var _is_damaged: bool = false
 var _is_dead: bool = false
+var _is_attacking: bool = false
+var _attack_target: Node = null
 
 const _attack_strength_default: int = 15
 const _defence_strength_default: int = 5
@@ -159,6 +161,9 @@ func _play_animation() -> void:
     _animated_sprite.play("die")
   elif _is_damaged:
     _animated_sprite.play("damaged")
+  elif _is_attacking:
+    if _animated_sprite.animation != "attack": # This animation shouldn't loop
+      _animated_sprite.play("attack")
   else:
     if _on_floor:
       if _move_direction == 0.0:
@@ -181,7 +186,6 @@ func _die() -> void:
     _disable_movement()
     _disable_collider()
     velocity.y = -150.0
-    ## TODO: play dying animation
     GameManager.apply_camera_shake(1)
     GameManager.on_player_dying()
 
@@ -208,23 +212,42 @@ func open_door(dict: Dictionary) -> void:
 
 
 func _attack_collision_check() -> void:
-  var _entity_collider: Object = null
+  var entity_collider: Object = null
   var entity: Node2D = null
 
   if _attack_range_sensor_left.is_colliding() and _last_move_direction < 0:
-    _entity_collider = _attack_range_sensor_left.get_collider()
+    entity_collider = _attack_range_sensor_left.get_collider()
 
   if _attack_range_sensor_right.is_colliding() and _last_move_direction > 0:
-    _entity_collider = _attack_range_sensor_right.get_collider()
+    entity_collider = _attack_range_sensor_right.get_collider()
 
-  if _entity_collider != null:
-    if _entity_collider is CharacterBody2D:
-      entity = _entity_collider
+  if entity_collider != null:
+    if entity_collider is CharacterBody2D:
+      entity = entity_collider
     else:
-      entity = _entity_collider.owner
+      entity = entity_collider.owner
 
-  if entity != null and entity.has_method("take_damage") and _interact_button_just_pressed:
-    entity.take_damage(self, _attack_strength)
+  if entity != null and entity.has_method("take_damage") and _interact_button_just_pressed and not _is_attacking:
+    _is_attacking = true
+    _attack_target = entity
+    # Wait until half-way through the animation to attack (see signal handler, below)
+
+
+func _on_animated_sprite_frame_changed() -> void:
+  if (
+    _animated_sprite != null and
+    _animated_sprite.animation == "attack" and
+    _animated_sprite.get_frame() == 2 and
+    _attack_target != null
+  ):
+    _attack_target.take_damage(self, _attack_strength)
+    _attack_target = null
+
+
+func _on_animated_sprite_animation_finished() -> void:
+  if _animated_sprite.animation == "attack":
+    _is_attacking = false
+    _attack_target = null
 
 
 ## Score
