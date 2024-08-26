@@ -189,12 +189,18 @@ sources/2 = SubResource("TileSetAtlasSource_63gdx")
 [node name="BaseLevel" type="Node"]
 script = ExtResource("1_dbl82")
 
-[node name="TileMap" type="TileMap" parent="."]
+[node name="Tiles" type="Node2D" parent="."]
+
+[node name="Background" type="TileMapLayer" parent="Tiles"]
+use_parent_material = true
 tile_set = SubResource("TileSet_xv61y")
-format = 2
-layer_0/name = "Background"
-layer_1/name = "Midground"
-layer_1/tile_data = PackedInt32Array(65535, 0, 0, 0, 0, 0, 1, 0, 0, 65534, 0, 0)
+
+[node name="Midground" type="TileMapLayer" parent="Tiles"]
+use_parent_material = true
+tile_map_data = PackedByteArray(0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 254, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+tile_set = SubResource("TileSet_xv61y")
+
+[node name="Foreground" type="TileMapLayer" parent="Tiles"]
 
 [node name="KillZone" parent="." instance=ExtResource("4_0hngq")]
 position = Vector2(0, 128)
